@@ -32,6 +32,7 @@ const strategySchema = z.object({
   strategy_code: z.string(),
 });
 type StrategyFormValues = z.infer<typeof strategySchema>;
+/*
 const strategyParameterSchema = z.object({
   code: z.string().min(2).max(50),
   description: z.string().min(2).max(999),
@@ -41,6 +42,7 @@ const strategyParameterSchema = z.object({
   max_value: z.number().optional(),
 });
 type StrategyParameterFormValues = z.infer<typeof strategyParameterSchema>;
+*/
 
 export default function StrategiesView() {
   const { list, add, edit } = useStrategies();
