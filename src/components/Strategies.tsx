@@ -26,6 +26,13 @@ import {
 
 // 1) Define your Zod schema
 const strategySchema = z.object({
+  name: z.string().min(2).max(100),
+  symbol_ids: z.string().min(2),
+  status: z.enum(["active", "inactive", "test"]),
+  strategy_code: z.string(),
+});
+type StrategyFormValues = z.infer<typeof strategySchema>;
+const strategyParameterSchema = z.object({
   code: z.string().min(2).max(50),
   description: z.string().min(2).max(999),
   value: z.number(),
@@ -33,7 +40,7 @@ const strategySchema = z.object({
   min_value: z.number().optional(),
   max_value: z.number().optional(),
 });
-type StrategyFormValues = z.infer<typeof strategySchema>;
+type StrategyParameterFormValues = z.infer<typeof strategyParameterSchema>;
 
 export default function StrategiesView() {
   const { list, add, edit } = useStrategies();
@@ -45,35 +52,36 @@ export default function StrategiesView() {
   const addForm = useForm<StrategyFormValues>({
     resolver: zodResolver(strategySchema),
     defaultValues: {
-      code: "",
-      description: "",
-      value: 0,
-      type: "integer",
-      min_value: undefined,
-      max_value: undefined,
+      name: "",
+      symbol_ids: "[]",
+      status: "inactive",
+      strategy_code: "PRICE_ANALYSIS_1",
     },
   });
 
   const onAddSubmit = async (values: StrategyFormValues) => {
-    await add(values);
+    await add({
+      ...values,
+      id: 0,
+      parameters: [],
+      symbol_ids: JSON.parse(values.symbol_ids),
+    } as Strategy);
     addForm.reset();
   };
 
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Strategies</h2>
-
-      {/*
-        3) Loop through all strategies,
-           show either a read‐only row or an edit form
-      */}
       {list.map((s) =>
         editingId === s.id ? (
           <StrategyEditRow
             key={s.id}
             strategy={s}
             onSave={async (vals) => {
-              await edit(s.id, vals);
+              await edit(s.id, {
+                ...vals,
+                symbol_ids: JSON.parse(vals.symbol_ids),
+              });
               setEditingId(null);
             }}
             onCancel={() => setEditingId(null)}
@@ -85,18 +93,17 @@ export default function StrategiesView() {
           >
             <div className="space-y-1">
               <p>
-                <span className="font-medium">Code:</span> {s.code}
+                <span className="font-medium">Name:</span> {s.name}
               </p>
               <p>
-                <span className="font-medium">Description:</span>{" "}
-                {s.description}
+                <span className="font-medium">Symbol IDs:</span> {s.symbol_ids}
               </p>
               <p>
-                <span className="font-medium">Type:</span> {s.type},{" "}
-                <span className="font-medium">Value:</span> {s.value}
+                <span className="font-medium">Status:</span> {s.status},{" "}
               </p>
-              <p className="text-sm text-muted-foreground">
-                Min: {s.min_value ?? "-"}, Max: {s.max_value ?? "-"}
+              <p>
+                <span className="font-medium">Strategy Code:</span>{" "}
+                {s.strategy_code}
               </p>
             </div>
             <Button
@@ -121,46 +128,46 @@ export default function StrategiesView() {
             className="space-y-4"
           >
             <FormField
-              name="code"
+              name="name"
               control={addForm.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Code</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="STRATEGY_A" {...field} />
+                    <Input type="string" placeholder="STRATEGY_A" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
-              name="description"
+              name="symbol_ids"
               control={addForm.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Symbol IDs</FormLabel>
                   <FormControl>
-                    <Input placeholder="What does it do?" {...field} />
+                    <Input type="string" placeholder="[2, 3]" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
-              name="type"
+              name="status"
               control={addForm.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel>Status</FormLabel>
                   <FormControl>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="integer">Integer</SelectItem>
-                        <SelectItem value="float">Float</SelectItem>
-                        <SelectItem value="boolean">Boolean</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                        <SelectItem value="test">Test</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -169,46 +176,18 @@ export default function StrategiesView() {
               )}
             />
             <FormField
-              name="value"
+              name="strategy_code"
               control={addForm.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Value</FormLabel>
+                  <FormLabel>Strategy Code</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} />
+                    <Input type="string" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex gap-4">
-              <FormField
-                name="min_value"
-                control={addForm.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Min Value</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="max_value"
-                control={addForm.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Max Value</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
             <Button type="submit">Add Strategy</Button>
           </form>
         </Form>
@@ -229,12 +208,10 @@ function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
   const form = useForm<StrategyFormValues>({
     resolver: zodResolver(strategySchema),
     defaultValues: {
-      code: strategy.code,
-      description: strategy.description,
-      type: strategy.type,
-      value: strategy.value,
-      min_value: strategy.min_value,
-      max_value: strategy.max_value,
+      name: strategy.name,
+      status: strategy.status,
+      symbol_ids: strategy.symbol_ids.toString(),
+      strategy_code: strategy.strategy_code,
     },
   });
 
@@ -245,11 +222,11 @@ function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
         className="space-y-4 p-4 border rounded"
       >
         <FormField
-          name="code"
+          name="name"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Code</FormLabel>
+              <FormLabel>Name</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -258,11 +235,11 @@ function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
           )}
         />
         <FormField
-          name="description"
+          name="symbol_ids"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Description</FormLabel>
+              <FormLabel>Symbol IDs</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
@@ -271,20 +248,20 @@ function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
           )}
         />
         <FormField
-          name="type"
+          name="status"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Type</FormLabel>
+              <FormLabel>Status</FormLabel>
               <FormControl>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="integer">Integer</SelectItem>
-                    <SelectItem value="float">Float</SelectItem>
-                    <SelectItem value="boolean">Boolean</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="test">Test</SelectItem>
                   </SelectContent>
                 </Select>
               </FormControl>
@@ -293,46 +270,18 @@ function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
           )}
         />
         <FormField
-          name="value"
+          name="strategy_code"
           control={form.control}
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Value</FormLabel>
+              <FormLabel>Strategy Code</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input type="string" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex gap-4">
-          <FormField
-            name="min_value"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Min Value</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            name="max_value"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Max Value</FormLabel>
-                <FormControl>
-                  <Input type="number" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
         <div className="flex space-x-2">
           <Button type="submit" size="sm">
             Save

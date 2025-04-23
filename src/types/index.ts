@@ -23,12 +23,21 @@ export interface Trades {
 
 export interface Strategy {
   id: number;
+  name: string;
+  status: "active" | "inactive" | "test";
+  symbol_ids: number[];
+  strategy_code: string;
+  parameters: StrategyParameter[];
+}
+
+export interface StrategyParameter {
+  id: number | undefined;
   code: string;
-  description: string;
-  value: number;
+  description: string; // A desciption of the parameter
+  value: number; // The default value
   type: "integer" | "float" | "boolean";
-  min_value?: number;
-  max_value?: number;
+  min_value: number | undefined; // The minimum value for the parameter that we might test above
+  max_value: number | undefined; // The maximum value for the parameter that we might test below
 }
 
 export interface Symbols {

@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useOpenTrades } from "@/hooks/useOpenTrades";
 import { Button } from "@/components/ui/button";
+import TimeAgo from "react-timeago";
 
 export default function OpenTrades() {
   const { trades, strategies, symbols, onClose, onCloseAll } = useOpenTrades();
@@ -41,10 +42,11 @@ export default function OpenTrades() {
             <tr>
               <th>Symbol</th>
               <th>Strategy</th>
+              <th>Opened</th>
               <th>Size (USD)</th>
               <th>Open Price</th>
-              <th>PnL $</th>
-              <th>PnL %</th>
+              <th>Target Price</th>
+              <th>Trailing Stop (%)</th>
               <th />
             </tr>
           </thead>
@@ -52,17 +54,17 @@ export default function OpenTrades() {
             {trades.map((t) => {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
-              const pnl = t.pnl_amount ?? 0;
-              const pct = t.pnl_percent ?? 0;
-              const rowClass = pnl >= 0 ? "bg-green-50" : "bg-red-50";
               return (
-                <tr key={t.id} className={rowClass}>
+                <tr key={t.id}>
                   <td>{sym?.symbol}</td>
-                  <td>{strat?.code}</td>
-                  <td>${t.size.toFixed(2)}</td>
+                  <td>{strat?.name}</td>
+                  <td>
+                    <TimeAgo date={t.open_time} />
+                  </td>
+                  <td>${(t.size * t.open_price).toFixed(2)}</td>
                   <td>${t.open_price.toFixed(2)}</td>
-                  <td>${pnl.toFixed(2)}</td>
-                  <td>{pct.toFixed(2)}%</td>
+                  <td>${t.take_profit_price?.toFixed(2)}</td>
+                  <td>{t.stop_loss_percent?.toFixed(2)}%</td>
                   <td className="text-right">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>

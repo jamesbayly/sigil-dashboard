@@ -14,6 +14,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { useHistoricTrades } from "@/hooks/useHistoricTrades";
 
@@ -28,13 +29,14 @@ export default function HistoricTrades() {
   );
 
   // compute cumulative PnL
-  const data = trades
+  const graphData = trades
     .slice()
     .reverse() // older first
     .map((t, idx, arr) => ({
       date: t.close_time?.slice(0, 10) ?? "",
       pnl: t.pnl_amount ?? 0,
-      cum: (idx > 0 ? arr[idx - 1].pnl_amount ?? 0 : 0) + (t.pnl_amount ?? 0),
+      cum_pnl:
+        (idx > 0 ? arr[idx - 1].pnl_amount ?? 0 : 0) + (t.pnl_amount ?? 0),
     }));
 
   return (
@@ -50,12 +52,12 @@ export default function HistoricTrades() {
             value={stratFilter?.toString()}
           >
             <SelectTrigger className="w-40">
-              {strategies.find((s) => s.id === stratFilter)?.code ?? "All"}
+              {strategies.find((s) => s.id === stratFilter)?.name ?? "All"}
             </SelectTrigger>
             <SelectContent>
               {strategies.map((s) => (
                 <SelectItem key={s.id} value={s.id.toString()}>
-                  {s.code}
+                  {s.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -81,14 +83,27 @@ export default function HistoricTrades() {
         </div>
       </div>
 
-      {/* chart */}
       <div className="h-64 bg-white dark:bg-gray-800 p-4 rounded">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
+          <LineChart data={graphData}>
             <XAxis dataKey="date" />
             <YAxis />
             <Tooltip />
-            <Line type="monotone" dataKey="cum" stroke="#3b82f6" dot={false} />
+            <Line
+              label="PNL"
+              type="monotone"
+              dataKey="pnl"
+              stroke="#3b82f6"
+              dot={false}
+            />
+            <Line
+              label="Cumulative PNL"
+              type="monotone"
+              dataKey="cum_pnl"
+              stroke="#3b82f6"
+              dot={false}
+            />
+            <ReferenceLine label="Break Even" y="0" />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -98,7 +113,7 @@ export default function HistoricTrades() {
         <table className="w-full table-auto">
           <thead>
             <tr>
-              <th>Date</th>
+              <th>Close Date</th>
               <th>Symbol</th>
               <th>Strategy</th>
               <th>PnL $</th>
@@ -116,7 +131,7 @@ export default function HistoricTrades() {
                 <tr key={t.id} className={bg}>
                   <td>{t.close_time?.slice(0, 10)}</td>
                   <td>{sym?.symbol}</td>
-                  <td>{strat?.code}</td>
+                  <td>{strat?.name}</td>
                   <td>${pnl.toFixed(2)}</td>
                   <td>{pct.toFixed(2)}%</td>
                 </tr>

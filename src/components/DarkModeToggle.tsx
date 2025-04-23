@@ -1,6 +1,6 @@
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Sun, Moon } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
 
 export function DarkModeToggle() {
   const { theme, setTheme } = useTheme();
