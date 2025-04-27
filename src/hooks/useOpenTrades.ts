@@ -1,27 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  getOpenTrades,
-  closeTrade,
-  closeAllTrades,
-  getStrategies,
-  getSymbols,
-} from "@/utils/api";
-import type { Trades, Strategy, Symbols } from "@/types";
+import { getOpenTrades, closeTrade, closeAllTrades } from "@/utils/api";
+import type { Trades } from "@/types";
 
 export function useOpenTrades() {
   const [trades, setTrades] = useState<Trades[]>([]);
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
-  const [symbols, setSymbols] = useState<Symbols[]>([]);
 
   const fetchAll = useCallback(async () => {
-    const [t, s, sy] = await Promise.all([
-      getOpenTrades(),
-      getStrategies(),
-      getSymbols(),
-    ]);
-    setTrades(t);
-    setStrategies(s);
-    setSymbols(sy);
+    setTrades(await getOpenTrades());
   }, []);
 
   useEffect(() => {
@@ -39,5 +24,5 @@ export function useOpenTrades() {
     await fetchAll();
   };
 
-  return { trades, strategies, symbols, onClose, onCloseAll };
+  return { trades, onClose, onCloseAll };
 }

@@ -8,9 +8,13 @@ import {
 import { useOpenTrades } from "@/hooks/useOpenTrades";
 import { Button } from "@/components/ui/button";
 import TimeAgo from "react-timeago";
+import { useSymbols } from "@/hooks/useSymbols";
+import { useStrategies } from "@/hooks/useStrategies";
 
 export default function OpenTrades() {
-  const { trades, strategies, symbols, onClose, onCloseAll } = useOpenTrades();
+  const { trades, onClose, onCloseAll } = useOpenTrades();
+  const { symbols } = useSymbols();
+  const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
 
   return (
@@ -45,6 +49,8 @@ export default function OpenTrades() {
               <th>Opened</th>
               <th>Size (USD)</th>
               <th>Open Price</th>
+              <th>Current Price</th>
+              <th>Current Profit</th>
               <th>Target Price</th>
               <th>Trailing Stop (%)</th>
               <th />
@@ -63,6 +69,8 @@ export default function OpenTrades() {
                   </td>
                   <td>${(t.size * t.open_price).toFixed(2)}</td>
                   <td>${t.open_price.toFixed(2)}</td>
+                  <td>{t.close_price ? "$" + t.close_price.toFixed(2) : ""}</td>
+                  <td>{t.pnl_percent ? t.pnl_percent.toFixed(2) + "%" : ""}</td>
                   <td>${t.take_profit_price?.toFixed(2)}</td>
                   <td>{t.stop_loss_percent?.toFixed(2)}%</td>
                   <td className="text-right">

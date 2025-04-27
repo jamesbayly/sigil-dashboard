@@ -45,7 +45,7 @@ type StrategyParameterFormValues = z.infer<typeof strategyParameterSchema>;
 */
 
 export default function StrategiesView() {
-  const { list, add, edit } = useStrategies();
+  const { strategies, add, edit } = useStrategies();
   const [editingId, setEditingId] = useState<number | null>(null);
 
   //
@@ -74,7 +74,7 @@ export default function StrategiesView() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Strategies</h2>
-      {list.map((s) =>
+      {strategies.map((s) =>
         editingId === s.id ? (
           <StrategyEditRow
             key={s.id}

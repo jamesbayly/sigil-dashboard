@@ -6,7 +6,6 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useOpenTrades } from "@/hooks/useOpenTrades";
 import {
   LineChart,
   Line,
@@ -17,9 +16,12 @@ import {
   ReferenceLine,
 } from "recharts";
 import { useHistoricTrades } from "@/hooks/useHistoricTrades";
+import { useSymbols } from "@/hooks/useSymbols";
+import { useStrategies } from "@/hooks/useStrategies";
 
 export default function HistoricTrades() {
-  const { strategies, symbols } = useOpenTrades();
+  const { symbols } = useSymbols();
+  const { strategies } = useStrategies();
   const [stratFilter, setStratFilter] = useState<number | undefined>();
   const [symFilter, setSymFilter] = useState<number | undefined>();
   const { trades, loading, sentinel } = useHistoricTrades(
@@ -31,13 +33,17 @@ export default function HistoricTrades() {
   // compute cumulative PnL
   const graphData = trades
     .slice()
-    .reverse() // older first
-    .map((t, idx, arr) => ({
+    .reverse()
+    .map((t) => ({
       date: t.close_time?.slice(0, 10) ?? "",
       pnl: t.pnl_amount ?? 0,
-      cum_pnl:
-        (idx > 0 ? arr[idx - 1].pnl_amount ?? 0 : 0) + (t.pnl_amount ?? 0),
-    }));
+    }))
+    .map((t, i, a) => {
+      return {
+        ...t,
+        cum_pnl: a.slice(0, i + 1).reduce((acc, t) => acc + t.pnl, 0),
+      };
+    });
 
   return (
     <div className="space-y-4">
@@ -100,7 +106,7 @@ export default function HistoricTrades() {
               label="Cumulative PNL"
               type="monotone"
               dataKey="cum_pnl"
-              stroke="#3b82f6"
+              stroke="#22c55e"
               dot={false}
             />
             <ReferenceLine label="Break Even" y="0" />

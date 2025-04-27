@@ -1,3 +1,5 @@
+import { Strategy } from "@/types";
+
 const BASE = import.meta.env.VITE_API_BASE_URL;
 
 export async function getOpenTrades() {
@@ -30,7 +32,7 @@ export async function getStrategies() {
   const res = await fetch(`${BASE}/strategy`);
   return res.json();
 }
-export async function createStrategy(payload: any) {
+export async function createStrategy(payload: Omit<Strategy, "id">) {
   const res = await fetch(`${BASE}/strategy`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -38,7 +40,7 @@ export async function createStrategy(payload: any) {
   });
   return res.json();
 }
-export async function updateStrategy(id: number, payload: any) {
+export async function updateStrategy(id: number, payload: Partial<Strategy>) {
   const res = await fetch(`${BASE}/strategy/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },

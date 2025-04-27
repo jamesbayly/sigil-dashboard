@@ -3,10 +3,10 @@ import { getStrategies, createStrategy, updateStrategy } from "@/utils/api";
 import type { Strategy } from "@/types";
 
 export function useStrategies() {
-  const [list, setList] = useState<Strategy[]>([]);
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
 
   const fetchAll = async () => {
-    setList(await getStrategies());
+    setStrategies(await getStrategies());
   };
   useEffect(() => {
     fetchAll();
@@ -20,5 +20,5 @@ export function useStrategies() {
     await updateStrategy(id, data);
     fetchAll();
   };
-  return { list, add, edit };
+  return { strategies, add, edit };
 }
