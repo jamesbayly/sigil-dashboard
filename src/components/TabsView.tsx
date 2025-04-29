@@ -2,6 +2,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import OpenTrades from "./OpenTrades";
 import HistoricTrades from "./HistoricTrades";
 import StrategiesView from "./Strategies";
+import TestRunsView from "./TestRuns";
 
 export default function TabsView() {
   return (
@@ -10,6 +11,7 @@ export default function TabsView() {
         <TabsTrigger value="open">Open</TabsTrigger>
         <TabsTrigger value="history">History</TabsTrigger>
         <TabsTrigger value="strategies">Strategies</TabsTrigger>
+        <TabsTrigger value="tests">Test Runs</TabsTrigger>
       </TabsList>
 
       <TabsContent value="open">
@@ -20,6 +22,9 @@ export default function TabsView() {
       </TabsContent>
       <TabsContent value="strategies">
         <StrategiesView />
+      </TabsContent>
+      <TabsContent value="tests">
+        <TestRunsView />
       </TabsContent>
     </Tabs>
   );

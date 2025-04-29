@@ -51,3 +51,33 @@ export interface Symbols {
   cg_rank?: number;
   cg_id: string;
 }
+
+export interface StrategyTestRunsResponse {
+  id: number;
+  strategy: Strategy | undefined;
+  created_at: number;
+  name: string;
+  symbol_ids: number[];
+  count_permutations: number;
+  count_results: number;
+}
+
+export interface StrategyTestRunResponse extends StrategyTestRunsResponse {
+  permutations: StrategyTestRunPermutationResponse[];
+}
+
+export interface StrategyTestRunPermutationResponse {
+  id: number;
+  name: string;
+  results: StrategyTestRunPermutationResultResponse[];
+}
+
+export interface StrategyTestRunPermutationResultResponse {
+  id: number;
+  symbol_id: number;
+  trade_count: number;
+  win_rate: number;
+  pnl_percent: number | undefined;
+  pnl_amount: number | undefined;
+  zella_score: number;
+}

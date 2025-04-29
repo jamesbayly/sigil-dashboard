@@ -53,3 +53,13 @@ export async function getSymbols() {
   const res = await fetch(`${BASE}/symbol`);
   return res.json();
 }
+
+export async function getTestRuns() {
+  const res = await fetch(`${BASE}/strategy/test`);
+  return res.json();
+}
+
+export async function getTestRun(testRunID: number) {
+  const res = await fetch(`${BASE}/strategy/test/${testRunID}`);
+  return res.json();
+}
