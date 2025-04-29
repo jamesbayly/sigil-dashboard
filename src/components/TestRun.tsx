@@ -54,9 +54,7 @@ const TestRunPermutationsView: FC<{
     <TableBody>
       {permutations.map((perm, index) => (
         <TableRow key={index} onClick={() => onRowClick(perm)}>
-          <TableCell className="text-sm font-medium text-gray-900">
-            {perm.name}
-          </TableCell>
+          <TableCell>{perm.name}</TableCell>
           <TableCell>{perm.results_with_many_trades}</TableCell>
           <TableCell>{perm.win_rate_max?.toFixed(2)}</TableCell>
           <TableCell>{perm.win_rate_median?.toFixed(2)}</TableCell>
