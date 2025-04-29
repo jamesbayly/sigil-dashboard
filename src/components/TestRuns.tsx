@@ -38,7 +38,6 @@ export default function TestRunsView() {
               <TableHead>Symbol Count</TableHead>
               <TableHead>Permutations</TableHead>
               <TableHead>Results</TableHead>
-              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -47,7 +46,7 @@ export default function TestRunsView() {
                 (s) => s.id === testRun.strategy?.id
               );
               return (
-                <tr key={testRun.id}>
+                <TableRow key={testRun.id} onClick={() => openTestRun(testRun)}>
                   <TableCell>{testRun.name}</TableCell>
                   <TableCell>
                     <TimeAgo date={new Date(testRun.created_at)} />
@@ -58,16 +57,7 @@ export default function TestRunsView() {
                   <TableCell>{testRun.symbol_ids.length}</TableCell>
                   <TableCell>{testRun.count_permutations}</TableCell>
                   <TableCell>{testRun.count_results}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openTestRun(testRun)}
-                    >
-                      View Full Results
-                    </Button>
-                  </TableCell>
-                </tr>
+                </TableRow>
               );
             })}
           </TableBody>

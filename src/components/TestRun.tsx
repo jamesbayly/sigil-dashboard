@@ -1,5 +1,5 @@
 import { useTestRun } from "@/hooks/useTestRun";
-import { useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import TimeAgo from "react-timeago";
@@ -14,8 +14,143 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
+import { StrategyTestRunPermutationResponse } from "@/types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { useSymbols } from "@/hooks/useSymbols";
+
+const TestRunPermutationsView: FC<{
+  permutations: StrategyTestRunPermutationResponse[];
+  onRowClick: (permutation: StrategyTestRunPermutationResponse) => void;
+}> = ({ permutations, onRowClick }) => (
+  <Table>
+    <TableHeader>
+      <TableRow>
+        <TableHead>Name</TableHead>
+        <TableHead>Results with Many Trades</TableHead>
+        <TableHead>Win Rate Max</TableHead>
+        <TableHead>Win Rate Median</TableHead>
+        <TableHead>PNL % Max</TableHead>
+        <TableHead>PNL % Median</TableHead>
+        <TableHead>PNL Amount Max</TableHead>
+        <TableHead>PNL Amount Median</TableHead>
+        <TableHead>Zella Score Max</TableHead>
+        <TableHead>Zella Score Median</TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {permutations.map((perm, index) => (
+        <TableRow key={index} onClick={() => onRowClick(perm)}>
+          <TableCell className="text-sm font-medium text-gray-900">
+            {perm.name}
+          </TableCell>
+          <TableCell>{perm.results_with_many_trades}</TableCell>
+          <TableCell>{perm.win_rate_max?.toFixed(2)}</TableCell>
+          <TableCell>{perm.win_rate_median?.toFixed(2)}</TableCell>
+          <TableCell>{perm.pnl_percent_max?.toFixed(2)}</TableCell>
+          <TableCell>{perm.pnl_percent_median?.toFixed(2)}</TableCell>
+          <TableCell>{perm.pnl_amount_max?.toFixed(2)}</TableCell>
+          <TableCell>{perm.pnl_amount_median?.toFixed(2)}</TableCell>
+          <TableCell>{perm.zella_score_max?.toFixed(2)}</TableCell>
+          <TableCell>{perm.zella_score_median?.toFixed(2)}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+);
+
+const TestRunPermutationsResultsView: FC<{
+  permutation: StrategyTestRunPermutationResponse | undefined;
+  setPermutationDialogContent: (
+    permutation: StrategyTestRunPermutationResponse | undefined
+  ) => void;
+}> = ({ permutation, setPermutationDialogContent }) => {
+  const { symbols } = useSymbols();
+
+  return (
+    <Dialog
+      open={!!permutation}
+      onOpenChange={() => setPermutationDialogContent(undefined)}
+    >
+      <DialogContent className="max-h-screen overflow-y-auto w-screen">
+        <DialogHeader>
+          <DialogTitle>{permutation?.name}</DialogTitle>
+          <DialogDescription></DialogDescription>
+        </DialogHeader>
+        <div>
+          <h2>Results</h2>
+          <p>
+            {permutation?.results.length} results with many trades.{" "}
+            {permutation?.results_with_many_trades} total results.
+          </p>
+          <p>
+            Win Rate: {permutation?.win_rate_median.toFixed(2)} (Max:{" "}
+            {permutation?.win_rate_max.toFixed(2)})
+          </p>
+          <p>
+            PNL %: {permutation?.pnl_percent_median.toFixed(2)} (Max:{" "}
+            {permutation?.pnl_percent_max.toFixed(2)})
+          </p>
+          <p>
+            PNL Amount: {permutation?.pnl_amount_median.toFixed(2)} (Max:{" "}
+            {permutation?.pnl_amount_max.toFixed(2)})
+          </p>
+          <p>
+            Zella Score: {permutation?.zella_score_median.toFixed(2)} (Max:{" "}
+            {permutation?.zella_score_max.toFixed(2)})
+          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Symbol Name</TableHead>
+                <TableHead>Trade Count</TableHead>
+                <TableHead>Win Rate</TableHead>
+                <TableHead>PNL %</TableHead>
+                <TableHead>PNL Amount</TableHead>
+                <TableHead>Zella Score</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {permutation?.results
+                .filter((r) => r.trade_count > 0)
+                .sort((a, b) => b.zella_score - a.zella_score)
+                .map((result) => (
+                  <TableRow key={result.id}>
+                    <TableCell>
+                      {symbols.find((s) => s.id === result.symbol_id)?.symbol}
+                    </TableCell>
+                    <TableCell>{result.trade_count}</TableCell>
+                    <TableCell>{result.win_rate.toFixed(2)}</TableCell>
+                    <TableCell>{result.pnl_percent?.toFixed(2)}</TableCell>
+                    <TableCell>{result.pnl_amount?.toFixed(2)}</TableCell>
+                    <TableCell>{result.zella_score.toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 export default function TestRunView() {
+  const [selectedPermutation, setSelectedPermutation] = useState<
+    StrategyTestRunPermutationResponse | undefined
+  >(undefined);
   const { testRunId } = useParams();
   const { testRun, onDelete, isLoading, error } = useTestRun(Number(testRunId));
   const navigate = useNavigate();
@@ -38,6 +173,12 @@ export default function TestRunView() {
       await onDelete(parseInt(testRunId, 10));
       navigate("/tests");
     }
+  };
+
+  const onPermRowClick = (permutation: StrategyTestRunPermutationResponse) => {
+    // Handle row click if needed
+    console.log("Row clicked:", permutation);
+    setSelectedPermutation(permutation);
   };
 
   return (
@@ -89,33 +230,21 @@ export default function TestRunView() {
             <p>Symbol Count: {testRun.symbol_ids.length}</p>
             <p>Permutations: {testRun.count_permutations}</p>
             <p>Results: {testRun.count_results}</p>
+
             <div>
               <h2>Test Run Permutations</h2>
-              {testRun.permutations.map((perm, index) => (
-                <div key={index} className="border rounded p-2 mb-2">
-                  <h4 className="font-semibold">{perm.name}</h4>
-                  <h3>Results</h3>
-                  <div>
-                    {perm.results.map((res, index) => (
-                      <div key={index} className="border rounded p-2 mb-2">
-                        <h4 className="font-semibold">Result #{res.id}</h4>
-                        <p>Symbol ID: {res.symbol_id}</p>
-                        <p>Profit/Loss $: {res.pnl_amount?.toFixed(2)}</p>
-                        <p>
-                          Profit/Loss Percent: {res.pnl_percent?.toFixed(2)}%
-                        </p>
-                        <p>Trades: {res.trade_count}</p>
-                        <p>Win Rate: {res.win_rate}</p>
-                        <p>Zella Score: {res.zella_score}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
+              <TestRunPermutationsView
+                permutations={testRun.permutations}
+                onRowClick={onPermRowClick}
+              />
             </div>
           </div>
         ) : null}
       </div>
+      <TestRunPermutationsResultsView
+        permutation={selectedPermutation}
+        setPermutationDialogContent={setSelectedPermutation}
+      />
     </div>
   );
 }
