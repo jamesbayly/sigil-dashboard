@@ -10,6 +10,14 @@ import { Button } from "@/components/ui/button";
 import TimeAgo from "react-timeago";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function OpenTrades() {
   const { trades, onClose, onCloseAll } = useOpenTrades();
@@ -41,39 +49,43 @@ export default function OpenTrades() {
       </div>
 
       <div className="overflow-auto">
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <th>Symbol</th>
-              <th>Strategy</th>
-              <th>Opened</th>
-              <th>Size (USD)</th>
-              <th>Open Price</th>
-              <th>Current Price</th>
-              <th>Current Profit</th>
-              <th>Target Price</th>
-              <th>Trailing Stop (%)</th>
+        <Table className="w-full table-auto">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Symbol</TableHead>
+              <TableHead>Strategy</TableHead>
+              <TableHead>Opened</TableHead>
+              <TableHead>Size (USD)</TableHead>
+              <TableHead>Open Price</TableHead>
+              <TableHead>Current Price</TableHead>
+              <TableHead>Current Profit</TableHead>
+              <TableHead>Target Price</TableHead>
+              <TableHead>Trailing Stop (%)</TableHead>
               <th />
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {trades.map((t) => {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
               return (
-                <tr key={t.id}>
-                  <td>{sym?.symbol}</td>
-                  <td>{strat?.name}</td>
-                  <td>
+                <TableRow key={t.id}>
+                  <TableCell>{sym?.symbol}</TableCell>
+                  <TableCell>{strat?.name}</TableCell>
+                  <TableCell>
                     <TimeAgo date={t.open_time} />
-                  </td>
-                  <td>${(t.size * t.open_price).toFixed(2)}</td>
-                  <td>${t.open_price.toFixed(2)}</td>
-                  <td>{t.close_price ? "$" + t.close_price.toFixed(2) : ""}</td>
-                  <td>{t.pnl_percent ? t.pnl_percent.toFixed(2) + "%" : ""}</td>
-                  <td>${t.take_profit_price?.toFixed(2)}</td>
-                  <td>{t.stop_loss_percent?.toFixed(2)}%</td>
-                  <td className="text-right">
+                  </TableCell>
+                  <TableCell>${(t.size * t.open_price).toFixed(2)}</TableCell>
+                  <TableCell>${t.open_price.toFixed(2)}</TableCell>
+                  <TableCell>
+                    {t.close_price ? "$" + t.close_price.toFixed(2) : ""}
+                  </TableCell>
+                  <TableCell>
+                    {t.pnl_percent ? t.pnl_percent.toFixed(2) + "%" : ""}
+                  </TableCell>
+                  <TableCell>${t.take_profit_price?.toFixed(2)}</TableCell>
+                  <TableCell>{t.stop_loss_percent?.toFixed(2)}%</TableCell>
+                  <TableCell className="text-right">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -91,12 +103,12 @@ export default function OpenTrades() {
                         </AlertDialogAction>
                       </AlertDialogContent>
                     </AlertDialog>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

@@ -1,12 +1,31 @@
 import { useEffect, useState } from "react";
 import { getStrategies, createStrategy, updateStrategy } from "@/utils/api";
-import type { Strategy } from "@/types";
+import { isGenericResponse, type Strategy } from "@/types";
+import { toast } from "sonner";
 
-export function useStrategies() {
+export const useStrategies = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
   const fetchAll = async () => {
-    setStrategies(await getStrategies());
+    try {
+      setIsLoading(true);
+      setError(null);
+      const res = await getStrategies();
+      if (isGenericResponse(res)) {
+        throw new Error(res.message);
+      }
+
+      setStrategies(res);
+    } catch (err) {
+      const newError =
+        err instanceof Error ? err : new Error("Failed to fetch test run");
+      setError(newError);
+      toast.error(newError.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
   useEffect(() => {
     fetchAll();
@@ -20,5 +39,5 @@ export function useStrategies() {
     await updateStrategy(id, data);
     fetchAll();
   };
-  return { strategies, add, edit };
-}
+  return { strategies, add, edit, isLoading, error, refetch: fetchAll };
+};

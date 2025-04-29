@@ -1,27 +1,43 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { getHistoricTrades } from "@/utils/api";
-import type { Trades } from "@/types";
+import { type Trades, isGenericResponse } from "@/types";
+import { toast } from "sonner";
 
-export function useHistoricTrades(
+export const useHistoricTrades = (
   take = 25,
   strategyId?: number,
   symbolId?: number
-) {
+) => {
   const [trades, setTrades] = useState<Trades[]>([]);
   const [skip, setSkip] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
   const sentinel = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
-    const data = await getHistoricTrades(take, skip, strategyId, symbolId);
-    setTrades((x) => [...x, ...data]);
-    setSkip((s) => s + take);
-    if (data.length < take) setHasMore(false);
-    setLoading(false);
-  }, [skip, take, loading, hasMore, strategyId, symbolId]);
+    if (isLoading || !hasMore) return;
+    try {
+      setIsLoading(true);
+      const res = await getHistoricTrades(take, skip, strategyId, symbolId);
+      if (isGenericResponse(res)) {
+        throw new Error(res.message);
+      }
+
+      setTrades((x) => [...x, ...res]);
+      setSkip((s) => s + take);
+      if (res.length < take) setHasMore(false);
+    } catch (err) {
+      const newError =
+        err instanceof Error
+          ? err
+          : new Error("Failed to fetch historic trades");
+      setError(newError);
+      toast.error(newError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [skip, take, isLoading, hasMore, strategyId, symbolId]);
 
   // infinite scroll via IntersectionObserver
   useEffect(() => {
@@ -42,5 +58,5 @@ export function useHistoricTrades(
     setHasMore(true);
   }, [strategyId, symbolId]);
 
-  return { trades, loading, sentinel };
-}
+  return { trades, isLoading, error, sentinel };
+};

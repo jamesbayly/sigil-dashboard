@@ -3,14 +3,23 @@ import { Button } from "@/components/ui/button";
 import TimeAgo from "react-timeago";
 import { useStrategies } from "@/hooks/useStrategies";
 import type { StrategyTestRunsResponse } from "@/types";
+import { useNavigate } from "react-router-dom";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function TestRunsView() {
+  const navigate = useNavigate();
   const { testRuns } = useTestRuns();
   const { strategies } = useStrategies();
 
-  const openTestRun = (testRun: StrategyTestRunsResponse) => {
-    console.log(testRun);
-  };
+  const openTestRun = (testRun: StrategyTestRunsResponse) =>
+    navigate(`/tests/${testRun.id}`);
 
   return (
     <div className="space-y-4">
@@ -20,36 +29,36 @@ export default function TestRunsView() {
       </div>
 
       <div className="overflow-auto">
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Created</th>
-              <th>Strategy</th>
-              <th>Symbol Count</th>
-              <th>Permutations</th>
-              <th>Results</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="w-full table-auto">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Strategy</TableHead>
+              <TableHead>Symbol Count</TableHead>
+              <TableHead>Permutations</TableHead>
+              <TableHead>Results</TableHead>
+              <TableHead></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {testRuns.map((testRun) => {
               const strategy = strategies.find(
                 (s) => s.id === testRun.strategy?.id
               );
               return (
                 <tr key={testRun.id}>
-                  <td>{testRun.name}</td>
-                  <td>
+                  <TableCell>{testRun.name}</TableCell>
+                  <TableCell>
                     <TimeAgo date={new Date(testRun.created_at)} />
-                  </td>
-                  <td>
+                  </TableCell>
+                  <TableCell>
                     {strategy?.name || testRun.strategy?.name || "Unknown"}
-                  </td>
-                  <td>{testRun.symbol_ids.length}</td>
-                  <td>{testRun.count_permutations}</td>
-                  <td>{testRun.count_results}</td>
-                  <td className="text-right">
+                  </TableCell>
+                  <TableCell>{testRun.symbol_ids.length}</TableCell>
+                  <TableCell>{testRun.count_permutations}</TableCell>
+                  <TableCell>{testRun.count_results}</TableCell>
+                  <TableCell className="text-right">
                     <Button
                       size="sm"
                       variant="outline"
@@ -57,12 +66,12 @@ export default function TestRunsView() {
                     >
                       View Full Results
                     </Button>
-                  </td>
+                  </TableCell>
                 </tr>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

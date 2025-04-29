@@ -1,3 +1,12 @@
+export interface GenericResponse {
+  message: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const isGenericResponse = (object: any): object is GenericResponse => {
+  return "message" in object;
+};
+
 export interface Trades {
   id: number;
   strategy_id: number;
@@ -69,6 +78,20 @@ export interface StrategyTestRunResponse extends StrategyTestRunsResponse {
 export interface StrategyTestRunPermutationResponse {
   id: number;
   name: string;
+  results_with_many_trades: number;
+  win_rate_max: number;
+  win_rate_median: number;
+  win_rate_average: number;
+  pnl_percent_max: number;
+  pnl_percent_median: number;
+  pnl_percent_average: number;
+  pnl_amount_max: number;
+  pnl_amount_median: number;
+  pnl_amount_average: number;
+  zella_score_max: number;
+  zella_score_median: number;
+  zella_score_average: number;
+
   results: StrategyTestRunPermutationResultResponse[];
 }
 

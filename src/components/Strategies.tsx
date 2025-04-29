@@ -206,7 +206,11 @@ interface StrategyEditRowProps {
   onSave: (data: StrategyFormValues) => Promise<void>;
   onCancel: () => void;
 }
-function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
+const StrategyEditRow = ({
+  strategy,
+  onSave,
+  onCancel,
+}: StrategyEditRowProps) => {
   const form = useForm<StrategyFormValues>({
     resolver: zodResolver(strategySchema),
     defaultValues: {
@@ -295,4 +299,4 @@ function StrategyEditRow({ strategy, onSave, onCancel }: StrategyEditRowProps) {
       </form>
     </Form>
   );
-}
+};

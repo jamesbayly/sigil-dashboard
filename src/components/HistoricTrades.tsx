@@ -15,6 +15,14 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useHistoricTrades } from "@/hooks/useHistoricTrades";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
@@ -24,7 +32,7 @@ export default function HistoricTrades() {
   const { strategies } = useStrategies();
   const [stratFilter, setStratFilter] = useState<number | undefined>();
   const [symFilter, setSymFilter] = useState<number | undefined>();
-  const { trades, loading, sentinel } = useHistoricTrades(
+  const { trades, isLoading, sentinel } = useHistoricTrades(
     25,
     stratFilter,
     symFilter
@@ -116,17 +124,17 @@ export default function HistoricTrades() {
 
       {/* list */}
       <div className="overflow-auto">
-        <table className="w-full table-auto">
-          <thead>
-            <tr>
-              <th>Close Date</th>
-              <th>Symbol</th>
-              <th>Strategy</th>
-              <th>PnL $</th>
-              <th>PnL %</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table className="w-full table-auto">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Close Date</TableHead>
+              <TableHead>Symbol</TableHead>
+              <TableHead>Strategy</TableHead>
+              <TableHead>PnL $</TableHead>
+              <TableHead>PnL %</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {trades.map((t) => {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
@@ -134,20 +142,20 @@ export default function HistoricTrades() {
               const pct = t.pnl_percent ?? 0;
               const bg = pnl >= 0 ? "bg-green-50" : "bg-red-50";
               return (
-                <tr key={t.id} className={bg}>
-                  <td>{t.close_time?.slice(0, 10)}</td>
-                  <td>{sym?.symbol}</td>
-                  <td>{strat?.name}</td>
-                  <td>${pnl.toFixed(2)}</td>
-                  <td>{pct.toFixed(2)}%</td>
-                </tr>
+                <TableRow key={t.id} className={bg}>
+                  <TableCell>{t.close_time?.slice(0, 10)}</TableCell>
+                  <TableCell>{sym?.symbol}</TableCell>
+                  <TableCell>{strat?.name}</TableCell>
+                  <TableCell>${pnl.toFixed(2)}</TableCell>
+                  <TableCell>{pct.toFixed(2)}%</TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
       <div ref={sentinel} className="h-10 text-center">
-        {loading ? "Loading…" : "Scroll for more"}
+        {isLoading ? "Loading…" : "Scroll for more"}
       </div>
     </div>
   );
