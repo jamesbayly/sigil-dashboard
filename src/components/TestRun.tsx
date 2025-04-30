@@ -78,6 +78,34 @@ const TestRunPermutationsResultsView: FC<{
 }> = ({ permutation, setPermutationDialogContent }) => {
   const { symbols } = useSymbols();
 
+  const exportTestRunPermutationResults = () => {
+    if (!permutation) return;
+    const csvContent =
+      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella\n" +
+      permutation.results
+        .map((result) => {
+          return [
+            permutation.id,
+            permutation.name,
+            result.symbol_id,
+            symbols.find((s) => s.id === result.symbol_id)?.symbol,
+            result.trade_count,
+            result.win_rate,
+            result.pnl_percent,
+            result.pnl_amount,
+            result.zella_score,
+          ].join(",");
+        })
+        .join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${permutation.name}-results.csv`);
+    document.body.appendChild(link);
+    link.click();
+  };
+
   return (
     <Dialog
       open={!!permutation}
@@ -86,7 +114,15 @@ const TestRunPermutationsResultsView: FC<{
       <DialogContent className="max-h-screen overflow-y-auto w-screen">
         <DialogHeader>
           <DialogTitle>{permutation?.name}</DialogTitle>
-          <DialogDescription></DialogDescription>
+          <DialogDescription>
+            <Button
+              variant="link"
+              size="sm"
+              onClick={exportTestRunPermutationResults}
+            >
+              Export Results
+            </Button>
+          </DialogDescription>
         </DialogHeader>
         <div>
           <h2>Results</h2>
@@ -150,6 +186,7 @@ export default function TestRunView() {
     StrategyTestRunPermutationResponse | undefined
   >(undefined);
   const { testRunId } = useParams();
+  const { symbols } = useSymbols();
   const { testRun, onDelete, isLoading, error } = useTestRun(Number(testRunId));
   const navigate = useNavigate();
 
@@ -179,37 +216,71 @@ export default function TestRunView() {
     setSelectedPermutation(permutation);
   };
 
+  const exportTestRunResults = () => {
+    if (!testRun) return;
+    const csvContent =
+      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella\n" +
+      testRun.permutations
+        .flatMap((perm) =>
+          perm.results.map((result) => {
+            return [
+              perm.id,
+              perm.name,
+              result.symbol_id,
+              symbols.find((s) => s.id === result.symbol_id)?.symbol,
+              result.trade_count,
+              result.win_rate,
+              result.pnl_percent,
+              result.pnl_amount,
+              result.zella_score,
+            ].join(",");
+          })
+        )
+        .join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${testRun.name}-results.csv`);
+    document.body.appendChild(link);
+    link.click();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">
           Test Run #{testRunId} {testRun?.name}
         </h1>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button size="sm" variant="destructive">
-              Delete Test Run
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Delete this test run and all of its data?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete all
-                data related to this test run.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteTestRun}>
-                Yes, delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <Button onClick={() => navigate("/tests")}>Back to Test Runs</Button>
+        <div>
+          <Button variant="outline" size="sm" onClick={exportTestRunResults}>
+            Export Results
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="destructive">
+                Delete Test Run
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Delete this test run and all of its data?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete all
+                  data related to this test run.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteTestRun}>
+                  Yes, delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {/* Test run details content will go here */}
