@@ -15,7 +15,7 @@ import {
 
 export default function TestRunsView() {
   const navigate = useNavigate();
-  const { testRuns } = useTestRuns();
+  const { testRuns, isLoading } = useTestRuns();
   const { strategies } = useStrategies();
 
   const openTestRun = (testRun: StrategyTestRunsResponse) =>
@@ -41,12 +41,21 @@ export default function TestRunsView() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {isLoading && (
+              <TableRow>
+                <TableCell colSpan={5}>Loading…</TableCell>
+              </TableRow>
+            )}
             {testRuns.map((testRun) => {
               const strategy = strategies.find(
                 (s) => s.id === testRun.strategy?.id
               );
               return (
-                <TableRow key={testRun.id} onClick={() => openTestRun(testRun)}>
+                <TableRow
+                  key={testRun.id}
+                  className="cursor-pointer hover:bg-muted"
+                  onClick={() => openTestRun(testRun)}
+                >
                   <TableCell>{testRun.name}</TableCell>
                   <TableCell>
                     <TimeAgo date={new Date(testRun.created_at)} />

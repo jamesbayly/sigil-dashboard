@@ -5,6 +5,7 @@ import StrategiesView from "./components/Strategies";
 import TestRunsView from "./components/TestRuns";
 import Nav from "./components/Nav";
 import TestRunView from "./components/TestRun";
+import StrategyView from "./components/Strategy";
 
 export default function App() {
   return (
@@ -15,6 +16,8 @@ export default function App() {
           <Route path="open" element={<OpenTrades />} />
           <Route path="history" element={<HistoricTrades />} />
           <Route path="strategies" element={<StrategiesView />} />
+          <Route path="strategies/create" element={<StrategyView />} />
+          <Route path="strategies/:id" element={<StrategyView />} />
           <Route path="tests" element={<TestRunsView />} />
           <Route path="tests/:testRunId" element={<TestRunView />} />{" "}
         </Route>

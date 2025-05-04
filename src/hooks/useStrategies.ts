@@ -35,8 +35,8 @@ export const useStrategies = () => {
     await createStrategy(data);
     fetchAll();
   };
-  const edit = async (id: number, data: Partial<Strategy>) => {
-    await updateStrategy(id, data);
+  const edit = async (data: Strategy) => {
+    await updateStrategy(data);
     fetchAll();
   };
   return { strategies, add, edit, isLoading, error, refetch: fetchAll };

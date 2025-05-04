@@ -51,11 +51,8 @@ export const createStrategy = async (payload: Omit<Strategy, "id">) => {
   return (await res.json()) as Strategy | GenericResponse;
 };
 
-export const updateStrategy = async (
-  id: number,
-  payload: Partial<Strategy>
-) => {
-  const res = await fetch(`${BASE}/strategy/${id}`, {
+export const updateStrategy = async (payload: Partial<Strategy>) => {
+  const res = await fetch(`${BASE}/strategy`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
