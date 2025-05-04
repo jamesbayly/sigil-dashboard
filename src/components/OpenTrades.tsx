@@ -18,12 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Trades } from "@/types";
+import TradeView from "./Trade";
 
 export default function OpenTrades() {
   const { trades, onClose, onCloseAll } = useOpenTrades();
   const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
+  const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
+    undefined
+  );
 
   return (
     <div className="space-y-4">
@@ -69,7 +74,7 @@ export default function OpenTrades() {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
               return (
-                <TableRow key={t.id}>
+                <TableRow key={t.id} onClick={() => setSelectedTrade(t)}>
                   <TableCell>{sym?.symbol}</TableCell>
                   <TableCell>{strat?.name}</TableCell>
                   <TableCell>
@@ -110,6 +115,10 @@ export default function OpenTrades() {
           </TableBody>
         </Table>
       </div>
+      <TradeView
+        trade={selectedTrade}
+        closeSelf={() => setSelectedTrade(undefined)}
+      />
     </div>
   );
 }

@@ -26,12 +26,17 @@ import {
 import { useHistoricTrades } from "@/hooks/useHistoricTrades";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
+import { Trades } from "@/types";
+import TradeView from "./Trade";
 
 export default function HistoricTrades() {
   const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [stratFilter, setStratFilter] = useState<number | undefined>();
   const [symFilter, setSymFilter] = useState<number | undefined>();
+  const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
+    undefined
+  );
   const { trades, isLoading, sentinel } = useHistoricTrades(
     25,
     stratFilter,
@@ -142,7 +147,11 @@ export default function HistoricTrades() {
               const pct = t.pnl_percent ?? 0;
               const bg = pnl >= 0 ? "bg-green-50" : "bg-red-50";
               return (
-                <TableRow key={t.id} className={bg}>
+                <TableRow
+                  key={t.id}
+                  className={bg}
+                  onClick={() => setSelectedTrade(t)}
+                >
                   <TableCell>{t.close_time?.slice(0, 10)}</TableCell>
                   <TableCell>{sym?.symbol}</TableCell>
                   <TableCell>{strat?.name}</TableCell>
@@ -157,6 +166,10 @@ export default function HistoricTrades() {
       <div ref={sentinel} className="h-10 text-center">
         {isLoading ? "Loading…" : "Scroll for more"}
       </div>
+      <TradeView
+        trade={selectedTrade}
+        closeSelf={() => setSelectedTrade(undefined)}
+      />
     </div>
   );
 }

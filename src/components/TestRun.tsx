@@ -72,10 +72,10 @@ const TestRunPermutationsView: FC<{
 
 const TestRunPermutationsResultsView: FC<{
   permutation: StrategyTestRunPermutationResponse | undefined;
-  setPermutationDialogContent: (
-    permutation: StrategyTestRunPermutationResponse | undefined
+  closeSelf: (
+    updatedPermutation: StrategyTestRunPermutationResponse | undefined
   ) => void;
-}> = ({ permutation, setPermutationDialogContent }) => {
+}> = ({ permutation, closeSelf }) => {
   const { symbols } = useSymbols();
 
   const exportTestRunPermutationResults = () => {
@@ -107,10 +107,7 @@ const TestRunPermutationsResultsView: FC<{
   };
 
   return (
-    <Dialog
-      open={!!permutation}
-      onOpenChange={() => setPermutationDialogContent(undefined)}
-    >
+    <Dialog open={!!permutation} onOpenChange={() => closeSelf(undefined)}>
       <DialogContent className="max-h-screen overflow-y-auto w-screen">
         <DialogHeader>
           <DialogTitle>{permutation?.name}</DialogTitle>
@@ -312,7 +309,7 @@ export default function TestRunView() {
       </div>
       <TestRunPermutationsResultsView
         permutation={selectedPermutation}
-        setPermutationDialogContent={setSelectedPermutation}
+        closeSelf={setSelectedPermutation}
       />
     </div>
   );
