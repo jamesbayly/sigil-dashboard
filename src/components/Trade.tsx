@@ -68,6 +68,10 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
                 <strong>Size:</strong> {trade.size}
               </p>
               <p>
+                <strong>Size USD:</strong> $
+                {(trade.size * trade.open_price).toFixed(2)}
+              </p>
+              <p>
                 <strong>Open Time:</strong>{" "}
                 {new Date(trade.open_time).toLocaleString()}
               </p>

@@ -35,6 +35,8 @@ import { CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { calculateZellaScore } from "@/lib/zellaScoreHelper";
 
 export default function HistoricTrades() {
   const { symbols } = useSymbols();
@@ -171,6 +173,50 @@ export default function HistoricTrades() {
             <ReferenceLine label="Break Even" y="0" />
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      <div>
+        <h3>Summary</h3>
+        <div className="flex flex-wrap gap-4">
+          <Card className="flex-auto">
+            <CardHeader>
+              <CardTitle>{calculateZellaScore(trades)}</CardTitle>
+              <CardDescription>Zella Score</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="flex-auto">
+            <CardHeader>
+              <CardTitle>
+                $
+                {trades
+                  .reduce((acc, t) => acc + (t.pnl_amount || 0), 0)
+                  .toFixed(2)}
+              </CardTitle>
+              <CardDescription>Total PNL</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="flex-auto">
+            <CardHeader>
+              <CardTitle>{trades.length.toLocaleString()}</CardTitle>
+              <CardDescription>Total Trades</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="flex-auto">
+            <CardHeader>
+              <CardTitle>
+                {trades.length > 0
+                  ? (
+                      (trades.filter((t) => (t.pnl_amount ?? 0) > 0).length /
+                        trades.length) *
+                      100
+                    ).toFixed(1)
+                  : 0}
+                %
+              </CardTitle>
+              <CardDescription>Win Rate</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
 
       {/* list */}
