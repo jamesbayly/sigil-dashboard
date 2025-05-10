@@ -73,8 +73,18 @@ export default function OpenTrades() {
             {trades.map((t) => {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
+              const bg =
+                (t.pnl_amount || 0) > 0
+                  ? "bg-green-50 dark:bg-green-900"
+                  : (t.pnl_amount || 0) < 0
+                  ? "bg-red-50 dark:bg-red-900"
+                  : "";
               return (
-                <TableRow key={t.id} onClick={() => setSelectedTrade(t)}>
+                <TableRow
+                  key={t.id}
+                  className={bg}
+                  onClick={() => setSelectedTrade(t)}
+                >
                   <TableCell>{sym?.symbol}</TableCell>
                   <TableCell>{strat?.name}</TableCell>
                   <TableCell>

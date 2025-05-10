@@ -28,6 +28,13 @@ import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
 import { Trades } from "@/types";
 import TradeView from "./Trade";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { Calendar } from "./ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { DateRange } from "react-day-picker";
+import { addDays, format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function HistoricTrades() {
   const { symbols } = useSymbols();
@@ -37,11 +44,11 @@ export default function HistoricTrades() {
   const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
     undefined
   );
-  const { trades, isLoading, sentinel } = useHistoricTrades(
-    25,
-    stratFilter,
-    symFilter
-  );
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: addDays(new Date(), -7),
+    to: new Date(),
+  });
+  const { trades } = useHistoricTrades(date, stratFilter, symFilter);
 
   // compute cumulative PnL
   const graphData = trades
@@ -64,6 +71,45 @@ export default function HistoricTrades() {
 
       {/* filters */}
       <div className="flex flex-wrap gap-4">
+        <div>
+          <Label>Date Range</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="date"
+                variant={"outline"}
+                className={cn(
+                  "w-[300px] justify-start text-left font-normal",
+                  !date && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon />
+                {date?.from ? (
+                  date.to ? (
+                    <>
+                      {format(date.from, "LLL dd, y")} -{" "}
+                      {format(date.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(date.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={date?.from}
+                selected={date}
+                onSelect={setDate}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
         <div>
           <Label>Strategy</Label>
           <Select
@@ -145,7 +191,12 @@ export default function HistoricTrades() {
               const strat = strategies.find((s) => s.id === t.strategy_id);
               const pnl = t.pnl_amount ?? 0;
               const pct = t.pnl_percent ?? 0;
-              const bg = pnl >= 0 ? "bg-green-50" : "bg-red-50";
+              const bg =
+                pnl > 0
+                  ? "bg-green-50 dark:bg-green-900"
+                  : pnl < 0
+                  ? "bg-red-50 dark:bg-red-900"
+                  : "";
               return (
                 <TableRow
                   key={t.id}
@@ -162,9 +213,6 @@ export default function HistoricTrades() {
             })}
           </TableBody>
         </Table>
-      </div>
-      <div ref={sentinel} className="h-10 text-center">
-        {isLoading ? "Loading…" : "Scroll for more"}
       </div>
       <TradeView
         trade={selectedTrade}

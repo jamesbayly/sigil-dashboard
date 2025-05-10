@@ -31,7 +31,7 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
 
   return (
     <Dialog open={!!trade} onOpenChange={() => closeSelf(undefined)}>
-      <DialogContent className="max-h-screen max-w-full flex flex-col">
+      <DialogContent className="max-h-screen max-w-full flex flex-col overflow-scroll">
         <DialogHeader>
           <DialogTitle>
             Trade {trade?.id} - {symbol?.name}

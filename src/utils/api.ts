@@ -25,12 +25,14 @@ export const closeAllTrades = async () => {
 };
 
 export const getHistoricTrades = async (
-  take: number,
-  skip: number,
+  start: Date | undefined,
+  end: Date | undefined,
   strategyId?: number,
   symbolId?: number
 ) => {
-  const params = new URLSearchParams({ take: `${take}`, skip: `${skip}` });
+  const params = new URLSearchParams({});
+  if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
+  if (end) params.set("end", `${end.toISOString().slice(0, 10)}`);
   if (strategyId) params.set("strategy_id", `${strategyId}`);
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   const res = await fetch(`${BASE}/trade/historic?${params.toString()}`);
