@@ -32,12 +32,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { CalendarIcon } from "lucide-react";
-import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { calculateZellaScore } from "@/lib/zellaScoreHelper";
 import { useHistoricMarketState } from "@/hooks/useHistoricMarketState";
+import { DateRange } from "react-day-picker";
 
 export default function HistoricTrades() {
   const { symbols } = useSymbols();
@@ -70,6 +70,7 @@ export default function HistoricTrades() {
         100;
       return {
         ...t,
+        date: t.close_time,
         cum_pnl: a
           .slice(0, i + 1)
           .reduce((acc, t) => acc + (t.pnl_amount ?? 0), 0),
@@ -163,7 +164,7 @@ export default function HistoricTrades() {
       <div className="h-64 bg-white dark:bg-gray-800 p-4 rounded">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={graphData}>
-            <XAxis dataKey="date" />
+            <XAxis dataKey="date" tickFormatter={(tick) => tick.slice(0, 10)} />
             <YAxis />
             <YAxis yAxisId={1} hide={true} />
             <Tooltip />
@@ -283,7 +284,7 @@ export default function HistoricTrades() {
                   className={bg}
                   onClick={() => setSelectedTrade(t)}
                 >
-                  <TableCell>{t.close_time?.slice(0, 10)}</TableCell>
+                  <TableCell>{t.close_time}</TableCell>
                   <TableCell>{sym?.symbol}</TableCell>
                   <TableCell>{strat?.name}</TableCell>
                   <TableCell>${pnl.toFixed(2)}</TableCell>
