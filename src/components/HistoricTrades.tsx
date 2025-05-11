@@ -37,6 +37,7 @@ import { addDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { calculateZellaScore } from "@/lib/zellaScoreHelper";
+import { useHistoricMarketState } from "@/hooks/useHistoricMarketState";
 
 export default function HistoricTrades() {
   const { symbols } = useSymbols();
@@ -51,19 +52,28 @@ export default function HistoricTrades() {
     to: new Date(),
   });
   const { trades } = useHistoricTrades(date, stratFilter, symFilter);
+  const { marketState } = useHistoricMarketState(date);
 
   // compute cumulative PnL
   const graphData = trades
     .slice()
     .reverse()
-    .map((t) => ({
-      date: t.close_time?.slice(0, 10) ?? "",
-      pnl: t.pnl_amount ?? 0,
-    }))
+    .filter((t) => t.close_time)
     .map((t, i, a) => {
+      const marketStateAtDate = marketState.find(
+        (m) => new Date(m.created_at) <= new Date(t.close_time || Date.now())
+      );
+      const marketPctAtDate =
+        (((marketStateAtDate?.market_cap || 0) -
+          marketState[marketState.length - 1].market_cap) /
+          marketState[marketState.length - 1].market_cap) *
+        100;
       return {
         ...t,
-        cum_pnl: a.slice(0, i + 1).reduce((acc, t) => acc + t.pnl, 0),
+        cum_pnl: a
+          .slice(0, i + 1)
+          .reduce((acc, t) => acc + (t.pnl_amount ?? 0), 0),
+        market_pct_change: marketPctAtDate,
       };
     });
 
@@ -155,6 +165,7 @@ export default function HistoricTrades() {
           <LineChart data={graphData}>
             <XAxis dataKey="date" />
             <YAxis />
+            <YAxis yAxisId={1} hide={true} />
             <Tooltip />
             <Line
               label="PNL"
@@ -169,6 +180,14 @@ export default function HistoricTrades() {
               dataKey="cum_pnl"
               stroke="#22c55e"
               dot={false}
+            />
+            <Line
+              label="Total Market Return"
+              type="monotone"
+              dataKey="market_pct_change"
+              stroke="#f97316"
+              dot={false}
+              yAxisId={1}
             />
             <ReferenceLine label="Break Even" y="0" />
           </LineChart>
@@ -214,6 +233,21 @@ export default function HistoricTrades() {
                 %
               </CardTitle>
               <CardDescription>Win Rate</CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="flex-auto">
+            <CardHeader>
+              <CardTitle>
+                {marketState && marketState.length > 0
+                  ? (
+                      ((marketState[0].market_cap -
+                        marketState[marketState.length - 1].market_cap) /
+                        marketState[marketState.length - 1].market_cap) *
+                      100
+                    ).toFixed(1) + "%"
+                  : "N/A"}
+              </CardTitle>
+              <CardDescription>Market Return</CardDescription>
             </CardHeader>
           </Card>
         </div>

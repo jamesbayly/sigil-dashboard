@@ -30,6 +30,16 @@ export interface Trades {
   pnl_amount?: number;
 }
 
+export interface MarketState {
+  id: number;
+  created_at: string;
+  market_cap: number; // Express in Millions
+  ema_9: number | undefined; // Express in Millions
+  ema_21: number | undefined; // Express in Millions
+  ema_50: number | undefined; // Express in Millions
+  ema_100: number | undefined; // Express in Millions
+}
+
 export interface Strategy {
   id: number;
   name: string;

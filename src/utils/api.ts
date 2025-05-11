@@ -1,5 +1,6 @@
 import {
   GenericResponse,
+  MarketState,
   Strategy,
   StrategyTestRunResponse,
   StrategyTestRunsResponse,
@@ -37,6 +38,17 @@ export const getHistoricTrades = async (
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   const res = await fetch(`${BASE}/trade/historic?${params.toString()}`);
   return (await res.json()) as Trades[] | GenericResponse;
+};
+
+export const getHistoricMarketState = async (
+  start: Date | undefined,
+  end: Date | undefined
+) => {
+  const params = new URLSearchParams({});
+  if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
+  if (end) params.set("end", `${end.toISOString().slice(0, 10)}`);
+  const res = await fetch(`${BASE}/market/historic?${params.toString()}`);
+  return (await res.json()) as MarketState[] | GenericResponse;
 };
 
 export const getStrategies = async () => {
