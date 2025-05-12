@@ -28,7 +28,9 @@ export const useHistoricTrades = (
         throw new Error(res.message);
       }
 
-      setTrades(res);
+      setTrades(
+        res.sort((a, b) => ((a.close_time ?? 0) < (b.close_time ?? 0) ? 1 : -1))
+      );
     } catch (err) {
       const newError =
         err instanceof Error
