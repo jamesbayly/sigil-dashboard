@@ -59,6 +59,7 @@ export default function OpenTrades() {
             <TableRow>
               <TableHead>Symbol</TableHead>
               <TableHead>Strategy</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Opened</TableHead>
               <TableHead>Size (USD)</TableHead>
               <TableHead>Open Price</TableHead>
@@ -87,6 +88,9 @@ export default function OpenTrades() {
                 >
                   <TableCell>{sym?.symbol}</TableCell>
                   <TableCell>{strat?.name}</TableCell>
+                  <TableCell>
+                    {t.open_binance_order_id ? "REAL" : "TEST"}
+                  </TableCell>
                   <TableCell>
                     <TimeAgo date={t.open_time} />
                   </TableCell>

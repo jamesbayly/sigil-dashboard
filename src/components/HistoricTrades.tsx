@@ -285,6 +285,7 @@ export default function HistoricTrades() {
           <TableHeader>
             <TableRow>
               <TableHead>Close Date</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Symbol</TableHead>
               <TableHead>Strategy</TableHead>
               <TableHead>PnL $</TableHead>
@@ -310,6 +311,9 @@ export default function HistoricTrades() {
                   onClick={() => setSelectedTrade(t)}
                 >
                   <TableCell>{t.close_time}</TableCell>
+                  <TableCell>
+                    {t.open_binance_order_id ? "REAL" : "TEST"}
+                  </TableCell>
                   <TableCell>{sym?.symbol}</TableCell>
                   <TableCell>{strat?.name}</TableCell>
                   <TableCell>${pnl.toFixed(2)}</TableCell>
