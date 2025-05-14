@@ -4,6 +4,7 @@ import {
   SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
@@ -87,7 +88,7 @@ export default function HistoricTrades() {
         <div>
           <Label>Date Range</Label>
           <Popover>
-            <PopoverTrigger asChild>
+            <PopoverTrigger>
               <Button
                 id="date"
                 variant={"outline"}
@@ -111,15 +112,39 @@ export default function HistoricTrades() {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={setDate}
-                numberOfMonths={2}
-              />
+            <PopoverContent
+              className="flex w-auto flex-col space-y-2 p-2"
+              align="start"
+            >
+              <Select
+                onValueChange={(value) =>
+                  setDate({
+                    from: addDays(new Date(), parseInt(value) * -1),
+                    to: new Date(),
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  <SelectItem value="1">Last 24 hours</SelectItem>
+                  <SelectItem value="3">Last 3 days</SelectItem>
+                  <SelectItem value="7">Last week</SelectItem>
+                  <SelectItem value="14">Last fortnight</SelectItem>
+                  <SelectItem value="30">Last month</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="rounded-md border">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={date?.from}
+                  selected={date}
+                  onSelect={setDate}
+                  numberOfMonths={2}
+                />
+              </div>
             </PopoverContent>
           </Popover>
         </div>
