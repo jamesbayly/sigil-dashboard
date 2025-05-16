@@ -79,6 +79,26 @@ export default function HistoricTrades() {
       };
     });
 
+  const getDayBreakdown = (date: Date) => {
+    const dayTrades = trades.filter(
+      (t) =>
+        t.close_time &&
+        t.close_time.slice(0, 10) === date.toISOString().slice(0, 10)
+    );
+    return {
+      trade_count: dayTrades.length,
+      total_pnl: dayTrades.reduce((acc, t) => acc + (t.pnl_amount || 0), 0),
+      win_rate:
+        dayTrades.length > 0
+          ? (
+              (dayTrades.filter((t) => (t.pnl_amount ?? 0) > 0).length /
+                dayTrades.length) *
+              100
+            ).toFixed(1)
+          : 0,
+    };
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold">Historic Trades</h2>
@@ -276,6 +296,33 @@ export default function HistoricTrades() {
               <CardDescription>Market Return</CardDescription>
             </CardHeader>
           </Card>
+        </div>
+      </div>
+
+      <div>
+        <h3>Daily Breakdown</h3>
+        <div className="flex flex-nowrap gap-4 overflow-scroll">
+          {[
+            ...new Set(
+              trades
+                .filter((t) => t.close_time)
+                .map((t) => t.close_time?.slice(0, 10))
+            ),
+          ].map((date) => {
+            const breakdown = getDayBreakdown(new Date(date || ""));
+            return (
+              <Card key={date} className="flex-auto">
+                <CardHeader>
+                  <CardTitle>{date}</CardTitle>
+                  <CardDescription>
+                    <p>{breakdown.trade_count} trades</p>
+                    <p>Total PNL: ${breakdown.total_pnl.toFixed(2)}</p>
+                    <p>Win Rate: {breakdown.win_rate}%</p>
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            );
+          })}
         </div>
       </div>
 
