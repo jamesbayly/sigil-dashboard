@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Trades } from "@/types";
 import TradeView from "./Trade";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 export default function OpenTrades() {
   const { trades, onClose, onCloseAll } = useOpenTrades();
@@ -30,16 +31,47 @@ export default function OpenTrades() {
     undefined
   );
 
+  const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
+    "REAL"
+  );
+  const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
+
+  // Update filteredTrades when trades or tradeTypesFilter changes
+  useEffect(() => {
+    if (tradeTypesFilter === "REAL") {
+      setFilteredTrades(trades.filter((t) => t.open_binance_order_id));
+    } else {
+      setFilteredTrades(trades);
+    }
+  }, [trades, tradeTypesFilter]);
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between">
         <h2 className="text-2xl font-semibold">Open Trades</h2>
+        <div>
+          <Tabs
+            value={tradeTypesFilter}
+            onValueChange={(value) =>
+              setTradeTypesFilter(value as "REAL" | "ALL")
+            }
+            className="w-[400px]"
+          >
+            <TabsList>
+              <TabsTrigger value="REAL">Real Trades Only</TabsTrigger>
+              <TabsTrigger value="ALL">ALL Trades</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive">Close All</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
-            <p>Are you sure you want to close ALL open trades?</p>
+            <p>
+              Are you sure you want to close ALL open trades (both real and
+              test)?
+            </p>
             <AlertDialogAction
               onClick={async () => {
                 setClosingAll(true);
@@ -71,7 +103,7 @@ export default function OpenTrades() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trades.map((t) => {
+            {filteredTrades.map((t) => {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
               const bg =

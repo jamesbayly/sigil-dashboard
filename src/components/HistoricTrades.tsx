@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectTrigger,
@@ -39,6 +39,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { calculateZellaScore } from "@/lib/zellaScoreHelper";
 import { useHistoricMarketState } from "@/hooks/useHistoricMarketState";
 import { DateRange } from "react-day-picker";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 export default function HistoricTrades() {
   const { symbols } = useSymbols();
@@ -52,11 +53,24 @@ export default function HistoricTrades() {
     from: addDays(new Date(), -7),
     to: new Date(),
   });
+  const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
+    "REAL"
+  );
+  const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
   const { trades } = useHistoricTrades(date, stratFilter, symFilter);
   const { marketState } = useHistoricMarketState(date);
 
+  // Update filteredTrades when trades or tradeTypesFilter changes
+  useEffect(() => {
+    if (tradeTypesFilter === "REAL") {
+      setFilteredTrades(trades.filter((t) => t.open_binance_order_id));
+    } else {
+      setFilteredTrades(trades);
+    }
+  }, [trades, tradeTypesFilter]);
+
   // compute cumulative PnL
-  const graphData = trades
+  const graphData = filteredTrades
     .slice()
     .reverse()
     .filter((t) => t.close_time)
@@ -80,7 +94,7 @@ export default function HistoricTrades() {
     });
 
   const getDayBreakdown = (date: Date) => {
-    const dayTrades = trades.filter(
+    const dayTrades = filteredTrades.filter(
       (t) =>
         t.close_time &&
         t.close_time.slice(0, 10) === date.toISOString().slice(0, 10)
@@ -104,7 +118,7 @@ export default function HistoricTrades() {
       <h2 className="text-2xl font-semibold">Historic Trades</h2>
 
       {/* filters */}
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 align-end">
         <div>
           <Label>Date Range</Label>
           <Popover>
@@ -204,6 +218,20 @@ export default function HistoricTrades() {
             </SelectContent>
           </Select>
         </div>
+        <div>
+          <Tabs
+            value={tradeTypesFilter}
+            onValueChange={(value) =>
+              setTradeTypesFilter(value as "REAL" | "ALL")
+            }
+            className="w-[400px]"
+          >
+            <TabsList>
+              <TabsTrigger value="REAL">Real Trades Only</TabsTrigger>
+              <TabsTrigger value="ALL">ALL Trades</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       <div className="h-64 bg-white dark:bg-gray-800 p-4 rounded">
@@ -245,7 +273,7 @@ export default function HistoricTrades() {
         <div className="flex flex-wrap gap-4">
           <Card className="flex-auto">
             <CardHeader>
-              <CardTitle>{calculateZellaScore(trades)}</CardTitle>
+              <CardTitle>{calculateZellaScore(filteredTrades)}</CardTitle>
               <CardDescription>Zella Score</CardDescription>
             </CardHeader>
           </Card>
@@ -253,7 +281,7 @@ export default function HistoricTrades() {
             <CardHeader>
               <CardTitle>
                 $
-                {trades
+                {filteredTrades
                   .reduce((acc, t) => acc + (t.pnl_amount || 0), 0)
                   .toFixed(2)}
               </CardTitle>
@@ -262,17 +290,18 @@ export default function HistoricTrades() {
           </Card>
           <Card className="flex-auto">
             <CardHeader>
-              <CardTitle>{trades.length.toLocaleString()}</CardTitle>
+              <CardTitle>{filteredTrades.length.toLocaleString()}</CardTitle>
               <CardDescription>Total Trades</CardDescription>
             </CardHeader>
           </Card>
           <Card className="flex-auto">
             <CardHeader>
               <CardTitle>
-                {trades.length > 0
+                {filteredTrades.length > 0
                   ? (
-                      (trades.filter((t) => (t.pnl_amount ?? 0) > 0).length /
-                        trades.length) *
+                      (filteredTrades.filter((t) => (t.pnl_amount ?? 0) > 0)
+                        .length /
+                        filteredTrades.length) *
                       100
                     ).toFixed(1)
                   : 0}
@@ -304,7 +333,7 @@ export default function HistoricTrades() {
         <div className="flex flex-nowrap gap-4 overflow-scroll">
           {[
             ...new Set(
-              trades
+              filteredTrades
                 .filter((t) => t.close_time)
                 .map((t) => t.close_time?.slice(0, 10))
             ),
@@ -340,7 +369,7 @@ export default function HistoricTrades() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trades.map((t) => {
+            {filteredTrades.map((t) => {
               const sym = symbols.find((s) => s.id === t.symbol_id);
               const strat = strategies.find((s) => s.id === t.strategy_id);
               const pnl = t.pnl_amount ?? 0;
