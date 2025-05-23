@@ -10,20 +10,16 @@ import { Button } from "@/components/ui/button";
 import TimeAgo from "react-timeago";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Trades } from "@/types";
 import TradeView from "./Trade";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "./ui/data-table";
+import { ArrowUpDown } from "lucide-react";
+import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 export default function OpenTrades() {
-  const { trades, onClose, onCloseAll } = useOpenTrades();
+  const { trades, onCloseAll } = useOpenTrades();
   const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
@@ -35,6 +31,156 @@ export default function OpenTrades() {
     "REAL"
   );
   const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
+
+  const columns: ColumnDef<Trades>[] = [
+    {
+      accessorKey: "symbol_id",
+      header: "Symbol",
+      cell: ({ row }) => {
+        const sym = symbols.find((s) => s.id === row.original.symbol_id);
+        return <span>{sym?.symbol}</span>;
+      },
+    },
+    {
+      accessorKey: "strategy_id",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Strategy
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const strat = strategies.find((s) => s.id === row.original.strategy_id);
+        return <span>{strat?.name}</span>;
+      },
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => {
+        return (
+          <span>{row.original.open_binance_order_id ? "REAL" : "TEST"}</span>
+        );
+      },
+    },
+    {
+      accessorKey: "open_time",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Opened
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <TimeAgo date={row.original.open_time} />;
+      },
+    },
+    {
+      accessorKey: "size",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Size (USD)
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <span>
+            $
+            {parseFloat(
+              (row.original.size * row.original.open_price).toFixed(2)
+            ).toLocaleString()}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "open_price",
+      header: "Open Price",
+      cell: ({ row }) => {
+        return (
+          <span>
+            ${parseFloat(row.original.open_price.toFixed(2)).toLocaleString()}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "close_price",
+      header: "Current Price",
+      cell: ({ row }) => {
+        return (
+          <span>
+            {row.original.close_price
+              ? "$" +
+                parseFloat(row.original.close_price.toFixed(2)).toLocaleString()
+              : ""}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "pnl_percent",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Current PnL (%)
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <span>
+            {row.original.pnl_percent
+              ? row.original.pnl_percent.toFixed(2) + "%"
+              : ""}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "take_profit_price",
+      header: "Target Price",
+      cell: ({ row }) => {
+        return (
+          <span>
+            {row.original.take_profit_price
+              ? "$" +
+                parseFloat(
+                  row.original.take_profit_price.toFixed(2)
+                ).toLocaleString()
+              : ""}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "stop_loss_percent",
+      header: "Trailing Stop (%)",
+      cell: ({ row }) => {
+        return <span>{row.original.stop_loss_percent?.toFixed(2) + "%"}</span>;
+      },
+    },
+  ];
 
   // Update filteredTrades when trades or tradeTypesFilter changes
   useEffect(() => {
@@ -85,81 +231,48 @@ export default function OpenTrades() {
         </AlertDialog>
       </div>
 
+      <div className="flex flex-wrap gap-4">
+        <Card className="flex-auto">
+          <CardHeader>
+            <CardTitle>
+              $
+              {filteredTrades
+                .reduce((acc, t) => acc + (t.pnl_amount || 0), 0)
+                .toFixed(2)}
+            </CardTitle>
+            <CardDescription>Current Open PNL</CardDescription>
+          </CardHeader>
+        </Card>
+        <Card className="flex-auto">
+          <CardHeader>
+            <CardTitle>{filteredTrades.length.toLocaleString()}</CardTitle>
+            <CardDescription>Total Trades</CardDescription>
+          </CardHeader>
+        </Card>
+        <Card className="flex-auto">
+          <CardHeader>
+            <CardTitle>
+              {filteredTrades.length > 0
+                ? (
+                    (filteredTrades.filter((t) => (t.pnl_amount ?? 0) > 0)
+                      .length /
+                      filteredTrades.length) *
+                    100
+                  ).toFixed(1)
+                : 0}
+              %
+            </CardTitle>
+            <CardDescription>Winning Rate</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+
       <div className="overflow-auto">
-        <Table className="w-full table-auto">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Symbol</TableHead>
-              <TableHead>Strategy</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Opened</TableHead>
-              <TableHead>Size (USD)</TableHead>
-              <TableHead>Open Price</TableHead>
-              <TableHead>Current Price</TableHead>
-              <TableHead>Current Profit</TableHead>
-              <TableHead>Target Price</TableHead>
-              <TableHead>Trailing Stop (%)</TableHead>
-              <th />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTrades.map((t) => {
-              const sym = symbols.find((s) => s.id === t.symbol_id);
-              const strat = strategies.find((s) => s.id === t.strategy_id);
-              const bg =
-                (t.pnl_amount || 0) > 0
-                  ? "bg-green-50 dark:bg-green-900"
-                  : (t.pnl_amount || 0) < 0
-                  ? "bg-red-50 dark:bg-red-900"
-                  : "";
-              return (
-                <TableRow
-                  key={t.id}
-                  className={bg}
-                  onClick={() => setSelectedTrade(t)}
-                >
-                  <TableCell>{sym?.symbol}</TableCell>
-                  <TableCell>{strat?.name}</TableCell>
-                  <TableCell>
-                    {t.open_binance_order_id ? "REAL" : "TEST"}
-                  </TableCell>
-                  <TableCell>
-                    <TimeAgo date={t.open_time} />
-                  </TableCell>
-                  <TableCell>${(t.size * t.open_price).toFixed(2)}</TableCell>
-                  <TableCell>${t.open_price.toFixed(2)}</TableCell>
-                  <TableCell>
-                    {t.close_price ? "$" + t.close_price.toFixed(2) : ""}
-                  </TableCell>
-                  <TableCell>
-                    {t.pnl_percent ? t.pnl_percent.toFixed(2) + "%" : ""}
-                  </TableCell>
-                  <TableCell>${t.take_profit_price?.toFixed(2)}</TableCell>
-                  <TableCell>{t.stop_loss_percent?.toFixed(2)}%</TableCell>
-                  <TableCell className="text-right">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600"
-                        >
-                          Close
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <p>Close trade #{t.id}?</p>
-                        <AlertDialogAction onClick={() => onClose(t.id)}>
-                          Yes, close
-                        </AlertDialogAction>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <DataTable
+          data={filteredTrades}
+          columns={columns}
+          onRowClick={setSelectedTrade}
+        />
       </div>
       <TradeView
         trade={selectedTrade}
