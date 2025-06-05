@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { StrategyTestRunPermutationResponse } from "@/types";
+import { isGenericResponse, StrategyTestRunPermutationResponse } from "@/types";
 import {
   Table,
   TableBody,
@@ -31,6 +31,8 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { useSymbols } from "@/hooks/useSymbols";
+import { refreshTestRun } from "@/utils/api";
+import { toast } from "sonner";
 
 const TestRunPermutationsView: FC<{
   permutations: StrategyTestRunPermutationResponse[];
@@ -243,16 +245,46 @@ export default function TestRunView() {
     link.click();
   };
 
+  const doRefreshTestRun = async () => {
+    const res = await refreshTestRun(parseInt(testRunId, 10));
+    if (isGenericResponse(res)) {
+      toast.error(res.message);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">
           Test Run #{testRunId} {testRun?.name}
         </h1>
-        <div>
+        <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={exportTestRunResults}>
             Export Results
           </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button size="sm" variant="outline">
+                Refresh Test Run
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Refresh and rerun missing test run results?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action may take some time
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={doRefreshTestRun}>
+                  Refresh Test Run
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button size="sm" variant="destructive">

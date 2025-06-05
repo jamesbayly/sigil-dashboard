@@ -95,3 +95,11 @@ export const deleteTestRun = async (testRunID: number) => {
   });
   return (await res.json()) as GenericResponse;
 };
+
+export const refreshTestRun = async (testRunID: number) => {
+  const res = await fetch(`${BASE}/strategy/test/${testRunID}/results`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  return (await res.json()) as GenericResponse;
+};
