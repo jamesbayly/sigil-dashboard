@@ -324,6 +324,17 @@ export default function TestRunView() {
               Created At: {new Date(testRun.created_at).toLocaleString()} (
               <TimeAgo date={new Date(testRun.created_at)} />)
             </p>
+            <p>
+              <strong>
+                Percent complete:{" "}
+                {(
+                  (testRun.count_results /
+                    (testRun.count_permutations * testRun.symbol_ids.length)) *
+                  100
+                ).toFixed(1)}
+                %
+              </strong>
+            </p>
             <p>Strategy: {testRun.strategy?.name || "Unknown"}</p>
             <p>Symbol Count: {testRun.symbol_ids.length}</p>
             <p>Permutations: {testRun.count_permutations}</p>
