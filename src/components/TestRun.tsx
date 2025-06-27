@@ -279,7 +279,8 @@ const TestRunPermutationsResultsView: FC<{
   closeSelf: (
     updatedPermutation: StrategyTestRunPermutationResponse | undefined
   ) => void;
-}> = ({ permutation, closeSelf }) => {
+  doRefreshTestRun: (permutationID?: number) => void;
+}> = ({ permutation, closeSelf, doRefreshTestRun }) => {
   const { symbols } = useSymbols();
 
   const resultsColumns: ColumnDef<StrategyTestRunPermutationResultResponse>[] =
@@ -469,6 +470,31 @@ const TestRunPermutationsResultsView: FC<{
             >
               Export Results
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" variant="outline">
+                  Refresh Test Run
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    Refresh and rerun missing test run results?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action may take some time
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => doRefreshTestRun(permutation?.id)}
+                  >
+                    Refresh Test Run
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           <p>Permutation ID: {permutation?.id}</p>
           <p>
@@ -564,8 +590,8 @@ export default function TestRunView() {
     link.click();
   };
 
-  const doRefreshTestRun = async () => {
-    const res = await refreshTestRun(parseInt(testRunId, 10));
+  const doRefreshTestRun = async (permutationID: number | undefined) => {
+    const res = await refreshTestRun(parseInt(testRunId, 10), permutationID);
     if (isGenericResponse(res)) {
       toast.error(res.message);
     }
@@ -613,7 +639,7 @@ export default function TestRunView() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={doRefreshTestRun}>
+                <AlertDialogAction onClick={() => doRefreshTestRun(undefined)}>
                   Refresh Test Run
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -693,6 +719,7 @@ export default function TestRunView() {
       <TestRunPermutationsResultsView
         permutation={selectedPermutation}
         closeSelf={setSelectedPermutation}
+        doRefreshTestRun={doRefreshTestRun}
       />
     </div>
   );
