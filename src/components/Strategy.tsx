@@ -3,8 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
-import { getStrategies, createStrategy, updateStrategy } from "@/utils/api";
+import {
+  getStrategies,
+  createStrategy,
+  updateStrategy,
+  createTestRun,
+  createTestRunForSymbol,
+} from "@/utils/api";
 import type { Strategy } from "@/types";
+import { isGenericResponse } from "@/types";
+import { useSymbols } from "@/hooks/useSymbols";
 import {
   Form,
   FormField,
@@ -23,6 +31,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 // Zod schema for strategy parameter
@@ -54,6 +71,15 @@ export default function StrategyView() {
   const mode: Mode = id === "create" ? "create" : "edit";
   const [loading, setLoading] = useState(false);
   const [strategy, setStrategy] = useState<Strategy | null>(null);
+
+  // Use symbols hook
+  const { symbols, isLoading: symbolsLoading } = useSymbols();
+
+  // Test run dialog state
+  const [isTestRunDialogOpen, setIsTestRunDialogOpen] = useState(false);
+  const [permutationCount, setPermutationCount] = useState<string>("");
+  const [isCreatingTestRun, setIsCreatingTestRun] = useState(false);
+  const [selectedSymbolId, setSelectedSymbolId] = useState<string>("all");
 
   // Fetch strategy if editing
   useEffect(() => {
@@ -116,10 +142,26 @@ export default function StrategyView() {
   const onSubmit = async (values: StrategyFormValues) => {
     setLoading(true);
     try {
-      const payload: Strategy = {
-        id: mode === "edit" && strategy ? strategy.id : 0,
+      // Parse symbol_ids with error handling
+      let symbolIds: number[];
+      try {
+        symbolIds = JSON.parse(values.symbol_ids);
+        if (
+          !Array.isArray(symbolIds) ||
+          !symbolIds.every((id) => typeof id === "number")
+        ) {
+          throw new Error("Symbol IDs must be an array of numbers");
+        }
+      } catch {
+        toast.error(
+          "Invalid symbol IDs format. Please use a valid JSON array like [1,2,3]"
+        );
+        return;
+      }
+
+      const basePayload = {
         name: values.name,
-        symbol_ids: JSON.parse(values.symbol_ids),
+        symbol_ids: symbolIds,
         status: values.status,
         strategy_code: values.strategy_code,
         parameters: values.parameters.map((param) => ({
@@ -129,14 +171,28 @@ export default function StrategyView() {
           max_value: param.max_value ?? undefined,
         })),
       };
+
       if (mode === "create") {
-        await createStrategy(payload);
-        toast.success("Strategy created");
-        navigate("/strategies");
+        const result = await createStrategy(basePayload);
+        if (isGenericResponse(result)) {
+          toast.error(result.message);
+        } else {
+          toast.success("Strategy created");
+          navigate(`/strategies/${result.id}`);
+          setStrategy(result);
+        }
       } else if (mode === "edit" && strategy) {
-        await updateStrategy(payload);
-        toast.success("Strategy updated");
-        navigate("/strategies");
+        const payload: Strategy = {
+          id: strategy.id,
+          ...basePayload,
+        };
+        const result = await updateStrategy(payload);
+        if (isGenericResponse(result)) {
+          toast.error(result.message);
+        } else {
+          toast.success("Strategy updated");
+          setStrategy(result);
+        }
       }
     } catch {
       toast.error("Failed to save strategy");
@@ -145,13 +201,135 @@ export default function StrategyView() {
     }
   };
 
+  // Handle test run creation
+  const handleCreateTestRun = async () => {
+    if (!strategy) {
+      toast.error("No strategy available");
+      return;
+    }
+
+    setIsCreatingTestRun(true);
+    try {
+      const permutations = permutationCount
+        ? parseInt(permutationCount)
+        : undefined;
+
+      let result;
+      if (selectedSymbolId && selectedSymbolId !== "all") {
+        // Create test run for specific symbol
+        const symbolId = parseInt(selectedSymbolId);
+        result = await createTestRunForSymbol(
+          strategy.id,
+          symbolId,
+          permutations
+        );
+      } else {
+        // Create test run for all symbols
+        result = await createTestRun(strategy.id, permutations);
+      }
+
+      if (isGenericResponse(result)) {
+        toast.error(result.message);
+      } else {
+        const symbolName =
+          selectedSymbolId && selectedSymbolId !== "all"
+            ? symbols.find((s) => s.id === parseInt(selectedSymbolId))?.name
+            : "all symbols";
+        toast.success(`Test run created successfully for ${symbolName}`);
+        setIsTestRunDialogOpen(false);
+        setPermutationCount("");
+        setSelectedSymbolId("all");
+      }
+    } catch {
+      toast.error("Failed to create test run");
+    } finally {
+      setIsCreatingTestRun(false);
+    }
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
-          <CardTitle>
-            {mode === "create" ? "Create Strategy" : `Edit Strategy #${id}`}
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>
+              {mode === "create" ? "Create Strategy" : `Edit Strategy #${id}`}
+            </CardTitle>
+            {mode === "edit" && strategy && (
+              <Dialog
+                open={isTestRunDialogOpen}
+                onOpenChange={setIsTestRunDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="outline">Create Test Run</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Create Test Run for {strategy.name}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="symbol">Symbol (optional)</Label>
+                      <Select
+                        value={selectedSymbolId}
+                        onValueChange={setSelectedSymbolId}
+                        disabled={symbolsLoading}
+                      >
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              symbolsLoading
+                                ? "Loading symbols..."
+                                : "Select a symbol (optional)"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All symbols</SelectItem>
+                          {symbols.map((symbol) => (
+                            <SelectItem
+                              key={symbol.id}
+                              value={symbol.id.toString()}
+                            >
+                              {symbol.name} ({symbol.symbol})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="permutations">
+                        Permutation Count (optional)
+                      </Label>
+                      <Input
+                        id="permutations"
+                        type="number"
+                        placeholder="10"
+                        value={permutationCount}
+                        onChange={(e) => setPermutationCount(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsTestRunDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleCreateTestRun}
+                      disabled={isCreatingTestRun}
+                    >
+                      {isCreatingTestRun ? "Creating..." : "Create Test Run"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <Form {...form}>

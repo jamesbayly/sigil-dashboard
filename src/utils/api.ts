@@ -89,6 +89,39 @@ export const getTestRun = async (testRunID: number) => {
   return (await res.json()) as StrategyTestRunResponse | GenericResponse;
 };
 
+export const createTestRun = async (
+  strategyID: number,
+  permutation_count: number | undefined
+) => {
+  const res = await fetch(
+    permutation_count
+      ? `${BASE}/strategy/${strategyID}/test?permutation_count=${permutation_count}`
+      : `${BASE}/strategy/${strategyID}/test`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return (await res.json()) as GenericResponse;
+};
+
+export const createTestRunForSymbol = async (
+  strategyID: number,
+  symbolID: number,
+  permutation_count: number | undefined
+) => {
+  const res = await fetch(
+    permutation_count
+      ? `${BASE}/strategy/${strategyID}/test/${symbolID}?permutation_count=${permutation_count}`
+      : `${BASE}/strategy/${strategyID}/test/${symbolID}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+  return (await res.json()) as GenericResponse;
+};
+
 export const deleteTestRun = async (testRunID: number) => {
   const res = await fetch(`${BASE}/strategy/test/${testRunID}`, {
     method: "DELETE",
