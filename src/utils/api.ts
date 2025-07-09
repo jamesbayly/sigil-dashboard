@@ -91,17 +91,24 @@ export const getTestRun = async (testRunID: number) => {
 
 export const createTestRun = async (
   strategyID: number,
-  permutation_count: number | undefined
+  permutation_count: number | undefined,
+  symbol_ids: number[] | undefined
 ) => {
-  const res = await fetch(
-    permutation_count
-      ? `${BASE}/strategy/${strategyID}/test?permutation_count=${permutation_count}`
-      : `${BASE}/strategy/${strategyID}/test`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-    }
-  );
+  const params = new URLSearchParams();
+  if (permutation_count !== undefined) {
+    params.set("permutation_count", permutation_count.toString());
+  }
+  if (symbol_ids !== undefined) {
+    params.set("symbol_ids", symbol_ids.join(","));
+  }
+  const url = params.toString()
+    ? `${BASE}/strategy/${strategyID}/test?${params.toString()}`
+    : `${BASE}/strategy/${strategyID}/test`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
   return (await res.json()) as GenericResponse;
 };
 

@@ -79,7 +79,7 @@ export default function StrategyView() {
   const [isTestRunDialogOpen, setIsTestRunDialogOpen] = useState(false);
   const [permutationCount, setPermutationCount] = useState<string>("");
   const [isCreatingTestRun, setIsCreatingTestRun] = useState(false);
-  const [selectedSymbolId, setSelectedSymbolId] = useState<string>("all");
+  const [selectedSymbolIds, setSelectedSymbolIds] = useState<string[]>([]); // array for multi-select
 
   // Fetch strategy if editing
   useEffect(() => {
@@ -213,32 +213,43 @@ export default function StrategyView() {
       const permutations = permutationCount
         ? parseInt(permutationCount)
         : undefined;
-
       let result;
-      if (selectedSymbolId && selectedSymbolId !== "all") {
-        // Create test run for specific symbol
-        const symbolId = parseInt(selectedSymbolId);
+      if (selectedSymbolIds.length === 1) {
+        // Single symbol selected
+        const symbolId = parseInt(selectedSymbolIds[0]);
         result = await createTestRunForSymbol(
           strategy.id,
           symbolId,
           permutations
         );
+      } else if (selectedSymbolIds.length > 1) {
+        // Multiple symbols selected
+        result = await createTestRun(
+          strategy.id,
+          permutations,
+          selectedSymbolIds.map((id) => parseInt(id))
+        );
       } else {
-        // Create test run for all symbols
-        result = await createTestRun(strategy.id, permutations);
+        // All symbols (send no symbols)
+        result = await createTestRun(strategy.id, permutations, undefined);
       }
 
       if (isGenericResponse(result)) {
         toast.error(result.message);
       } else {
-        const symbolName =
-          selectedSymbolId && selectedSymbolId !== "all"
-            ? symbols.find((s) => s.id === parseInt(selectedSymbolId))?.name
-            : "all symbols";
+        let symbolName = "all symbols";
+        if (selectedSymbolIds.length === 1) {
+          const found = symbols.find(
+            (s) => s.id === parseInt(selectedSymbolIds[0])
+          );
+          symbolName = found ? found.name : selectedSymbolIds[0];
+        } else if (selectedSymbolIds.length > 1) {
+          symbolName = `${selectedSymbolIds.length} symbols`;
+        }
         toast.success(`Test run created successfully for ${symbolName}`);
         setIsTestRunDialogOpen(false);
         setPermutationCount("");
-        setSelectedSymbolId("all");
+        setSelectedSymbolIds([]);
       }
     } catch {
       toast.error("Failed to create test run");
@@ -271,33 +282,46 @@ export default function StrategyView() {
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
-                      <Label htmlFor="symbol">Symbol (optional)</Label>
-                      <Select
-                        value={selectedSymbolId}
-                        onValueChange={setSelectedSymbolId}
-                        disabled={symbolsLoading}
-                      >
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={
-                              symbolsLoading
-                                ? "Loading symbols..."
-                                : "Select a symbol (optional)"
-                            }
+                      <Label htmlFor="symbol">Symbols (optional)</Label>
+                      <div className="flex flex-col gap-1 max-h-40 overflow-y-auto border rounded p-2">
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={selectedSymbolIds.length === 0}
+                            onChange={() => setSelectedSymbolIds([])}
                           />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All symbols</SelectItem>
-                          {symbols.map((symbol) => (
-                            <SelectItem
-                              key={symbol.id}
-                              value={symbol.id.toString()}
-                            >
-                              {symbol.name} ({symbol.symbol})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                          All symbols
+                        </label>
+                        {symbols.map((symbol) => (
+                          <label
+                            key={symbol.id}
+                            className="flex items-center gap-2"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedSymbolIds.includes(
+                                symbol.id.toString()
+                              )}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedSymbolIds((prev) => [
+                                    ...prev,
+                                    symbol.id.toString(),
+                                  ]);
+                                } else {
+                                  setSelectedSymbolIds((prev) =>
+                                    prev.filter(
+                                      (id) => id !== symbol.id.toString()
+                                    )
+                                  );
+                                }
+                              }}
+                              disabled={symbolsLoading}
+                            />
+                            {symbol.name} ({symbol.symbol})
+                          </label>
+                        ))}
+                      </div>
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="permutations">
