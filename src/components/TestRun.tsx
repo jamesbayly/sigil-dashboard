@@ -502,20 +502,20 @@ const TestRunPermutationsResultsView: FC<{
             {permutation?.results_with_many_trades} total results.
           </p>
           <p>
-            Win Rate: {permutation?.win_rate_median.toFixed(2)} (Max:{" "}
-            {permutation?.win_rate_max.toFixed(2)})
+            Win Rate: {permutation?.win_rate_median?.toFixed(2)} (Max:{" "}
+            {permutation?.win_rate_max?.toFixed(2)})
           </p>
           <p>
-            PNL %: {permutation?.pnl_percent_median.toFixed(2)} (Max:{" "}
-            {permutation?.pnl_percent_max.toFixed(2)})
+            PNL %: {permutation?.pnl_percent_median?.toFixed(2)} (Max:{" "}
+            {permutation?.pnl_percent_max?.toFixed(2)})
           </p>
           <p>
-            PNL Amount: {permutation?.pnl_amount_median.toFixed(2)} (Max:{" "}
-            {permutation?.pnl_amount_max.toFixed(2)})
+            PNL Amount: {permutation?.pnl_amount_median?.toFixed(2)} (Max:{" "}
+            {permutation?.pnl_amount_max?.toFixed(2)})
           </p>
           <p>
-            Zella Score: {permutation?.zella_score_median.toFixed(2)} (Max:{" "}
-            {permutation?.zella_score_max.toFixed(2)})
+            Zella Score: {permutation?.zella_score_median?.toFixed(2)} (Max:{" "}
+            {permutation?.zella_score_max?.toFixed(2)})
           </p>
           <DataTable data={filteredResults} columns={resultsColumns} />
         </div>
