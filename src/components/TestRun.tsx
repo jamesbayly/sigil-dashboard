@@ -92,20 +92,20 @@ const TestRunPermutationsView: FC<{
       },
     },
     {
-      accessorKey: "win_rate_median",
+      accessorKey: "win_rate_average",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Win Rate Median
+            Win Rate Average
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const value = row.original.win_rate_median;
+        const value = row.original.win_rate_average;
         return (
           <span
             className={
@@ -152,20 +152,20 @@ const TestRunPermutationsView: FC<{
       },
     },
     {
-      accessorKey: "pnl_percent_median",
+      accessorKey: "pnl_percent_average",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            PNL % Median
+            PNL % Average
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const value = row.original.pnl_percent_median;
+        const value = row.original.pnl_percent_average;
         return (
           <span
             className={
@@ -204,20 +204,20 @@ const TestRunPermutationsView: FC<{
       },
     },
     {
-      accessorKey: "pnl_amount_median",
+      accessorKey: "pnl_amount_average",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            PNL Amount Median
+            PNL Amount Average
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        const value = row.original.pnl_amount_median;
+        const value = row.original.pnl_amount_average;
         return (
           <span className={value && value >= 0 ? "text-green-600" : ""}>
             {value?.toFixed(2)}
@@ -247,7 +247,7 @@ const TestRunPermutationsView: FC<{
       },
     },
     {
-      accessorKey: "zella_score_median",
+      accessorKey: "zella_score_average",
       header: ({ column }) => {
         return (
           <Button
@@ -258,13 +258,55 @@ const TestRunPermutationsView: FC<{
             <br />
             Score
             <br />
-            Median
+            Average
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        return <span>{row.original.zella_score_median?.toFixed(1)}</span>;
+        return <span>{row.original.zella_score_average?.toFixed(1)}</span>;
+      },
+    },
+    {
+      accessorKey: "sqn_score_max",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            SQN
+            <br />
+            Score
+            <br />
+            Max
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.sqn_score_max?.toFixed(1)}</span>;
+      },
+    },
+    {
+      accessorKey: "sqn_score_average",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            SQN
+            <br />
+            Score
+            <br />
+            Average
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.sqn_score_average?.toFixed(1)}</span>;
       },
     },
   ];
@@ -419,12 +461,31 @@ const TestRunPermutationsResultsView: FC<{
           return <span>{row.original.zella_score.toFixed(2)}</span>;
         },
       },
+      {
+        accessorKey: "sqn",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              SQN Score
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return <span>{row.original.sqn.toFixed(2)}</span>;
+        },
+      },
     ];
 
   const exportTestRunPermutationResults = () => {
     if (!permutation) return;
     const csvContent =
-      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella\n" +
+      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella,sqn\n" +
       permutation.results
         .map((result) => {
           return [
@@ -437,6 +498,7 @@ const TestRunPermutationsResultsView: FC<{
             result.pnl_percent,
             result.pnl_amount,
             result.zella_score,
+            result.sqn,
           ].join(",");
         })
         .join("\n");
@@ -502,20 +564,29 @@ const TestRunPermutationsResultsView: FC<{
             {permutation?.results_with_many_trades} total results.
           </p>
           <p>
-            Win Rate: {permutation?.win_rate_median?.toFixed(2)} (Max:{" "}
-            {permutation?.win_rate_max?.toFixed(2)})
+            Median Win Rate: {permutation?.win_rate_median?.toFixed(2)} (Max:{" "}
+            {permutation?.win_rate_max?.toFixed(2)}) (Avg:{" "}
+            {permutation?.win_rate_average?.toFixed(2)})
           </p>
           <p>
-            PNL %: {permutation?.pnl_percent_median?.toFixed(2)} (Max:{" "}
-            {permutation?.pnl_percent_max?.toFixed(2)})
+            Median PNL %: {permutation?.pnl_percent_median?.toFixed(2)} (Max:{" "}
+            {permutation?.pnl_percent_max?.toFixed(2)}) (Avg:{" "}
+            {permutation?.pnl_percent_average?.toFixed(2)})
           </p>
           <p>
-            PNL Amount: {permutation?.pnl_amount_median?.toFixed(2)} (Max:{" "}
-            {permutation?.pnl_amount_max?.toFixed(2)})
+            Median PNL Amount: {permutation?.pnl_amount_median?.toFixed(2)}{" "}
+            (Max: {permutation?.pnl_amount_max?.toFixed(2)}) (Avg:{" "}
+            {permutation?.pnl_amount_average?.toFixed(2)})
           </p>
           <p>
-            Zella Score: {permutation?.zella_score_median?.toFixed(2)} (Max:{" "}
-            {permutation?.zella_score_max?.toFixed(2)})
+            Median Zella Score: {permutation?.zella_score_median?.toFixed(2)}{" "}
+            (Max: {permutation?.zella_score_max?.toFixed(2)}) (Avg:{" "}
+            {permutation?.zella_score_average?.toFixed(2)})
+          </p>
+          <p>
+            Median SQN Score: {permutation?.sqn_score_median?.toFixed(2)} (Max:{" "}
+            {permutation?.sqn_score_max?.toFixed(2)}) (Avg:{" "}
+            {permutation?.sqn_score_average?.toFixed(2)})
           </p>
           <DataTable data={filteredResults} columns={resultsColumns} />
         </div>
@@ -563,7 +634,7 @@ export default function TestRunView() {
   const exportTestRunResults = () => {
     if (!testRun) return;
     const csvContent =
-      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella\n" +
+      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella,sqn\n" +
       testRun.permutations
         .flatMap((perm) =>
           perm.results.map((result) => {
@@ -577,6 +648,7 @@ export default function TestRunView() {
               result.pnl_percent,
               result.pnl_amount,
               result.zella_score,
+              result.sqn,
             ].join(",");
           })
         )

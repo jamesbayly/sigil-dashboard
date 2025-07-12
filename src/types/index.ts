@@ -101,6 +101,9 @@ export interface StrategyTestRunPermutationResponse {
   zella_score_max: number;
   zella_score_median: number;
   zella_score_average: number;
+  sqn_score_max: number;
+  sqn_score_median: number;
+  sqn_score_average: number;
 
   results: StrategyTestRunPermutationResultResponse[];
 }
@@ -113,4 +116,5 @@ export interface StrategyTestRunPermutationResultResponse {
   pnl_percent: number | undefined;
   pnl_amount: number | undefined;
   zella_score: number;
+  sqn: number;
 }
