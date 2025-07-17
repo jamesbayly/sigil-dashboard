@@ -22,6 +22,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { SymbolMultiSelect } from "./SymbolMultiSelect";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -79,7 +80,9 @@ export default function StrategyView() {
   const [isTestRunDialogOpen, setIsTestRunDialogOpen] = useState(false);
   const [permutationCount, setPermutationCount] = useState<string>("");
   const [isCreatingTestRun, setIsCreatingTestRun] = useState(false);
-  const [selectedSymbolIds, setSelectedSymbolIds] = useState<string[]>([]); // array for multi-select
+  const [selectedSymbolIds, setSelectedSymbolIds] = useState<string[]>(
+    strategy?.symbol_ids.map((s) => s.toString()) || []
+  ); // array for multi-select
 
   // Fetch strategy if editing
   useEffect(() => {
@@ -89,8 +92,10 @@ export default function StrategyView() {
         .then((res) => {
           if (Array.isArray(res)) {
             const found = res.find((s) => s.id === Number(id));
-            if (found) setStrategy(found);
-            else toast.error("Strategy not found");
+            if (found) {
+              setStrategy(found);
+              setSelectedSymbolIds(found.symbol_ids.map((s) => s.toString()));
+            } else toast.error("Strategy not found");
           }
         })
         .finally(() => setLoading(false));
@@ -283,45 +288,11 @@ export default function StrategyView() {
                   <div className="grid gap-4 py-4">
                     <div className="grid gap-2">
                       <Label htmlFor="symbol">Symbols (optional)</Label>
-                      <div className="flex flex-col gap-1 max-h-40 overflow-y-auto border rounded p-2">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={selectedSymbolIds.length === 0}
-                            onChange={() => setSelectedSymbolIds([])}
-                          />
-                          All symbols
-                        </label>
-                        {symbols.map((symbol) => (
-                          <label
-                            key={symbol.id}
-                            className="flex items-center gap-2"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={selectedSymbolIds.includes(
-                                symbol.id.toString()
-                              )}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedSymbolIds((prev) => [
-                                    ...prev,
-                                    symbol.id.toString(),
-                                  ]);
-                                } else {
-                                  setSelectedSymbolIds((prev) =>
-                                    prev.filter(
-                                      (id) => id !== symbol.id.toString()
-                                    )
-                                  );
-                                }
-                              }}
-                              disabled={symbolsLoading}
-                            />
-                            {symbol.name} ({symbol.symbol})
-                          </label>
-                        ))}
-                      </div>
+                      <SymbolMultiSelect
+                        value={selectedSymbolIds}
+                        onChange={setSelectedSymbolIds}
+                        disabled={symbolsLoading}
+                      />
                     </div>
                     <div className="grid gap-2">
                       <Label htmlFor="permutations">
@@ -378,7 +349,20 @@ export default function StrategyView() {
                   <FormItem>
                     <FormLabel>Symbol IDs</FormLabel>
                     <FormControl>
-                      <Input placeholder="[2,3]" {...field} />
+                      <SymbolMultiSelect
+                        value={(() => {
+                          try {
+                            const arr = JSON.parse(field.value);
+                            return Array.isArray(arr) ? arr.map(String) : [];
+                          } catch {
+                            return [];
+                          }
+                        })()}
+                        onChange={(ids) =>
+                          field.onChange(JSON.stringify(ids.map(Number)))
+                        }
+                        disabled={symbolsLoading}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

@@ -142,8 +142,8 @@ export const refreshTestRun = async (
 ) => {
   const res = await fetch(
     permutationID
-      ? `${BASE}/strategy/test/${testRunID}/results?permutation_id=${permutationID}`
-      : `${BASE}/strategy/test/${testRunID}/results`,
+      ? `${BASE}/strategy/test/${testRunID}/results/bulk?permutation_id=${permutationID}`
+      : `${BASE}/strategy/test/${testRunID}/results/bulk`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
