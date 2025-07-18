@@ -328,12 +328,20 @@ const TestRunPermutationsResultsView: FC<{
   const resultsColumns: ColumnDef<StrategyTestRunPermutationResultResponse>[] =
     [
       {
+        accessorKey: "id",
+        header: "ID",
+        cell: ({ row }) => {
+          return <span>{row.original.id}</span>;
+        },
+      },
+      {
         accessorKey: "symbol_id",
         header: "Symbol Name",
         cell: ({ row }) => {
+          const symbol = symbols.find((s) => s.id === row.original.symbol_id);
           return (
             <span>
-              {symbols.find((s) => s.id === row.original.symbol_id)?.symbol}
+              {symbol?.symbol} ({symbol?.id})
             </span>
           );
         },
