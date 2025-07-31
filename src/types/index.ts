@@ -59,16 +59,23 @@ export interface StrategyParameter {
   max_value: number | undefined; // The maximum value for the parameter that we might test below
 }
 
-export interface Symbols {
-  id: number;
+export interface SymbolRequest {
   name: string;
+  symbol_type: "CRYPTO" | "STOCK";
   symbol: string;
   binance_ticker: string;
-  market_cap?: number;
+  cg_id: string;
+}
+
+export interface SymbolResponse extends SymbolRequest {
+  id: number;
+  market_cap: number | undefined; // Express in Millions
   day_change_percent: number;
   hour_change_percent: number;
-  cg_rank?: number;
-  cg_id: string;
+  cg_rank: number | undefined;
+  earliest_date: Date | undefined; // The earliest date of price data
+  latest_date: Date | undefined; // The latest date of price data
+  count_data: number; // The count of price data
 }
 
 export interface StrategyTestRunsResponse {

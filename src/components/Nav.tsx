@@ -57,6 +57,16 @@ export default function Nav() {
           >
             Test Runs
           </Link>
+          <Link
+            to="/symbols"
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              isActive("/symbols")
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Symbols
+          </Link>
         </nav>
         <DarkModeToggle />
       </header>

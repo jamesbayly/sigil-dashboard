@@ -4,7 +4,8 @@ import {
   Strategy,
   StrategyTestRunResponse,
   StrategyTestRunsResponse,
-  Symbols,
+  SymbolRequest,
+  SymbolResponse,
   Trades,
 } from "@/types";
 
@@ -74,9 +75,29 @@ export const updateStrategy = async (payload: Partial<Strategy>) => {
   return (await res.json()) as Strategy | GenericResponse;
 };
 
-export const getSymbols = async () => {
-  const res = await fetch(`${BASE}/symbol`);
-  return (await res.json()) as Symbols[] | GenericResponse;
+export const getSymbols = async (include_dates: boolean = false) => {
+  const res = await fetch(
+    `${BASE}/symbol?include_dates=${include_dates.toString()}`
+  );
+  return (await res.json()) as SymbolResponse[] | GenericResponse;
+};
+
+export const createSymbol = async (payload: SymbolRequest) => {
+  const res = await fetch(`${BASE}/symbol`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as SymbolResponse | GenericResponse;
+};
+
+export const updateSymbol = async (payload: Partial<SymbolResponse>) => {
+  const res = await fetch(`${BASE}/symbol`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as SymbolResponse | GenericResponse;
 };
 
 export const getTestRuns = async () => {

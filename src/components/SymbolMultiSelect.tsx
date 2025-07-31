@@ -11,7 +11,7 @@ export function SymbolMultiSelect({
   onChange,
   disabled,
 }: SymbolMultiSelectProps) {
-  const { symbols, isLoading } = useSymbols();
+  const { symbols, isLoading } = useSymbols(false);
 
   return (
     <div className="flex flex-col gap-1 max-h-40 overflow-y-auto border rounded p-2">

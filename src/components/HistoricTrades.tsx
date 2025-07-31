@@ -42,7 +42,7 @@ import { DateRange } from "react-day-picker";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 export default function HistoricTrades() {
-  const { symbols } = useSymbols();
+  const { symbols } = useSymbols(false);
   const { strategies } = useStrategies();
   const [stratFilter, setStratFilter] = useState<number | undefined>();
   const [symFilter, setSymFilter] = useState<number | undefined>();

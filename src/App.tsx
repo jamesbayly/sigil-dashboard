@@ -6,6 +6,7 @@ import TestRunsView from "./components/TestRuns";
 import Nav from "./components/Nav";
 import TestRunView from "./components/TestRun";
 import StrategyView from "./components/Strategy";
+import SymbolsView from "./components/Symbols";
 
 export default function App() {
   return (
@@ -19,7 +20,8 @@ export default function App() {
           <Route path="strategies/create" element={<StrategyView />} />
           <Route path="strategies/:id" element={<StrategyView />} />
           <Route path="tests" element={<TestRunsView />} />
-          <Route path="tests/:testRunId" element={<TestRunView />} />{" "}
+          <Route path="tests/:testRunId" element={<TestRunView />} />
+          <Route path="symbols" element={<SymbolsView />} />
         </Route>
       </Routes>
     </BrowserRouter>

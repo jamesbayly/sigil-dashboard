@@ -20,7 +20,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
-  const { symbols } = useSymbols();
+  const { symbols } = useSymbols(false);
   const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
