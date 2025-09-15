@@ -29,6 +29,7 @@ export default function StrategiesView() {
               <TableHead>ID</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Symbols</TableHead>
               <TableHead>Strategy Code</TableHead>
             </TableRow>
@@ -48,6 +49,7 @@ export default function StrategiesView() {
                 <TableCell>{s.id}</TableCell>
                 <TableCell>{s.name}</TableCell>
                 <TableCell>{s.status}</TableCell>
+                <TableCell>{s.strategy_type}</TableCell>
                 <TableCell>{s.symbol_ids.length ?? "All"}</TableCell>
                 <TableCell>{s.strategy_code}</TableCell>
               </TableRow>

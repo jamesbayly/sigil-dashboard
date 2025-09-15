@@ -59,6 +59,7 @@ const strategySchema = z.object({
   name: z.string().min(2).max(100),
   symbol_ids: z.string(), // comma-separated or JSON array string
   status: z.enum(["active", "inactive", "test"]),
+  strategy_type: z.enum(["CRYPTO", "STOCK", "AI"]),
   strategy_code: z.string(),
   parameters: z.array(parameterSchema),
 });
@@ -69,7 +70,7 @@ type Mode = "create" | "edit";
 export default function StrategyView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const mode: Mode = id === "create" ? "create" : "edit";
+  const mode: Mode = !id ? "create" : "edit";
   const [loading, setLoading] = useState(false);
   const [strategy, setStrategy] = useState<Strategy | null>(null);
 
@@ -111,6 +112,7 @@ export default function StrategyView() {
             name: strategy.name,
             symbol_ids: JSON.stringify(strategy.symbol_ids),
             status: strategy.status,
+            strategy_type: strategy.strategy_type,
             strategy_code: strategy.strategy_code,
             parameters: strategy.parameters || [],
           }
@@ -118,6 +120,7 @@ export default function StrategyView() {
             name: "",
             symbol_ids: "[]",
             status: "inactive",
+            strategy_type: "CRYPTO",
             strategy_code: "",
             parameters: [],
           },
@@ -130,6 +133,7 @@ export default function StrategyView() {
         name: strategy.name,
         symbol_ids: JSON.stringify(strategy.symbol_ids),
         status: strategy.status,
+        strategy_type: strategy.strategy_type,
         strategy_code: strategy.strategy_code,
         parameters: strategy.parameters || [],
       });
@@ -168,6 +172,7 @@ export default function StrategyView() {
         name: values.name,
         symbol_ids: symbolIds,
         status: values.status,
+        strategy_type: values.strategy_type,
         strategy_code: values.strategy_code,
         parameters: values.parameters.map((param) => ({
           ...param,
@@ -176,6 +181,8 @@ export default function StrategyView() {
           max_value: param.max_value ?? undefined,
         })),
       };
+
+      console.log("Payload:", basePayload, mode, id);
 
       if (mode === "create") {
         const result = await createStrategy(basePayload);
@@ -386,6 +393,31 @@ export default function StrategyView() {
                           <SelectItem value="active">Active</SelectItem>
                           <SelectItem value="inactive">Inactive</SelectItem>
                           <SelectItem value="test">Test</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="strategy_type"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Strategy Type</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select strategy type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="CRYPTO">Crypto</SelectItem>
+                          <SelectItem value="STOCK">Stock</SelectItem>
+                          <SelectItem value="AI">AI</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
