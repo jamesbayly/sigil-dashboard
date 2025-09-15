@@ -130,3 +130,18 @@ export interface StrategyTestRunPermutationResultResponse {
   zella_score: number;
   sqn: number;
 }
+
+export interface OptionsDataRequest {
+  symbol_id: number;
+  type: "CALL_BUY" | "CALL_SELL" | "PUT_BUY" | "PUT_SELL";
+  trade_date: Date;
+  asset_price: number;
+  strike_price: number;
+  strike_delta_percent: number;
+  premium: number;
+  expiration_date: Date;
+}
+
+export interface OptionsDataResponse extends OptionsDataRequest {
+  id: number;
+}
