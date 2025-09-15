@@ -532,7 +532,7 @@ const TestRunPermutationsResultsView: FC<{
         </DialogHeader>
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-bold text-lg">Results</h2>
+            <h2 className="font-bold text-lg">Results Overview</h2>
             <Button
               variant="outline"
               size="sm"
@@ -596,6 +596,15 @@ const TestRunPermutationsResultsView: FC<{
             {permutation?.sqn_score_max?.toFixed(2)}) (Avg:{" "}
             {permutation?.sqn_score_average?.toFixed(2)})
           </p>
+          <h2 className="font-bold text-lg">Parameters</h2>
+          <ul>
+            {permutation?.parameters.map((param, index) => (
+              <li key={index}>
+                {param.code}: {param.value}
+              </li>
+            ))}
+          </ul>
+          <h2 className="font-bold text-lg">Results</h2>
           <DataTable data={filteredResults} columns={resultsColumns} />
         </div>
       </DialogContent>

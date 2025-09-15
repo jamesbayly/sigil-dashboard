@@ -112,6 +112,10 @@ export interface StrategyTestRunPermutationResponse {
   sqn_score_max: number;
   sqn_score_median: number;
   sqn_score_average: number;
+  parameters: {
+    code: string;
+    value: number;
+  }[];
 
   results: StrategyTestRunPermutationResultResponse[];
 }
