@@ -78,9 +78,16 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
               <p>
                 <strong>Open Price:</strong> ${trade.open_price.toFixed(2)}
               </p>
-              <p>
-                <strong>Open Notes:</strong> {trade.open_notes || "N/A"}
-              </p>
+              <div className="space-y-2">
+                <p>
+                  <strong>Open Notes:</strong>
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md border max-w-full">
+                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                    {trade.open_notes || "N/A"}
+                  </p>
+                </div>
+              </div>
               <p>
                 <strong>Open Fees:</strong> ${trade.open_fees.toFixed(2)}
               </p>
@@ -114,9 +121,16 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
                 </p>
               )}
               {trade.close_notes && (
-                <p>
-                  <strong>Close Notes:</strong> {trade.close_notes}
-                </p>
+                <div className="space-y-2">
+                  <p>
+                    <strong>Close Notes:</strong>
+                  </p>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-md border max-w-full">
+                    <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                      {trade.close_notes}
+                    </p>
+                  </div>
+                </div>
               )}
               {trade.close_fees && (
                 <p>

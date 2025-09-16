@@ -183,8 +183,6 @@ export default function StrategyView() {
         })),
       };
 
-      console.log("Payload:", basePayload, mode, id);
-
       if (mode === "create") {
         const result = await createStrategy(basePayload);
         if (isGenericResponse(result)) {

@@ -322,9 +322,6 @@ export default function OptionsUploadModal({
         }
       );
 
-      console.log("Final options data:", finalData);
-      console.log(`Successfully processed ${finalData.length} records`);
-
       const result = await createOptions(finalData);
 
       if (result.success) {

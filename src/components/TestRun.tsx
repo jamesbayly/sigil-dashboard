@@ -642,11 +642,8 @@ export default function TestRunView() {
     }
   };
 
-  const onPermRowClick = (permutation: StrategyTestRunPermutationResponse) => {
-    // Handle row click if needed
-    console.log("Row clicked:", permutation);
+  const onPermRowClick = (permutation: StrategyTestRunPermutationResponse) =>
     setSelectedPermutation(permutation);
-  };
 
   const exportTestRunResults = () => {
     if (!testRun) return;
