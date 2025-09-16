@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import TradesTable from "./TradesTable";
 
 // Zod schema for strategy parameter
 const parameterSchema = z.object({
@@ -59,7 +60,7 @@ const strategySchema = z.object({
   name: z.string().min(2).max(100),
   symbol_ids: z.string(), // comma-separated or JSON array string
   status: z.enum(["active", "inactive", "test"]),
-  strategy_type: z.enum(["CRYPTO", "STOCK", "AI"]),
+  strategy_type: z.enum(["CRYPTO", "STOCK_OPTIONS", "AI"]),
   strategy_code: z.string(),
   parameters: z.array(parameterSchema),
 });
@@ -416,7 +417,9 @@ export default function StrategyView() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="CRYPTO">Crypto</SelectItem>
-                          <SelectItem value="STOCK">Stock</SelectItem>
+                          <SelectItem value="STOCK_OPTIONS">
+                            Stock Options
+                          </SelectItem>
                           <SelectItem value="AI">AI</SelectItem>
                         </SelectContent>
                       </Select>
@@ -620,6 +623,16 @@ export default function StrategyView() {
           </Form>
         </CardContent>
       </Card>
+
+      {/* Show trades table when editing existing strategy */}
+      {mode === "edit" && strategy && (
+        <div className="mt-8">
+          <TradesTable
+            globalStrategyFilter={strategy.id}
+            title={`Trades for ${strategy.name}`}
+          />
+        </div>
+      )}
     </div>
   );
 }

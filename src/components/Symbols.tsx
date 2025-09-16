@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSymbols } from "@/hooks/useSymbols";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,15 +13,11 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
-import type { SymbolResponse, SymbolRequest } from "@/types";
-import SymbolModal from "./SymbolModal";
+import type { SymbolResponse } from "@/types";
 
 export default function SymbolsView() {
-  const { symbolsWithDates, add, edit } = useSymbols(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSymbol, setSelectedSymbol] = useState<SymbolResponse | null>(
-    null
-  );
+  const navigate = useNavigate();
+  const { symbolsWithDates } = useSymbols(true);
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
 
   const formatNumber = (num: number | undefined) => {
@@ -205,37 +202,11 @@ export default function SymbolsView() {
   ];
 
   const handleCreateSymbol = () => {
-    setSelectedSymbol(null);
-    setIsModalOpen(true);
+    navigate("/symbols/create");
   };
 
   const handleEditSymbol = (symbol: SymbolResponse) => {
-    setSelectedSymbol(symbol);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedSymbol(null);
-  };
-
-  const handleSaveSymbol = async (symbolData: SymbolRequest) => {
-    try {
-      if (selectedSymbol) {
-        // Edit existing symbol - merge with existing data to maintain all required fields
-        const updatedSymbol: SymbolResponse = {
-          ...selectedSymbol,
-          ...symbolData,
-        };
-        await edit(updatedSymbol);
-      } else {
-        // Create new symbol
-        await add(symbolData);
-      }
-      handleCloseModal();
-    } catch (error) {
-      console.error("Failed to save symbol:", error);
-    }
+    navigate(`/symbols/edit/${symbol.id}`);
   };
 
   // Filter symbols based on type
@@ -277,13 +248,6 @@ export default function SymbolsView() {
           onRowClick={handleEditSymbol}
         />
       </div>
-
-      <SymbolModal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onSave={handleSaveSymbol}
-        symbol={selectedSymbol}
-      />
     </div>
   );
 }

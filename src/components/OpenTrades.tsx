@@ -5,6 +5,14 @@ import {
   AlertDialogContent,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useOpenTrades } from "@/hooks/useOpenTrades";
 import { Button } from "@/components/ui/button";
 import TimeAgo from "react-timeago";
@@ -30,6 +38,7 @@ export default function OpenTrades() {
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
     "REAL"
   );
+  const [strategyFilter, setStrategyFilter] = useState<number | undefined>();
   const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
 
   const columns: ColumnDef<Trades>[] = [
@@ -182,33 +191,27 @@ export default function OpenTrades() {
     },
   ];
 
-  // Update filteredTrades when trades or tradeTypesFilter changes
+  // Update filteredTrades when trades, tradeTypesFilter, or strategyFilter changes
   useEffect(() => {
+    let filtered = trades;
+
+    // Apply trade type filter
     if (tradeTypesFilter === "REAL") {
-      setFilteredTrades(trades.filter((t) => t.open_binance_order_id));
-    } else {
-      setFilteredTrades(trades);
+      filtered = filtered.filter((t) => t.open_binance_order_id);
     }
-  }, [trades, tradeTypesFilter]);
+
+    // Apply strategy filter
+    if (strategyFilter !== undefined) {
+      filtered = filtered.filter((t) => t.strategy_id === strategyFilter);
+    }
+
+    setFilteredTrades(filtered);
+  }, [trades, tradeTypesFilter, strategyFilter]);
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Open Trades</h2>
-        <div>
-          <Tabs
-            value={tradeTypesFilter}
-            onValueChange={(value) =>
-              setTradeTypesFilter(value as "REAL" | "ALL")
-            }
-            className="w-[400px]"
-          >
-            <TabsList>
-              <TabsTrigger value="REAL">Real Trades Only</TabsTrigger>
-              <TabsTrigger value="ALL">ALL Trades</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive">Close All</Button>
@@ -229,6 +232,48 @@ export default function OpenTrades() {
             </AlertDialogAction>
           </AlertDialogContent>
         </AlertDialog>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4 items-end">
+        <div>
+          <Label>Strategy</Label>
+          <Select
+            onValueChange={(v) =>
+              setStrategyFilter(v === "all" ? undefined : Number(v))
+            }
+            value={strategyFilter?.toString() ?? "all"}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue>
+                {strategies.find((s) => s.id === strategyFilter)?.name ?? "All"}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              {strategies.map((s) => (
+                <SelectItem key={s.id} value={s.id.toString()}>
+                  {s.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Tabs
+            value={tradeTypesFilter}
+            onValueChange={(value) =>
+              setTradeTypesFilter(value as "REAL" | "ALL")
+            }
+            className="w-[400px]"
+          >
+            <TabsList>
+              <TabsTrigger value="REAL">Real Trades Only</TabsTrigger>
+              <TabsTrigger value="ALL">ALL Trades</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-4">

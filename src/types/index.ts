@@ -44,7 +44,7 @@ export interface Strategy {
   id: number;
   name: string;
   status: "active" | "inactive" | "test";
-  strategy_type: "CRYPTO" | "STOCK" | "AI"; // The type of strategy
+  strategy_type: "CRYPTO" | "STOCK_OPTIONS" | "AI"; // The type of strategy
   symbol_ids: number[];
   strategy_code: string;
   parameters: StrategyParameter[];
