@@ -1,6 +1,7 @@
 import {
   GenericResponse,
   MarketState,
+  OptionsDataRequest,
   OptionsDataResponse,
   Strategy,
   StrategyTestRunResponse,
@@ -177,4 +178,13 @@ export const refreshTestRun = async (
 export const getOptionsData = async () => {
   const res = await fetch(`${BASE}/option`);
   return (await res.json()) as OptionsDataResponse[] | GenericResponse;
+};
+
+export const createOptionsData = async (payload: OptionsDataRequest[]) => {
+  const res = await fetch(`${BASE}/option`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as GenericResponse;
 };

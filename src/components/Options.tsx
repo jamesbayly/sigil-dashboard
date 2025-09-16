@@ -12,14 +12,17 @@ import {
 } from "@/components/ui/select";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Upload } from "lucide-react";
+import OptionsUploadModal from "./OptionsUploadModal";
 import type { OptionsDataResponse } from "@/types";
 
 export default function OptionsView() {
-  const { optionsData, isLoading, error } = useOptionsData();
+  const { optionsData, isLoading, error, isCreating, createOptions } =
+    useOptionsData();
   const { symbols } = useSymbols(false);
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   const formatCurrency = (num: number | undefined) => {
     if (num === undefined || num === null) return "N/A";
@@ -257,6 +260,13 @@ export default function OptionsView() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Options Data</h2>
+        <Button
+          onClick={() => setShowUploadModal(true)}
+          className="flex items-center gap-2"
+        >
+          <Upload className="h-4 w-4" />
+          Upload Options Data
+        </Button>
       </div>
 
       <div className="flex gap-4 items-center flex-wrap">
@@ -301,6 +311,13 @@ export default function OptionsView() {
       <div className="overflow-auto">
         <DataTable data={filteredOptions} columns={columns} />
       </div>
+
+      <OptionsUploadModal
+        open={showUploadModal}
+        onOpenChange={setShowUploadModal}
+        createOptions={createOptions}
+        isCreating={isCreating}
+      />
     </div>
   );
 }
