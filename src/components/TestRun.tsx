@@ -62,6 +62,69 @@ const TestRunPermutationsView: FC<{
       },
     },
     {
+      accessorKey: "sqn_score_max",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            SQN
+            <br />
+            Score
+            <br />
+            Max
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.sqn_score_max?.toFixed(1)}</span>;
+      },
+    },
+    {
+      accessorKey: "sqn_score_average",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            SQN
+            <br />
+            Score
+            <br />
+            Avg
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.sqn_score_average?.toFixed(1)}</span>;
+      },
+    },
+    {
+      accessorKey: "sqn_score_median",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            SQN
+            <br />
+            Score
+            <br />
+            Med
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.sqn_score_median?.toFixed(1)}</span>;
+      },
+    },
+    {
       accessorKey: "win_rate_max",
       header: ({ column }) => {
         return (
@@ -99,13 +162,43 @@ const TestRunPermutationsView: FC<{
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Win Rate Average
+            Win Rate Avg
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
         const value = row.original.win_rate_average;
+        return (
+          <span
+            className={
+              value && value >= 50
+                ? "text-green-600"
+                : value && value < 40
+                ? "text-red-600"
+                : ""
+            }
+          >
+            {value?.toFixed(0)}%
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "win_rate_median",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Win Rate Med
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const value = row.original.win_rate_median;
         return (
           <span
             className={
@@ -159,13 +252,43 @@ const TestRunPermutationsView: FC<{
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            PNL % Average
+            PNL % Avg
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
         const value = row.original.pnl_percent_average;
+        return (
+          <span
+            className={
+              value && value >= 0
+                ? "text-green-600"
+                : value && value < -10
+                ? "text-red-600"
+                : ""
+            }
+          >
+            {value?.toFixed(1)}%
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "pnl_percent_median",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            PNL % Med
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const value = row.original.pnl_percent_median;
         return (
           <span
             className={
@@ -211,13 +334,35 @@ const TestRunPermutationsView: FC<{
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            PNL Amount Average
+            PNL Amount Avg
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
         const value = row.original.pnl_amount_average;
+        return (
+          <span className={value && value >= 0 ? "text-green-600" : ""}>
+            {value?.toFixed(2)}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "pnl_amount_median",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            PNL Amount Med
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const value = row.original.pnl_amount_median;
         return (
           <span className={value && value >= 0 ? "text-green-600" : ""}>
             {value?.toFixed(2)}
@@ -258,7 +403,7 @@ const TestRunPermutationsView: FC<{
             <br />
             Score
             <br />
-            Average
+            Avg
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
@@ -268,45 +413,24 @@ const TestRunPermutationsView: FC<{
       },
     },
     {
-      accessorKey: "sqn_score_max",
+      accessorKey: "zella_score_median",
       header: ({ column }) => {
         return (
           <Button
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            SQN
+            Zella
             <br />
             Score
             <br />
-            Max
+            Med
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
-        return <span>{row.original.sqn_score_max?.toFixed(1)}</span>;
-      },
-    },
-    {
-      accessorKey: "sqn_score_average",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            SQN
-            <br />
-            Score
-            <br />
-            Average
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return <span>{row.original.sqn_score_average?.toFixed(1)}</span>;
+        return <span>{row.original.zella_score_median?.toFixed(1)}</span>;
       },
     },
   ];
