@@ -11,6 +11,7 @@ export interface Trades {
   id: number;
   strategy_id: number;
   symbol_id: number;
+  conviction: number; // A conviction score from 1-10
   size: number;
   open_time: string;
   open_price: number;

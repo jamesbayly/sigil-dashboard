@@ -152,6 +152,23 @@ export default function TradesTable({
       },
     },
     {
+      accessorKey: "conviction",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Conviction
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.conviction * 100}%</span>;
+      },
+    },
+    {
       accessorKey: "pnl_amount",
       header: ({ column }) => {
         return (
