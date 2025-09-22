@@ -25,6 +25,7 @@ import {
 import { useSymbols } from "@/hooks/useSymbols";
 import type { SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
+import OptionsTable from "./OptionsTable";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -340,6 +341,18 @@ export default function SymbolPage() {
             <TradesTable
               globalSymbolFilter={symbol.id}
               title={`Trades for ${symbol.name} (${symbol.symbol})`}
+            />
+          </div>
+        )}
+
+        {/* Show options table when editing existing STOCK symbol */}
+        {isEdit && symbol && symbol.symbol_type === "STOCK" && (
+          <div className="mt-8">
+            <OptionsTable
+              globalSymbolFilter={symbol.id}
+              title={`Options for ${symbol.name} (${symbol.symbol})`}
+              showUploadButton={false}
+              showFilters={true}
             />
           </div>
         )}

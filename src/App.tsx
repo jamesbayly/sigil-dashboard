@@ -25,7 +25,7 @@ export default function App() {
           <Route path="tests/:testRunId" element={<TestRunView />} />
           <Route path="symbols" element={<SymbolsView />} />
           <Route path="symbols/create" element={<SymbolPage />} />
-          <Route path="symbols/edit/:id" element={<SymbolPage />} />
+          <Route path="symbols/:id" element={<SymbolPage />} />
           <Route path="options" element={<OptionsView />} />
         </Route>
       </Routes>

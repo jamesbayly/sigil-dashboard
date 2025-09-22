@@ -16,14 +16,6 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useHistoricTrades } from "@/hooks/useHistoricTrades";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
@@ -32,7 +24,7 @@ import TradeView from "./Trade";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ArrowUpDown } from "lucide-react";
 import { addDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
@@ -40,6 +32,9 @@ import { calculateZellaScore } from "@/lib/zellaScoreHelper";
 import { useHistoricMarketState } from "@/hooks/useHistoricMarketState";
 import { DateRange } from "react-day-picker";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "./ui/data-table";
+import { Link } from "react-router-dom";
 
 interface TradesTableProps {
   globalStrategyFilter?: number; // If set, strategy filter will be read-only
@@ -68,11 +63,155 @@ export default function TradesTable({
     to: new Date(),
   });
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
-    "REAL"
+    "ALL"
   );
   const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
   const { trades } = useHistoricTrades(date, stratFilter, symFilter);
   const { marketState } = useHistoricMarketState(date);
+
+  // Column definitions for the DataTable
+  const columns: ColumnDef<Trades>[] = [
+    {
+      accessorKey: "close_time",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Close Date
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <span>{row.original.close_time}</span>;
+      },
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => {
+        return (
+          <span>{row.original.open_binance_order_id ? "REAL" : "TEST"}</span>
+        );
+      },
+    },
+    {
+      id: "symbol",
+      accessorFn: (row) => {
+        const sym = symbols.find((s) => s.id === row.symbol_id);
+        return sym?.symbol || "";
+      },
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Symbol
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const sym = symbols.find((s) => s.id === row.original.symbol_id);
+        return (
+          <Link
+            to={`/symbols/${sym?.id}`}
+            className="hover:text-blue-800 underline"
+          >
+            {sym?.symbol}
+          </Link>
+        );
+      },
+    },
+    {
+      accessorKey: "strategy_id",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Strategy
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const strat = strategies.find((s) => s.id === row.original.strategy_id);
+        return (
+          <Link
+            to={`/strategies/${strat?.id}`}
+            className="hover:text-blue-800 underline"
+          >
+            {strat?.name}
+          </Link>
+        );
+      },
+    },
+    {
+      accessorKey: "pnl_amount",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            PnL $
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const pnl = row.original.pnl_amount ?? 0;
+        return (
+          <span
+            className={
+              pnl > 0
+                ? "text-green-600 dark:text-green-400"
+                : pnl < 0
+                ? "text-red-600 dark:text-red-400"
+                : ""
+            }
+          >
+            ${pnl.toFixed(2)}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "pnl_percent",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            PnL %
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const pct = row.original.pnl_percent ?? 0;
+        return (
+          <span
+            className={
+              pct > 0
+                ? "text-green-600 dark:text-green-400"
+                : pct < 0
+                ? "text-red-600 dark:text-red-400"
+                : ""
+            }
+          >
+            {pct.toFixed(2)}%
+          </span>
+        );
+      },
+    },
+  ];
 
   // Update local filters when global filters change
   useEffect(() => {
@@ -97,28 +236,32 @@ export default function TradesTable({
   }, [trades, tradeTypesFilter]);
 
   // compute cumulative PnL
-  const graphData = filteredTrades
-    .slice()
-    .reverse()
-    .filter((t) => t.close_time)
-    .map((t, i, a) => {
-      const marketStateAtDate = marketState.find(
-        (m) => new Date(m.created_at) <= new Date(t.close_time || Date.now())
-      );
-      const marketPctAtDate =
-        (((marketStateAtDate?.market_cap || 0) -
-          marketState[marketState.length - 1].market_cap) /
-          marketState[marketState.length - 1].market_cap) *
-        100;
-      return {
-        ...t,
-        date: t.close_time,
-        cum_pnl: a
-          .slice(0, i + 1)
-          .reduce((acc, t) => acc + (t.pnl_amount ?? 0), 0),
-        market_pct_change: marketPctAtDate,
-      };
-    });
+  const graphData =
+    marketState?.length > 0
+      ? filteredTrades
+          .slice()
+          .reverse()
+          .filter((t) => t.close_time)
+          .map((t, i, a) => {
+            const marketStateAtDate = marketState.find(
+              (m) =>
+                new Date(m.created_at) <= new Date(t.close_time || Date.now())
+            );
+            const marketPctAtDate =
+              (((marketStateAtDate?.market_cap || 0) -
+                marketState[marketState.length - 1].market_cap) /
+                marketState[marketState.length - 1].market_cap) *
+              100;
+            return {
+              ...t,
+              date: t.close_time,
+              cum_pnl: a
+                .slice(0, i + 1)
+                .reduce((acc, t) => acc + (t.pnl_amount ?? 0), 0),
+              market_pct_change: marketPctAtDate,
+            };
+          })
+      : [];
 
   const getDayBreakdown = (date: Date) => {
     const dayTrades = filteredTrades.filter(
@@ -264,11 +407,13 @@ export default function TradesTable({
             {globalSymbolFilter === undefined && (
               <SelectContent>
                 <SelectItem value="all">All</SelectItem>
-                {symbols.map((s) => (
-                  <SelectItem key={s.id} value={s.id.toString()}>
-                    {s.symbol}
-                  </SelectItem>
-                ))}
+                {symbols
+                  .sort((a, b) => a.symbol.localeCompare(b.symbol))
+                  .map((s) => (
+                    <SelectItem key={s.id} value={s.id.toString()}>
+                      {s.symbol}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             )}
           </Select>
@@ -413,48 +558,11 @@ export default function TradesTable({
 
       {/* trades table */}
       <div className="overflow-auto">
-        <Table className="w-full table-auto">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Close Date</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Symbol</TableHead>
-              <TableHead>Strategy</TableHead>
-              <TableHead>PnL $</TableHead>
-              <TableHead>PnL %</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTrades.map((t) => {
-              const sym = symbols.find((s) => s.id === t.symbol_id);
-              const strat = strategies.find((s) => s.id === t.strategy_id);
-              const pnl = t.pnl_amount ?? 0;
-              const pct = t.pnl_percent ?? 0;
-              const bg =
-                pnl > 0
-                  ? "bg-green-50 dark:bg-green-900"
-                  : pnl < 0
-                  ? "bg-red-50 dark:bg-red-900"
-                  : "";
-              return (
-                <TableRow
-                  key={t.id}
-                  className={bg}
-                  onClick={() => setSelectedTrade(t)}
-                >
-                  <TableCell>{t.close_time}</TableCell>
-                  <TableCell>
-                    {t.open_binance_order_id ? "REAL" : "TEST"}
-                  </TableCell>
-                  <TableCell>{sym?.symbol}</TableCell>
-                  <TableCell>{strat?.name}</TableCell>
-                  <TableCell>${pnl.toFixed(2)}</TableCell>
-                  <TableCell>{pct.toFixed(2)}%</TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <DataTable
+          data={filteredTrades}
+          columns={columns}
+          onRowClick={setSelectedTrade}
+        />
       </div>
 
       <TradeView

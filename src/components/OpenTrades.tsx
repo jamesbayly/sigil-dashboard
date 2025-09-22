@@ -25,6 +25,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Link } from "react-router-dom";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
@@ -36,18 +37,39 @@ export default function OpenTrades() {
   );
 
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
-    "REAL"
+    "ALL"
   );
   const [strategyFilter, setStrategyFilter] = useState<number | undefined>();
   const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
 
   const columns: ColumnDef<Trades>[] = [
     {
-      accessorKey: "symbol_id",
-      header: "Symbol",
+      id: "symbol",
+      accessorFn: (row) => {
+        const sym = symbols.find((s) => s.id === row.symbol_id);
+        return sym?.symbol || "";
+      },
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Symbol
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
       cell: ({ row }) => {
         const sym = symbols.find((s) => s.id === row.original.symbol_id);
-        return <span>{sym?.symbol}</span>;
+        return (
+          <Link
+            to={`/symbols/${sym?.id}`}
+            className="hover:text-blue-800 underline"
+          >
+            {sym?.symbol}
+          </Link>
+        );
       },
     },
     {
@@ -65,7 +87,14 @@ export default function OpenTrades() {
       },
       cell: ({ row }) => {
         const strat = strategies.find((s) => s.id === row.original.strategy_id);
-        return <span>{strat?.name}</span>;
+        return (
+          <Link
+            to={`/strategies/${strat?.id}`}
+            className="hover:text-blue-800 underline"
+          >
+            {strat?.name}
+          </Link>
+        );
       },
     },
     {

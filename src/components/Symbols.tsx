@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSymbols } from "@/hooks/useSymbols";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,13 +13,14 @@ import {
 } from "@/components/ui/select";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Search } from "lucide-react";
 import type { SymbolResponse } from "@/types";
 
 export default function SymbolsView() {
   const navigate = useNavigate();
   const { symbolsWithDates } = useSymbols(true);
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const formatNumber = (num: number | undefined) => {
     if (num === undefined || num === null) return "N/A";
@@ -206,13 +208,19 @@ export default function SymbolsView() {
   };
 
   const handleEditSymbol = (symbol: SymbolResponse) => {
-    navigate(`/symbols/edit/${symbol.id}`);
+    navigate(`/symbols/${symbol.id}`);
   };
 
-  // Filter symbols based on type
+  // Filter symbols based on type and search query
   const filteredSymbols = symbolsWithDates.filter((symbol) => {
-    if (typeFilter === "ALL") return true;
-    return symbol.symbol_type === typeFilter;
+    const matchesType =
+      typeFilter === "ALL" || symbol.symbol_type === typeFilter;
+    const matchesSearch =
+      searchQuery === "" ||
+      symbol.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      symbol.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      symbol.id.toString().includes(searchQuery);
+    return matchesType && matchesSearch;
   });
 
   return (
@@ -222,19 +230,31 @@ export default function SymbolsView() {
         <Button onClick={handleCreateSymbol}>Create Symbol</Button>
       </div>
 
-      <div className="flex gap-4 items-center">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Filter by Type:</span>
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Types</SelectItem>
-              <SelectItem value="CRYPTO">Crypto</SelectItem>
-              <SelectItem value="STOCK">Stock</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Search symbols..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 w-[250px]"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Filter by Type:</span>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="CRYPTO">Crypto</SelectItem>
+                <SelectItem value="STOCK">Stock</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className="text-sm text-muted-foreground">
           Showing {filteredSymbols.length} of {symbolsWithDates.length} symbols
