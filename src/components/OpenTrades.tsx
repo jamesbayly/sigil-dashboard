@@ -26,6 +26,7 @@ import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Link } from "react-router-dom";
+import { getNumberStyling } from "@/lib/utils";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
@@ -120,7 +121,11 @@ export default function OpenTrades() {
         );
       },
       cell: ({ row }) => {
-        return <span>{row.original.conviction * 100}%</span>;
+        return (
+          <span className={`${getNumberStyling(row.original.conviction, 0.3)}`}>
+            {Math.round(row.original.conviction * 100)}%
+          </span>
+        );
       },
     },
     {
