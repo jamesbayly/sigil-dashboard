@@ -27,6 +27,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
 import { Toggle } from "./ui/toggle";
+import { getNumberStyling } from "@/lib/utils";
 
 const TestRunPermutationsView: FC<{
   permutations: StrategyTestRunPermutationResponse[];
@@ -140,15 +141,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.win_rate_max;
         return (
-          <span
-            className={
-              value && value >= 50
-                ? "text-green-600"
-                : value && value < 40
-                ? "text-red-600"
-                : ""
-            }
-          >
+          <span className={getNumberStyling(value, 50)}>
             {value?.toFixed()}%
           </span>
         );
@@ -170,15 +163,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.win_rate_average;
         return (
-          <span
-            className={
-              value && value >= 50
-                ? "text-green-600"
-                : value && value < 40
-                ? "text-red-600"
-                : ""
-            }
-          >
+          <span className={getNumberStyling(value, 50)}>
             {value?.toFixed(0)}%
           </span>
         );
@@ -200,15 +185,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.win_rate_median;
         return (
-          <span
-            className={
-              value && value >= 50
-                ? "text-green-600"
-                : value && value < 40
-                ? "text-red-600"
-                : ""
-            }
-          >
+          <span className={getNumberStyling(value, 50)}>
             {value?.toFixed(0)}%
           </span>
         );
@@ -230,17 +207,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.pnl_percent_max;
         return (
-          <span
-            className={
-              value && value >= 0
-                ? "text-green-600"
-                : value && value < -10
-                ? "text-red-600"
-                : ""
-            }
-          >
-            {value?.toFixed(1)}%
-          </span>
+          <span className={getNumberStyling(value)}>{value?.toFixed(1)}%</span>
         );
       },
     },
@@ -260,17 +227,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.pnl_percent_average;
         return (
-          <span
-            className={
-              value && value >= 0
-                ? "text-green-600"
-                : value && value < -10
-                ? "text-red-600"
-                : ""
-            }
-          >
-            {value?.toFixed(1)}%
-          </span>
+          <span className={getNumberStyling(value)}>{value?.toFixed(1)}%</span>
         );
       },
     },
@@ -290,17 +247,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.pnl_percent_median;
         return (
-          <span
-            className={
-              value && value >= 0
-                ? "text-green-600"
-                : value && value < -10
-                ? "text-red-600"
-                : ""
-            }
-          >
-            {value?.toFixed(1)}%
-          </span>
+          <span className={getNumberStyling(value)}>{value?.toFixed(1)}%</span>
         );
       },
     },
@@ -320,9 +267,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.pnl_amount_max;
         return (
-          <span className={value && value >= 0 ? "text-green-600" : ""}>
-            {value?.toFixed(2)}
-          </span>
+          <span className={getNumberStyling(value)}>{value?.toFixed(2)}</span>
         );
       },
     },
@@ -342,9 +287,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.pnl_amount_average;
         return (
-          <span className={value && value >= 0 ? "text-green-600" : ""}>
-            {value?.toFixed(2)}
-          </span>
+          <span className={getNumberStyling(value)}>{value?.toFixed(2)}</span>
         );
       },
     },
@@ -364,9 +307,7 @@ const TestRunPermutationsView: FC<{
       cell: ({ row }) => {
         const value = row.original.pnl_amount_median;
         return (
-          <span className={value && value >= 0 ? "text-green-600" : ""}>
-            {value?.toFixed(2)}
-          </span>
+          <span className={getNumberStyling(value)}>{value?.toFixed(2)}</span>
         );
       },
     },
@@ -504,15 +445,7 @@ const TestRunPermutationsResultsView: FC<{
         cell: ({ row }) => {
           const value = row.original.win_rate;
           return (
-            <span
-              className={
-                value >= 50
-                  ? "text-green-600"
-                  : value < 40
-                  ? "text-red-600"
-                  : ""
-              }
-            >
+            <span className={getNumberStyling(value, 50)}>
               {value.toFixed(2)}%
             </span>
           );
@@ -536,15 +469,7 @@ const TestRunPermutationsResultsView: FC<{
         cell: ({ row }) => {
           const value = row.original.pnl_percent;
           return (
-            <span
-              className={
-                value && value >= 0
-                  ? "text-green-600"
-                  : value && value < -10
-                  ? "text-red-600"
-                  : ""
-              }
-            >
+            <span className={getNumberStyling(value)}>
               {value?.toFixed(2)}%
             </span>
           );
@@ -568,9 +493,7 @@ const TestRunPermutationsResultsView: FC<{
         cell: ({ row }) => {
           const value = row.original.pnl_amount;
           return (
-            <span className={value && value >= 0 ? "text-green-600" : ""}>
-              {value?.toFixed(2)}
-            </span>
+            <span className={getNumberStyling(value)}>{value?.toFixed(2)}</span>
           );
         },
       },

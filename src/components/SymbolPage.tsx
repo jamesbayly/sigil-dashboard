@@ -26,6 +26,7 @@ import { useSymbols } from "@/hooks/useSymbols";
 import type { SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
 import OptionsTable from "./OptionsTable";
+import { getNumberStyling } from "@/lib/utils";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -271,11 +272,9 @@ export default function SymbolPage() {
                     24h Change
                   </div>
                   <div
-                    className={`text-lg ${
-                      symbol.day_change_percent >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
+                    className={`text-lg ${getNumberStyling(
+                      symbol.day_change_percent
+                    )}`}
                   >
                     {(symbol.day_change_percent || 0) > 0 ? "+" : ""}
                     {(symbol.day_change_percent || 0).toFixed(2)}%
@@ -286,11 +285,9 @@ export default function SymbolPage() {
                     1h Change
                   </div>
                   <div
-                    className={`text-lg ${
-                      symbol.hour_change_percent >= 0
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
+                    className={`text-lg ${getNumberStyling(
+                      symbol.hour_change_percent
+                    )}`}
                   >
                     {(symbol.hour_change_percent || 0) > 0 ? "+" : ""}
                     {(symbol.hour_change_percent || 0).toFixed(2)}%

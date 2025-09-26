@@ -26,7 +26,7 @@ import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { CalendarIcon, ArrowUpDown } from "lucide-react";
 import { addDays, format } from "date-fns";
-import { cn } from "@/lib/utils";
+import { cn, getNumberStyling } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { calculateZellaScore } from "@/lib/zellaScoreHelper";
 import { useHistoricMarketState } from "@/hooks/useHistoricMarketState";
@@ -165,7 +165,7 @@ export default function TradesTable({
         );
       },
       cell: ({ row }) => {
-        return <span>{row.original.conviction * 100}%</span>;
+        return <span>{Math.round(row.original.conviction * 100)}%</span>;
       },
     },
     {
@@ -183,19 +183,7 @@ export default function TradesTable({
       },
       cell: ({ row }) => {
         const pnl = row.original.pnl_amount ?? 0;
-        return (
-          <span
-            className={
-              pnl > 0
-                ? "text-green-600 dark:text-green-400"
-                : pnl < 0
-                ? "text-red-600 dark:text-red-400"
-                : ""
-            }
-          >
-            ${pnl.toFixed(2)}
-          </span>
-        );
+        return <span className={getNumberStyling(pnl)}>${pnl.toFixed(2)}</span>;
       },
     },
     {
@@ -213,19 +201,7 @@ export default function TradesTable({
       },
       cell: ({ row }) => {
         const pct = row.original.pnl_percent ?? 0;
-        return (
-          <span
-            className={
-              pct > 0
-                ? "text-green-600 dark:text-green-400"
-                : pct < 0
-                ? "text-red-600 dark:text-red-400"
-                : ""
-            }
-          >
-            {pct.toFixed(2)}%
-          </span>
-        );
+        return <span className={getNumberStyling(pct)}>{pct.toFixed(2)}%</span>;
       },
     },
   ];

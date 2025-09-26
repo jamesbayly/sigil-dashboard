@@ -17,6 +17,7 @@ import { ArrowUpDown, Upload } from "lucide-react";
 import OptionsUploadModal from "./OptionsUploadModal";
 import type { OptionsDataResponse } from "@/types";
 import { Link } from "react-router-dom";
+import { getNumberStyling } from "@/lib/utils";
 
 interface OptionsTableProps {
   title?: string;
@@ -38,10 +39,10 @@ export default function OptionsTable({
   const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
   const [showUploadModal, setShowUploadModal] = useState(false);
 
-  const formatCurrency = (num: number | undefined) => {
+  const formatCurrency = (num: number | undefined, showZeros = true) => {
     if (num === undefined || num === null) return "N/A";
     return `$${num.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
+      minimumFractionDigits: showZeros ? 2 : 0,
       maximumFractionDigits: 2,
     })}`;
   };
@@ -219,13 +220,7 @@ export default function OptionsTable({
       },
       cell: ({ row }) => {
         return (
-          <span
-            className={
-              row.original.strike_delta_percent >= 0
-                ? "text-green-600"
-                : "text-red-600"
-            }
-          >
+          <span className={getNumberStyling(row.original.strike_delta_percent)}>
             {formatPercentage(row.original.strike_delta_percent)}
           </span>
         );
@@ -245,7 +240,7 @@ export default function OptionsTable({
         );
       },
       cell: ({ row }) => {
-        return formatCurrency(row.original.premium);
+        return formatCurrency(row.original.premium, false);
       },
     },
   ];

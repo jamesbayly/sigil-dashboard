@@ -15,6 +15,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown, Search } from "lucide-react";
 import type { SymbolResponse } from "@/types";
+import { getNumberStyling } from "@/lib/utils";
 
 export default function SymbolsView() {
   const navigate = useNavigate();
@@ -133,13 +134,7 @@ export default function SymbolsView() {
       },
       cell: ({ row }) => {
         return (
-          <span
-            className={
-              row.original.day_change_percent >= 0
-                ? "text-green-600"
-                : "text-red-600"
-            }
-          >
+          <span className={getNumberStyling(row.original.day_change_percent)}>
             {formatPercentage(row.original.day_change_percent)}
           </span>
         );
@@ -160,13 +155,7 @@ export default function SymbolsView() {
       },
       cell: ({ row }) => {
         return (
-          <span
-            className={
-              row.original.hour_change_percent >= 0
-                ? "text-green-600"
-                : "text-red-600"
-            }
-          >
+          <span className={getNumberStyling(row.original.hour_change_percent)}>
             {formatPercentage(row.original.hour_change_percent)}
           </span>
         );
