@@ -16,8 +16,8 @@ import { DataTable } from "./ui/data-table";
 import { ArrowUpDown, Upload } from "lucide-react";
 import OptionsUploadModal from "./OptionsUploadModal";
 import type { OptionsDataResponse } from "@/types";
-import { Link } from "react-router-dom";
 import { getNumberStyling } from "@/lib/utils";
+import SymbolPopover from "./SymbolPopover";
 
 interface OptionsTableProps {
   title?: string;
@@ -72,11 +72,6 @@ export default function OptionsTable({
     }
   };
 
-  const getSymbolName = (symbolId: number) => {
-    const symbol = symbols.find((s) => s.id === symbolId);
-    return symbol ? `${symbol.name} (${symbol.symbol})` : `ID: ${symbolId}`;
-  };
-
   const columns: ColumnDef<OptionsDataResponse>[] = [
     {
       accessorKey: "id",
@@ -112,13 +107,9 @@ export default function OptionsTable({
               );
             },
             cell: ({ row }) => {
+              const sym = symbols.find((s) => s.id === row.original.symbol_id);
               return (
-                <Link
-                  to={`/symbols/${row.original.symbol_id}`}
-                  className="font-medium hover:text-blue-800 underline"
-                >
-                  {getSymbolName(row.original.symbol_id)}
-                </Link>
+                <SymbolPopover symbolId={row.original.symbol_id} symbol={sym} />
               );
             },
           },

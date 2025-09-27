@@ -27,6 +27,7 @@ import { ArrowUpDown } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Link } from "react-router-dom";
 import { getNumberStyling } from "@/lib/utils";
+import SymbolPopover from "./SymbolPopover";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
@@ -63,14 +64,7 @@ export default function OpenTrades() {
       },
       cell: ({ row }) => {
         const sym = symbols.find((s) => s.id === row.original.symbol_id);
-        return (
-          <Link
-            to={`/symbols/${sym?.id}`}
-            className="hover:text-blue-800 underline"
-          >
-            {sym?.symbol}
-          </Link>
-        );
+        return <SymbolPopover symbolId={row.original.symbol_id} symbol={sym} />;
       },
     },
     {
@@ -240,6 +234,21 @@ export default function OpenTrades() {
         return <span>{row.original.stop_loss_percent?.toFixed(2) + "%"}</span>;
       },
     },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedTrade(row.original)}
+          >
+            View
+          </Button>
+        );
+      },
+    },
   ];
 
   // Update filteredTrades when trades, tradeTypesFilter, or strategyFilter changes
@@ -364,11 +373,7 @@ export default function OpenTrades() {
       </div>
 
       <div className="overflow-auto">
-        <DataTable
-          data={filteredTrades}
-          columns={columns}
-          onRowClick={setSelectedTrade}
-        />
+        <DataTable data={filteredTrades} columns={columns} />
       </div>
       <TradeView
         trade={selectedTrade}

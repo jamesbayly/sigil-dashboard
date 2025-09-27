@@ -35,6 +35,7 @@ import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { Link } from "react-router-dom";
+import SymbolPopover from "./SymbolPopover";
 
 interface TradesTableProps {
   globalStrategyFilter?: number; // If set, strategy filter will be read-only
@@ -116,14 +117,7 @@ export default function TradesTable({
       },
       cell: ({ row }) => {
         const sym = symbols.find((s) => s.id === row.original.symbol_id);
-        return (
-          <Link
-            to={`/symbols/${sym?.id}`}
-            className="hover:text-blue-800 underline"
-          >
-            {sym?.symbol}
-          </Link>
-        );
+        return <SymbolPopover symbolId={row.original.symbol_id} symbol={sym} />;
       },
     },
     {
@@ -202,6 +196,21 @@ export default function TradesTable({
       cell: ({ row }) => {
         const pct = row.original.pnl_percent ?? 0;
         return <span className={getNumberStyling(pct)}>{pct.toFixed(2)}%</span>;
+      },
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => {
+        return (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedTrade(row.original)}
+          >
+            View
+          </Button>
+        );
       },
     },
   ];
@@ -551,11 +560,7 @@ export default function TradesTable({
 
       {/* trades table */}
       <div className="overflow-auto">
-        <DataTable
-          data={filteredTrades}
-          columns={columns}
-          onRowClick={setSelectedTrade}
-        />
+        <DataTable data={filteredTrades} columns={columns} />
       </div>
 
       <TradeView
