@@ -34,7 +34,7 @@ export default function OptionsTable({
 }: OptionsTableProps) {
   const { optionsData, isLoading, error, isCreating, createOptions } =
     useOptionsData();
-  const { symbols } = useSymbols(false);
+  const { symbols } = useSymbols();
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
   const [showUploadModal, setShowUploadModal] = useState(false);

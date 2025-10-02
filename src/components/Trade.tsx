@@ -24,7 +24,7 @@ interface TradeViewProps {
 
 const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
   const { onClose } = useOpenTrades();
-  const { symbols } = useSymbols(false);
+  const { symbols } = useSymbols();
   const symbol = symbols.find((s) => s.id === trade?.symbol_id);
 
   const isOpen = !!trade && !trade.close_time;

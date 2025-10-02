@@ -31,7 +31,7 @@ import SymbolPopover from "./SymbolPopover";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
-  const { symbols } = useSymbols(false);
+  const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(

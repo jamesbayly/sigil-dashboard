@@ -69,12 +69,17 @@ export interface SymbolRequest {
   cg_id: string;
 }
 
-export interface SymbolResponse extends SymbolRequest {
+export interface SymbolsResponse extends SymbolRequest {
   id: number;
   market_cap: number | undefined; // Express in Millions
   day_change_percent: number;
   hour_change_percent: number;
   cg_rank: number | undefined;
+  option_score: number;
+  option_score_prev: number;
+}
+
+export interface SymbolResponse extends SymbolsResponse {
   earliest_date: Date | undefined; // The earliest date of price data
   latest_date: Date | undefined; // The latest date of price data
   count_data: number; // The count of price data

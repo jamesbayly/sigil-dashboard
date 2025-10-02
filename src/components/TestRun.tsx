@@ -388,7 +388,7 @@ const TestRunPermutationsResultsView: FC<{
   ) => void;
   doRefreshTestRun: (permutationID?: number) => void;
 }> = ({ permutation, closeSelf, doRefreshTestRun }) => {
-  const { symbols } = useSymbols(false);
+  const { symbols } = useSymbols();
 
   const resultsColumns: ColumnDef<StrategyTestRunPermutationResultResponse>[] =
     [
@@ -665,7 +665,7 @@ export default function TestRunView() {
   >(undefined);
   const [showOnlyWithManyTrades, setShowOnlyWithManyTrades] = useState(false);
   const { testRunId } = useParams();
-  const { symbols } = useSymbols(false);
+  const { symbols } = useSymbols();
   const { testRun, onDelete, isLoading, error } = useTestRun(Number(testRunId));
   const navigate = useNavigate();
 

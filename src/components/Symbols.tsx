@@ -14,12 +14,12 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown, Search } from "lucide-react";
-import type { SymbolResponse } from "@/types";
+import type { SymbolsResponse } from "@/types";
 import { getNumberStyling } from "@/lib/utils";
 
 export default function SymbolsView() {
   const navigate = useNavigate();
-  const { symbolsWithDates } = useSymbols(true);
+  const { symbols } = useSymbols();
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -33,12 +33,7 @@ export default function SymbolsView() {
     return `${num > 0 ? "+" : ""}${num.toFixed(2)}%`;
   };
 
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString();
-  };
-
-  const columns: ColumnDef<SymbolResponse>[] = [
+  const columns: ColumnDef<SymbolsResponse>[] = [
     {
       accessorKey: "id",
       header: ({ column }) => {
@@ -100,6 +95,30 @@ export default function SymbolsView() {
       },
       cell: ({ row }) => {
         return <span className="font-mono text-sm">{row.original.symbol}</span>;
+      },
+    },
+    {
+      accessorKey: "option_score",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Option Score
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return row.original.symbol_type === "STOCK" ? (
+          <span className={getNumberStyling(row.original.option_score)}>
+            {row.original.option_score} (Δ{" "}
+            {row.original.option_score - row.original.option_score_prev})
+          </span>
+        ) : (
+          "N/A"
+        );
       },
     },
     {
@@ -178,30 +197,18 @@ export default function SymbolsView() {
         return row.original.cg_rank || "N/A";
       },
     },
-    {
-      accessorKey: "earliest_date",
-      header: "Date Range",
-      cell: ({ row }) => {
-        return (
-          <div className="text-xs">
-            <div>From: {formatDate(row.original.earliest_date)}</div>
-            <div>To: {formatDate(row.original.latest_date)}</div>
-          </div>
-        );
-      },
-    },
   ];
 
   const handleCreateSymbol = () => {
     navigate("/symbols/create");
   };
 
-  const handleEditSymbol = (symbol: SymbolResponse) => {
+  const handleEditSymbol = (symbol: SymbolsResponse) => {
     navigate(`/symbols/${symbol.id}`);
   };
 
   // Filter symbols based on type and search query
-  const filteredSymbols = symbolsWithDates.filter((symbol) => {
+  const filteredSymbols = symbols.filter((symbol) => {
     const matchesType =
       typeFilter === "ALL" || symbol.symbol_type === typeFilter;
     const matchesSearch =
@@ -246,7 +253,7 @@ export default function SymbolsView() {
           </div>
         </div>
         <div className="text-sm text-muted-foreground">
-          Showing {filteredSymbols.length} of {symbolsWithDates.length} symbols
+          Showing {filteredSymbols.length} of {symbols.length} symbols
         </div>
       </div>
 

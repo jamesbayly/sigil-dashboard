@@ -76,7 +76,7 @@ export default function StrategyView() {
   const [strategy, setStrategy] = useState<Strategy | null>(null);
 
   // Use symbols hook
-  const { symbols, isLoading: symbolsLoading } = useSymbols(false);
+  const { symbols, isLoading: symbolsLoading } = useSymbols();
 
   // Test run dialog state
   const [isTestRunDialogOpen, setIsTestRunDialogOpen] = useState(false);

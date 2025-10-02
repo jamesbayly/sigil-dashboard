@@ -1,35 +1,24 @@
 import { useEffect, useState } from "react";
-import { createSymbol, getSymbols, updateSymbol } from "@/utils/api";
-import {
-  isGenericResponse,
-  type SymbolRequest,
-  type SymbolResponse,
-} from "@/types";
+import { getSymbols } from "@/utils/api";
+import { isGenericResponse, type SymbolsResponse } from "@/types";
 import { toast } from "sonner";
 
-export const useSymbols = (with_dates: boolean) => {
-  const [symbols, setSymbols] = useState<SymbolResponse[]>([]);
-  const [symbolsWithDates, setSymbolsWithDates] = useState<SymbolResponse[]>(
-    []
-  );
+export const useSymbols = () => {
+  const [symbols, setSymbols] = useState<SymbolsResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAll = async (include_dates: boolean) => {
+  const fetchAll = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const res = await getSymbols(include_dates);
+      const res = await getSymbols();
       if (isGenericResponse(res)) {
         throw new Error(res.message);
       }
 
-      if (include_dates) {
-        setSymbolsWithDates(res as SymbolResponse[]);
-      } else {
-        setSymbols(res as SymbolResponse[]);
-      }
+      setSymbols(res as SymbolsResponse[]);
     } catch (err) {
       const newError =
         err instanceof Error ? err : new Error("Failed to fetch symbols");
@@ -41,23 +30,11 @@ export const useSymbols = (with_dates: boolean) => {
   };
 
   useEffect(() => {
-    fetchAll(with_dates);
-  }, [with_dates]);
-
-  const add = async (data: SymbolRequest) => {
-    await createSymbol(data);
-    fetchAll(with_dates);
-  };
-  const edit = async (data: SymbolResponse) => {
-    await updateSymbol(data);
-    fetchAll(with_dates);
-  };
+    fetchAll();
+  }, []);
 
   return {
     symbols,
-    symbolsWithDates,
-    add,
-    edit,
     isLoading,
     error,
     refetch: fetchAll,

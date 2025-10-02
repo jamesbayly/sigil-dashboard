@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSymbols } from "@/hooks/useSymbols";
+import { useSymbol } from "@/hooks/useSymbol";
 import type { SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
 import OptionsTable from "./OptionsTable";
@@ -47,12 +47,15 @@ export default function SymbolPage() {
   const [scoreError, setScoreError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { symbolsWithDates, add, edit } = useSymbols(true);
+  const symbolId = id ? parseInt(id, 10) : undefined;
+  const {
+    symbol,
+    create,
+    update,
+    isLoading: symbolLoading,
+  } = useSymbol(symbolId);
 
   const isEdit = !!id;
-  const symbol = isEdit
-    ? symbolsWithDates.find((s) => s.id.toString() === id)
-    : null;
 
   const form = useForm<SymbolFormValues>({
     resolver: zodResolver(symbolSchema),
@@ -73,14 +76,17 @@ export default function SymbolPage() {
         cg_id: values.cg_id || "",
       };
 
+      let result;
       if (isEdit && symbol) {
-        await edit({ ...symbol, ...symbolData });
+        result = await update({ id: symbol.id, ...symbolData });
       } else {
-        await add(symbolData);
+        result = await create(symbolData);
       }
 
-      form.reset();
-      navigate("/symbols");
+      if (result) {
+        form.reset();
+        navigate("/symbols");
+      }
     } catch (error) {
       console.error("Failed to save symbol:", error);
     }
@@ -153,7 +159,9 @@ export default function SymbolPage() {
         <div>
           <h1 className="text-2xl font-bold">
             {isEdit
-              ? `Edit Symbol: ${symbol?.name || "Loading..."}`
+              ? `Edit Symbol: ${
+                  symbolLoading ? "Loading..." : symbol?.name || "Not Found"
+                }`
               : "Create New Symbol"}
           </h1>
           <p className="text-muted-foreground">

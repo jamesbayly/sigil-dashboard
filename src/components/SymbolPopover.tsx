@@ -7,11 +7,12 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getSymbolOptionScore } from "@/utils/api";
 import { getNumberStyling } from "@/lib/utils";
-import { SymbolResponse } from "@/types";
+import { SymbolsResponse } from "@/types";
+import { Link } from "react-router-dom";
 
 interface SymbolPopoverProps {
   symbolId: number;
-  symbol: SymbolResponse | undefined;
+  symbol: SymbolsResponse | undefined;
   className?: string;
 }
 
@@ -68,7 +69,12 @@ export default function SymbolPopover({
           {/* Header with symbol name and type */}
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="font-semibold text-lg">{symbol.name}</h4>
+              <Link
+                to={`/symbols/${symbol.id}`}
+                className="font-semibold text-lg underline cursor-pointer"
+              >
+                {symbol.name}
+              </Link>
               <p className="text-sm text-muted-foreground">
                 {symbol.symbol} • ID: #{symbol.id}
               </p>

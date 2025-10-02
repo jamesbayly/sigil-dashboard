@@ -48,7 +48,7 @@ export default function TradesTable({
   globalSymbolFilter,
   title = "Trades",
 }: TradesTableProps) {
-  const { symbols } = useSymbols(false);
+  const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [stratFilter, setStratFilter] = useState<number | undefined>(
     globalStrategyFilter

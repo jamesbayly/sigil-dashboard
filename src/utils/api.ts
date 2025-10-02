@@ -8,6 +8,7 @@ import {
   StrategyTestRunsResponse,
   SymbolRequest,
   SymbolResponse,
+  SymbolsResponse,
   Trades,
 } from "@/types";
 
@@ -77,11 +78,14 @@ export const updateStrategy = async (payload: Partial<Strategy>) => {
   return (await res.json()) as Strategy | GenericResponse;
 };
 
-export const getSymbols = async (include_dates: boolean = false) => {
-  const res = await fetch(
-    `${BASE}/symbol?include_dates=${include_dates.toString()}`
-  );
-  return (await res.json()) as SymbolResponse[] | GenericResponse;
+export const getSymbols = async () => {
+  const res = await fetch(`${BASE}/symbol`);
+  return (await res.json()) as SymbolsResponse[] | GenericResponse;
+};
+
+export const getSymbol = async (id: number) => {
+  const res = await fetch(`${BASE}/symbol/${id}`);
+  return (await res.json()) as SymbolResponse | GenericResponse;
 };
 
 export const createSymbol = async (payload: SymbolRequest) => {
@@ -93,7 +97,11 @@ export const createSymbol = async (payload: SymbolRequest) => {
   return (await res.json()) as SymbolResponse | GenericResponse;
 };
 
-export const updateSymbol = async (payload: Partial<SymbolResponse>) => {
+export const updateSymbol = async (
+  payload: SymbolRequest & {
+    id: number;
+  }
+) => {
   const res = await fetch(`${BASE}/symbol`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
