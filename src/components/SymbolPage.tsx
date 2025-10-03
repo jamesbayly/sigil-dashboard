@@ -393,7 +393,13 @@ export default function SymbolPage() {
                   ) : scoreError ? (
                     <div className="text-red-600">{scoreError}</div>
                   ) : (
-                    <div className="text-3xl font-bold">
+                    <div
+                      className={
+                        optionScore
+                          ? getNumberStyling(optionScore)
+                          : "" + "text-3xl font-bold"
+                      }
+                    >
                       {optionScore !== null ? optionScore.toFixed(3) : "N/A"}
                     </div>
                   )}

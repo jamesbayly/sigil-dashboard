@@ -112,10 +112,22 @@ export default function SymbolsView() {
       },
       cell: ({ row }) => {
         return row.original.symbol_type === "STOCK" ? (
-          <span className={getNumberStyling(row.original.option_score)}>
-            {row.original.option_score} (Δ{" "}
-            {row.original.option_score - row.original.option_score_prev})
-          </span>
+          <>
+            <span className={getNumberStyling(row.original.option_score)}>
+              {row.original.option_score.toFixed(3)}
+            </span>{" "}
+            <span
+              className={getNumberStyling(
+                row.original.option_score - row.original.option_score_prev
+              )}
+            >
+              (Δ{" "}
+              {(
+                row.original.option_score - row.original.option_score_prev
+              ).toFixed(3)}
+              )
+            </span>
+          </>
         ) : (
           "N/A"
         );
