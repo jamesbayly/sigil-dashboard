@@ -196,8 +196,3 @@ export const createOptionsData = async (payload: OptionsDataRequest[]) => {
   });
   return (await res.json()) as GenericResponse;
 };
-
-export const getSymbolOptionScore = async (symbol_id: number) => {
-  const res = await fetch(`${BASE}/symbol/${symbol_id}/option_rating`);
-  return (await res.json()) as { score: number } | GenericResponse;
-};

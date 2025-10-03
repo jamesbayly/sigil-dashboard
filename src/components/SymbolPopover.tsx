@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { getSymbolOptionScore } from "@/utils/api";
 import { getNumberStyling } from "@/lib/utils";
 import { SymbolsResponse } from "@/types";
 import { Link } from "react-router-dom";
@@ -21,37 +20,7 @@ export default function SymbolPopover({
   symbol,
   className = "",
 }: SymbolPopoverProps) {
-  const [optionScore, setOptionScore] = useState<number | null>(null);
-  const [scoreLoading, setScoreLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  // Fetch option score when popover opens for STOCK symbols
-  useEffect(() => {
-    if (
-      isOpen &&
-      symbol &&
-      symbol.symbol_type === "STOCK" &&
-      optionScore === null &&
-      !scoreLoading
-    ) {
-      setScoreLoading(true);
-      getSymbolOptionScore(symbol.id)
-        .then((res) => {
-          if (typeof res === "object" && "score" in res) {
-            setOptionScore(res.score);
-          }
-        })
-        .catch(() => {
-          // Silently handle errors - score will remain null
-        })
-        .finally(() => setScoreLoading(false));
-    }
-  }, [isOpen, symbol, optionScore, scoreLoading]);
-
-  // Reset option score when symbol changes
-  useEffect(() => {
-    setOptionScore(null);
-  }, [symbolId]);
 
   if (!symbol) {
     return <span className={className}>{symbolId}</span>;
@@ -138,13 +107,20 @@ export default function SymbolPopover({
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Option Score:</span>
                 <span className="text-sm font-semibold">
-                  {scoreLoading ? (
-                    <span className="text-muted-foreground">Loading...</span>
-                  ) : optionScore !== null ? (
-                    <span className="text-sm">{optionScore.toFixed(3)}</span>
-                  ) : (
-                    <span className="text-muted-foreground">N/A</span>
-                  )}
+                  <span className={getNumberStyling(symbol.option_score)}>
+                    {symbol.option_score.toFixed(3)}
+                  </span>{" "}
+                  <span
+                    className={getNumberStyling(
+                      symbol.option_score - symbol.option_score_prev
+                    )}
+                  >
+                    (Δ{" "}
+                    {(symbol.option_score - symbol.option_score_prev).toFixed(
+                      3
+                    )}
+                    )
+                  </span>
                 </span>
               </div>
             </div>

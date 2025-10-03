@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import {
@@ -26,7 +26,6 @@ import { useSymbol } from "@/hooks/useSymbol";
 import type { SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
 import OptionsTable from "./OptionsTable";
-import { getSymbolOptionScore } from "@/utils/api";
 import { getNumberStyling } from "@/lib/utils";
 
 // Zod schema for symbol form
@@ -41,10 +40,6 @@ const symbolSchema = z.object({
 type SymbolFormValues = z.infer<typeof symbolSchema>;
 
 export default function SymbolPage() {
-  // Option score state
-  const [optionScore, setOptionScore] = useState<number | null>(null);
-  const [scoreLoading, setScoreLoading] = useState(false);
-  const [scoreError, setScoreError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const symbolId = id ? parseInt(id, 10) : undefined;
@@ -116,32 +111,6 @@ export default function SymbolPage() {
       });
     }
   }, [symbol, form, isEdit]);
-
-  // Fetch option score for STOCK symbols
-  useEffect(() => {
-    if (isEdit && symbol && symbol.symbol_type === "STOCK") {
-      setScoreLoading(true);
-      setScoreError(null);
-      getSymbolOptionScore(symbol.id)
-        .then((res) => {
-          if (typeof res === "object" && "score" in res) {
-            setOptionScore(res.score);
-          } else {
-            setScoreError("Failed to fetch score");
-            setOptionScore(null);
-          }
-        })
-        .catch(() => {
-          setScoreError("Failed to fetch score");
-          setOptionScore(null);
-        })
-        .finally(() => setScoreLoading(false));
-    } else {
-      setOptionScore(null);
-      setScoreError(null);
-      setScoreLoading(false);
-    }
-  }, [isEdit, symbol]);
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -388,21 +357,24 @@ export default function SymbolPage() {
               <div className="w-full">
                 <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mb-6">
                   <h2 className="text-xl font-semibold mb-2">Option Score</h2>
-                  {scoreLoading ? (
-                    <div className="text-muted-foreground">Loading...</div>
-                  ) : scoreError ? (
-                    <div className="text-red-600">{scoreError}</div>
-                  ) : (
-                    <div
-                      className={
-                        optionScore
-                          ? getNumberStyling(optionScore)
-                          : "" + "text-3xl font-bold"
-                      }
+                  <div className="text-3xl font-bold">
+                    <span className={getNumberStyling(symbol.option_score)}>
+                      {symbol.option_score.toFixed(3) || "N/A"}
+                    </span>
+                    <span
+                      className={getNumberStyling(
+                        symbol.option_score - symbol.option_score_prev
+                      )}
                     >
-                      {optionScore !== null ? optionScore.toFixed(3) : "N/A"}
-                    </div>
-                  )}
+                      {symbol.option_score - symbol.option_score_prev > 0
+                        ? " (Δ +"
+                        : " (Δ "}
+                      {(symbol.option_score - symbol.option_score_prev).toFixed(
+                        3
+                      ) || "N/A"}
+                      {")"}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
