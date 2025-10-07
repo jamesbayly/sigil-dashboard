@@ -150,4 +150,5 @@ export interface OptionsDataRequest {
 
 export interface OptionsDataResponse extends OptionsDataRequest {
   id: number;
+  score: number;
 }

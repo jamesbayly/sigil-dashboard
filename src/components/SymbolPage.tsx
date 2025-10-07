@@ -80,7 +80,7 @@ export default function SymbolPage() {
 
       if (result) {
         form.reset();
-        navigate("/symbols");
+        navigate(`/symbols/${result.id}`);
       }
     } catch (error) {
       console.error("Failed to save symbol:", error);

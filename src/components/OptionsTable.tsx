@@ -146,6 +146,25 @@ export default function OptionsTable({
       },
     },
     {
+      accessorKey: "score",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Score
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => (
+        <span className={getNumberStyling(row.original.score, 20)}>
+          {(row.original.score || 0).toFixed(2)}
+        </span>
+      ),
+    },
+    {
       accessorKey: "expiration_date",
       header: ({ column }) => {
         return (
