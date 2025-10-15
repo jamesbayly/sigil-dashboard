@@ -7,7 +7,7 @@ import {
 } from "@/types";
 import { toast } from "sonner";
 
-export const useOptionsData = () => {
+export const useOptionsData = (symbolId?: number) => {
   const [optionsData, setOptionsData] = useState<OptionsDataResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -18,7 +18,7 @@ export const useOptionsData = () => {
       setIsLoading(true);
       setError(null);
 
-      const res = await getOptionsData();
+      const res = await getOptionsData(symbolId);
       if (isGenericResponse(res)) {
         throw new Error(res.message);
       }
@@ -65,7 +65,8 @@ export const useOptionsData = () => {
 
   useEffect(() => {
     fetchAll();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [symbolId]);
 
   return {
     optionsData,

@@ -32,12 +32,13 @@ export default function OptionsTable({
   globalSymbolFilter,
   showFilters = true,
 }: OptionsTableProps) {
-  const { optionsData, isLoading, error, isCreating, createOptions } =
-    useOptionsData();
   const { symbols } = useSymbols();
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
   const [showUploadModal, setShowUploadModal] = useState(false);
+
+  const { optionsData, isLoading, error, isCreating, createOptions } =
+    useOptionsData(globalSymbolFilter);
 
   const formatCurrency = (num: number | undefined, showZeros = true) => {
     if (num === undefined || num === null) return "N/A";

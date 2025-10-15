@@ -183,8 +183,10 @@ export const refreshTestRun = async (
   return (await res.json()) as GenericResponse;
 };
 
-export const getOptionsData = async () => {
-  const res = await fetch(`${BASE}/option`);
+export const getOptionsData = async (symbolId?: number) => {
+  const params = new URLSearchParams({});
+  if (symbolId) params.set("symbol_id", `${symbolId}`);
+  const res = await fetch(`${BASE}/option?${params.toString()}`);
   return (await res.json()) as OptionsDataResponse[] | GenericResponse;
 };
 
