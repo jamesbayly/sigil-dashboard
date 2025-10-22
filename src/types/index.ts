@@ -242,4 +242,7 @@ export interface NewsParsedResponse {
   symbol_id?: number;
   content: string;
   sentiment: NewsSentiment;
+  date: Date;
+  type: NewsType;
+  source_link: string;
 }

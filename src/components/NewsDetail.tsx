@@ -34,12 +34,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { useNewsItem } from "@/hooks/useNewsItem";
 import { useSymbols } from "@/hooks/useSymbols";
-import { NewsSentiment, NewsType, type NewsRequest } from "@/types";
+import { NewsType, type NewsRequest } from "@/types";
 import SymbolSelector from "./SymbolSelector";
-import SymbolPopover from "./SymbolPopover";
+import ParsedNewsList from "./ParsedNewsList";
 
 // Zod schema for news form
 const newsSchema = z.object({
@@ -70,21 +69,6 @@ export default function NewsDetail() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isEdit = !!id;
-
-  const getSentimentColor = (sentiment: NewsSentiment) => {
-    switch (sentiment) {
-      case "VERY_POSITIVE":
-        return "bg-green-50 text-green-700 dark:bg-green-800 dark:text-green-300";
-      case "POSITIVE":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "VERY_NEGATIVE":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "NEGATIVE":
-        return "bg-red-50 text-red-700 dark:bg-red-800 dark:text-red-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsSchema),
@@ -369,42 +353,11 @@ export default function NewsDetail() {
         {newsItem &&
           newsItem.parsed_items &&
           newsItem.parsed_items.length > 0 && (
-            <div className="space-y-4">
-              <h2 className="text-2xl font-bold">
-                Parsed News Items ({newsItem.parsed_items.length})
-              </h2>
-              <div className="grid gap-4">
-                {newsItem.parsed_items.map((item) => (
-                  <Card key={item.id}>
-                    <CardHeader className="flex items-center gap-2">
-                      {item.symbol_id ? (
-                        <span className="text-sm text-muted-foreground">
-                          <SymbolPopover
-                            symbolId={item.symbol_id}
-                            symbol={symbols.find(
-                              (s) => s.id === item.symbol_id
-                            )}
-                          />
-                        </span>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          GENERAL NEWS
-                        </span>
-                      )}
-                      <Badge
-                        className={getSentimentColor(item.sentiment)}
-                        variant="outline"
-                      >
-                        {item.sentiment}
-                      </Badge>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm">{item.content}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+            <ParsedNewsList
+              parsedItems={newsItem.parsed_items}
+              symbols={symbols}
+              title="Parsed News Items"
+            />
           )}
       </div>
     </div>

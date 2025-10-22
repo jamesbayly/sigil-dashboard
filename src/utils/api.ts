@@ -1,6 +1,7 @@
 import {
   GenericResponse,
   MarketStateResponse,
+  NewsParsedResponse,
   NewsRequest,
   NewsResponse,
   NewsType,
@@ -235,4 +236,12 @@ export const getNews = async (symbolId?: number, type?: NewsType) => {
   if (type) params.set("type", type);
   const res = await fetch(`${BASE}/news?${params.toString()}`);
   return (await res.json()) as NewsResponse[] | GenericResponse;
+};
+
+export const getNewsParsed = async (symbolId?: number, type?: NewsType) => {
+  const params = new URLSearchParams({});
+  if (symbolId) params.set("symbol_id", `${symbolId}`);
+  if (type) params.set("type", type);
+  const res = await fetch(`${BASE}/news/parsed?${params.toString()}`);
+  return (await res.json()) as NewsParsedResponse[] | GenericResponse;
 };

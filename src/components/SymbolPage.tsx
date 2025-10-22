@@ -26,6 +26,9 @@ import { useSymbol } from "@/hooks/useSymbol";
 import { SymbolType, type SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
 import OptionsTable from "./OptionsTable";
+import ParsedNewsList from "./ParsedNewsList";
+import { useParsedNews } from "@/hooks/useParsedNews";
+import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
 
 // Zod schema for symbol form
@@ -49,6 +52,8 @@ export default function SymbolPage() {
     update,
     isLoading: symbolLoading,
   } = useSymbol(symbolId);
+  const { symbols } = useSymbols();
+  const { parsedNews, isLoading: parsedNewsLoading } = useParsedNews(symbolId);
 
   const isEdit = !!id;
 
@@ -387,6 +392,17 @@ export default function SymbolPage() {
               />
             </div>
           </>
+        )}
+
+        {/* Show parsed news when editing existing symbol */}
+        {isEdit && symbol && !parsedNewsLoading && parsedNews.length > 0 && (
+          <div className="mt-8">
+            <ParsedNewsList
+              parsedItems={parsedNews}
+              symbols={symbols}
+              title={`Parsed News for ${symbol.name} (${symbol.symbol})`}
+            />
+          </div>
         )}
       </div>
     </div>
