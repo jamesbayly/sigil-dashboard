@@ -9,6 +9,8 @@ import StrategyView from "./components/Strategy";
 import SymbolsView from "./components/Symbols";
 import SymbolPage from "./components/SymbolPage";
 import OptionsView from "./components/Options";
+import NewsList from "./components/NewsList";
+import NewsDetail from "./components/NewsDetail";
 
 export default function App() {
   return (
@@ -27,6 +29,9 @@ export default function App() {
           <Route path="symbols/create" element={<SymbolPage />} />
           <Route path="symbols/:id" element={<SymbolPage />} />
           <Route path="options" element={<OptionsView />} />
+          <Route path="news" element={<NewsList />} />
+          <Route path="news/create" element={<NewsDetail />} />
+          <Route path="news/:id" element={<NewsDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

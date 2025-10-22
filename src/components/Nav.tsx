@@ -77,6 +77,16 @@ export default function Nav() {
           >
             Options
           </Link>
+          <Link
+            to="/news"
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              isActive("/news")
+                ? "border-b-2 border-primary text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            News
+          </Link>
         </nav>
         <DarkModeToggle />
       </header>

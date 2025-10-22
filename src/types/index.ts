@@ -44,6 +44,24 @@ export enum OptionType {
   PUT_SELL = "PUT_SELL",
 }
 
+export enum NewsType {
+  PREMARKET = "PREMARKET",
+  INTRADAY_OPTIONS = "INTRADAY_OPTIONS",
+}
+
+export enum NewsTypeDB {
+  PREMARKET = "PREMARKET",
+  INTRADAY_OPTIONS = "INTRADAY_OPTIONS",
+}
+
+export enum NewsSentiment {
+  VERY_POSITIVE = "VERY_POSITIVE",
+  POSITIVE = "POSITIVE",
+  NEGATIVE = "NEGATIVE",
+  VERY_NEGATIVE = "VERY_NEGATIVE",
+  NEUTRAL = "NEUTRAL",
+}
+
 export class GenericResponse {
   message: string;
 
@@ -203,4 +221,25 @@ export interface OptionsDataRequest {
 export interface OptionsDataResponse extends OptionsDataRequest {
   id: number;
   score: number;
+}
+
+export interface NewsRequest {
+  date: Date;
+  type: NewsType;
+  symbol_id?: number;
+  source_link: string;
+  content: string;
+}
+
+export interface NewsResponse extends NewsRequest {
+  id: number;
+  parsed_items: NewsParsedResponse[];
+}
+
+export interface NewsParsedResponse {
+  id: number;
+  news_id: number;
+  symbol_id?: number;
+  content: string;
+  sentiment: NewsSentiment;
 }

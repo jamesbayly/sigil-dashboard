@@ -1,6 +1,9 @@
 import {
   GenericResponse,
   MarketStateResponse,
+  NewsRequest,
+  NewsResponse,
+  NewsType,
   OptionsDataRequest,
   OptionsDataResponse,
   StrategyRequest,
@@ -198,4 +201,38 @@ export const createOptionsData = async (payload: OptionsDataRequest[]) => {
     body: JSON.stringify(payload),
   });
   return (await res.json()) as GenericResponse;
+};
+
+export const createNews = async (payload: NewsRequest) => {
+  const res = await fetch(`${BASE}/news`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as NewsResponse | GenericResponse;
+};
+
+export const updateNews = async (payload: NewsResponse) => {
+  const res = await fetch(`${BASE}/news`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as NewsResponse | GenericResponse;
+};
+
+export const deleteNews = async (id: number) => {
+  const res = await fetch(`${BASE}/news/${id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  });
+  return (await res.json()) as GenericResponse;
+};
+
+export const getNews = async (symbolId?: number, type?: NewsType) => {
+  const params = new URLSearchParams({});
+  if (symbolId) params.set("symbol_id", `${symbolId}`);
+  if (type) params.set("type", type);
+  const res = await fetch(`${BASE}/news?${params.toString()}`);
+  return (await res.json()) as NewsResponse[] | GenericResponse;
 };
