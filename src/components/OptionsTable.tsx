@@ -18,6 +18,7 @@ import OptionsUploadModal from "./OptionsUploadModal";
 import type { OptionsDataResponse } from "@/types";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
+import SymbolSelector from "./SymbolSelector";
 
 interface OptionsTableProps {
   title?: string;
@@ -34,7 +35,7 @@ export default function OptionsTable({
 }: OptionsTableProps) {
   const { symbols } = useSymbols();
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
-  const [symbolFilter, setSymbolFilter] = useState<string>("ALL");
+  const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [showUploadModal, setShowUploadModal] = useState(false);
 
   const { optionsData, isLoading, error, isCreating, createOptions } =
@@ -260,7 +261,7 @@ export default function OptionsTable({
   const filteredOptions = optionsData.filter((option) => {
     const typeMatch = typeFilter === "ALL" || option.type === typeFilter;
     const symbolMatch =
-      symbolFilter === "ALL" || option.symbol_id.toString() === symbolFilter;
+      symbolFilter === undefined || option.symbol_id === symbolFilter;
     const globalSymbolMatch =
       !globalSymbolFilter || option.symbol_id === globalSymbolFilter;
     return typeMatch && symbolMatch && globalSymbolMatch;
@@ -358,22 +359,14 @@ export default function OptionsTable({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Filter by Symbol:</span>
-              <Select value={symbolFilter} onValueChange={setSymbolFilter}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="All Symbols" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Symbols</SelectItem>
-                  {symbols
-                    .filter((s) => s.symbol_type === "STOCK")
-                    .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                    .map((symbol) => (
-                      <SelectItem key={symbol.id} value={symbol.id.toString()}>
-                        {symbol.symbol} - {symbol.name.slice(0, 30)}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <SymbolSelector
+                value={symbolFilter}
+                onChange={setSymbolFilter}
+                showLabel={false}
+                className="w-[200px]"
+                filterType="STOCK"
+                showName={true}
+              />
             </div>
           </div>
         )}

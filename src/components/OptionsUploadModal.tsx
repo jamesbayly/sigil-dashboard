@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 import { Upload, AlertCircle, CheckCircle2 } from "lucide-react";
-import type { OptionsDataRequest } from "@/types";
+import { OptionsDataRequest, OptionType } from "@/types";
 
 interface OptionsUploadModalProps {
   open: boolean;
@@ -160,12 +160,17 @@ export default function OptionsUploadModal({
 
       // Validate order_type
       const orderType = values[3] as
-        | "CALL_BUY"
-        | "CALL_SELL"
-        | "PUT_BUY"
-        | "PUT_SELL";
+        | OptionType.CALL_BUY
+        | OptionType.CALL_SELL
+        | OptionType.PUT_BUY
+        | OptionType.PUT_SELL;
       if (
-        !["CALL_BUY", "CALL_SELL", "PUT_BUY", "PUT_SELL"].includes(orderType)
+        ![
+          OptionType.CALL_BUY,
+          OptionType.CALL_SELL,
+          OptionType.PUT_BUY,
+          OptionType.PUT_SELL,
+        ].includes(orderType)
       ) {
         errors.push({
           row: i,

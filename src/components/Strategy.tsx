@@ -10,8 +10,8 @@ import {
   createTestRun,
   createTestRunForSymbol,
 } from "@/utils/api";
-import type { Strategy } from "@/types";
-import { isGenericResponse } from "@/types";
+import type { StrategyRequest, StrategyResponse } from "@/types";
+import { isGenericResponse, StrategyStatus, StrategyType } from "@/types";
 import { useSymbols } from "@/hooks/useSymbols";
 import {
   Form,
@@ -59,8 +59,8 @@ const parameterSchema = z.object({
 const strategySchema = z.object({
   name: z.string().min(2).max(100),
   symbol_ids: z.string(), // comma-separated or JSON array string
-  status: z.enum(["active", "inactive", "test"]),
-  strategy_type: z.enum(["CRYPTO", "STOCK_OPTIONS", "AI"]),
+  status: z.nativeEnum(StrategyStatus),
+  strategy_type: z.nativeEnum(StrategyType),
   strategy_code: z.string(),
   parameters: z.array(parameterSchema),
 });
@@ -73,7 +73,7 @@ export default function StrategyView() {
   const navigate = useNavigate();
   const mode: Mode = !id ? "create" : "edit";
   const [loading, setLoading] = useState(false);
-  const [strategy, setStrategy] = useState<Strategy | null>(null);
+  const [strategy, setStrategy] = useState<StrategyResponse | null>(null);
 
   // Use symbols hook
   const { symbols, isLoading: symbolsLoading } = useSymbols();
@@ -120,8 +120,8 @@ export default function StrategyView() {
         : {
             name: "",
             symbol_ids: "[]",
-            status: "inactive",
-            strategy_type: "CRYPTO",
+            status: StrategyStatus.INACTIVE,
+            strategy_type: StrategyType.CRYPTO,
             strategy_code: "",
             parameters: [],
           },
@@ -181,7 +181,7 @@ export default function StrategyView() {
           min_value: param.min_value ?? undefined,
           max_value: param.max_value ?? undefined,
         })),
-      };
+      } as StrategyRequest;
 
       if (mode === "create") {
         const result = await createStrategy(basePayload);
@@ -193,7 +193,7 @@ export default function StrategyView() {
           setStrategy(result);
         }
       } else if (mode === "edit" && strategy) {
-        const payload: Strategy = {
+        const payload: StrategyResponse = {
           id: strategy.id,
           ...basePayload,
         };

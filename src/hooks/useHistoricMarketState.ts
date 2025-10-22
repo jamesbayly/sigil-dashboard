@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { getHistoricMarketState } from "@/utils/api";
-import { MarketState, isGenericResponse } from "@/types";
+import { isGenericResponse, MarketStateResponse } from "@/types";
 import { toast } from "sonner";
 import { DateRange } from "react-day-picker";
 
 export const useHistoricMarketState = (date: DateRange | undefined) => {
-  const [marketState, setMarketState] = useState<MarketState[]>([]);
+  const [marketState, setMarketState] = useState<MarketStateResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 

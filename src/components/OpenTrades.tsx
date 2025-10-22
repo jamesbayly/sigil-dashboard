@@ -28,6 +28,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Link } from "react-router-dom";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
+import SymbolSelector from "./SymbolSelector";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
@@ -42,6 +43,7 @@ export default function OpenTrades() {
     "ALL"
   );
   const [strategyFilter, setStrategyFilter] = useState<number | undefined>();
+  const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
 
   const columns: ColumnDef<Trades>[] = [
@@ -251,7 +253,7 @@ export default function OpenTrades() {
     },
   ];
 
-  // Update filteredTrades when trades, tradeTypesFilter, or strategyFilter changes
+  // Update filteredTrades when trades, tradeTypesFilter, strategyFilter, or symbolFilter changes
   useEffect(() => {
     let filtered = trades;
 
@@ -265,8 +267,13 @@ export default function OpenTrades() {
       filtered = filtered.filter((t) => t.strategy_id === strategyFilter);
     }
 
+    // Apply symbol filter
+    if (symbolFilter !== undefined) {
+      filtered = filtered.filter((t) => t.symbol_id === symbolFilter);
+    }
+
     setFilteredTrades(filtered);
-  }, [trades, tradeTypesFilter, strategyFilter]);
+  }, [trades, tradeTypesFilter, strategyFilter, symbolFilter]);
 
   return (
     <div className="space-y-4">
@@ -319,6 +326,8 @@ export default function OpenTrades() {
             </SelectContent>
           </Select>
         </div>
+
+        <SymbolSelector value={symbolFilter} onChange={setSymbolFilter} />
 
         <div>
           <Tabs

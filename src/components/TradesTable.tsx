@@ -36,6 +36,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { Link } from "react-router-dom";
 import SymbolPopover from "./SymbolPopover";
+import SymbolSelector from "./SymbolSelector";
 
 interface TradesTableProps {
   globalStrategyFilter?: number; // If set, strategy filter will be read-only
@@ -388,37 +389,15 @@ export default function TradesTable({
         </div>
 
         <div>
-          <Label>Symbol</Label>
-          <Select
-            onValueChange={(v) => {
+          <SymbolSelector
+            value={symFilter}
+            onChange={(v) => {
               if (!globalSymbolFilter) {
-                setSymFilter(v === "all" ? undefined : Number(v));
+                setSymFilter(v);
               }
             }}
-            value={symFilter?.toString() ?? "all"}
             disabled={globalSymbolFilter !== undefined}
-          >
-            <SelectTrigger
-              className={cn(
-                "w-40",
-                globalSymbolFilter !== undefined && "opacity-60"
-              )}
-            >
-              {symbols.find((s) => s.id === symFilter)?.symbol ?? "All"}
-            </SelectTrigger>
-            {globalSymbolFilter === undefined && (
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                {symbols
-                  .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                  .map((s) => (
-                    <SelectItem key={s.id} value={s.id.toString()}>
-                      {s.symbol}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            )}
-          </Select>
+          />
         </div>
 
         <div>

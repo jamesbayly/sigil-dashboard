@@ -1,5 +1,55 @@
-export interface GenericResponse {
+export enum StrategyCodes {
+  TRADING_VIEW = "TRADING_VIEW",
+  CRYPTO_STRATEGY_1 = "CRYPTO_STRATEGY_1",
+  CRYPTO_STRATEGY_2 = "CRYPTO_STRATEGY_2",
+  CRYPTO_STRATEGY_3 = "CRYPTO_STRATEGY_3",
+  CRYPTO_STRATEGY_4 = "CRYPTO_STRATEGY_4",
+  CRYPTO_STRATEGY_5 = "CRYPTO_STRATEGY_5",
+  CRYPTO_STRATEGY_6 = "CRYPTO_STRATEGY_6",
+  CRYPTO_STRATEGY_7 = "CRYPTO_STRATEGY_7",
+  CRYPTO_STRATEGY_8 = "CRYPTO_STRATEGY_8",
+  CRYPTO_STRATEGY_9 = "CRYPTO_STRATEGY_9",
+  CRYPTO_STRATEGY_10 = "CRYPTO_STRATEGY_10",
+  CRYPTO_STRATEGY_11 = "CRYPTO_STRATEGY_11",
+  CRYPTO_STRATEGY_12 = "CRYPTO_STRATEGY_12",
+  STOCK_STRATEGY_1 = "STOCK_STRATEGY_1",
+}
+export enum StrategyStatus {
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  TEST = "test",
+}
+
+export enum StrategyType {
+  CRYPTO = "CRYPTO",
+  STOCK_OPTIONS = "STOCK_OPTIONS",
+  AI = "AI",
+}
+
+export enum ParameterType {
+  INTEGER = "integer",
+  FLOAT = "float",
+  BOOLEAN = "boolean",
+}
+
+export enum SymbolType {
+  CRYPTO = "CRYPTO",
+  STOCK = "STOCK",
+}
+
+export enum OptionType {
+  CALL_BUY = "CALL_BUY",
+  CALL_SELL = "CALL_SELL",
+  PUT_BUY = "PUT_BUY",
+  PUT_SELL = "PUT_SELL",
+}
+
+export class GenericResponse {
   message: string;
+
+  constructor(message: string) {
+    this.message = message;
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -11,7 +61,7 @@ export interface Trades {
   id: number;
   strategy_id: number;
   symbol_id: number;
-  conviction: number; // A conviction score from 1-10
+  conviction: number;
   size: number;
   open_time: string;
   open_price: number;
@@ -31,63 +81,41 @@ export interface Trades {
   pnl_amount?: number;
 }
 
-export interface MarketState {
+export interface MarketStateResponse {
   id: number;
-  created_at: string;
+  created_at: Date;
   market_cap: number; // Express in Millions
-  ema_9: number | undefined; // Express in Millions
-  ema_21: number | undefined; // Express in Millions
-  ema_50: number | undefined; // Express in Millions
-  ema_100: number | undefined; // Express in Millions
+  ema_9: number; // Express in Millions
+  ema_21: number; // Express in Millions
+  ema_50: number; // Express in Millions
+  ema_100: number; // Express in Millions
 }
 
-export interface Strategy {
-  id: number;
+export interface StrategyRequest {
   name: string;
-  status: "active" | "inactive" | "test";
-  strategy_type: "CRYPTO" | "STOCK_OPTIONS" | "AI"; // The type of strategy
+  status: StrategyStatus;
+  strategy_type: StrategyType; // The type of strategy
   symbol_ids: number[];
-  strategy_code: string;
-  parameters: StrategyParameter[];
+  strategy_code: StrategyCodes;
+  parameters: StrategyParameterRequest[];
 }
 
-export interface StrategyParameter {
-  id: number | undefined;
+export interface StrategyParameterRequest {
   code: string;
   description: string; // A desciption of the parameter
   value: number; // The default value
-  type: "integer" | "float" | "boolean";
+  type: ParameterType;
   min_value: number | undefined; // The minimum value for the parameter that we might test above
   max_value: number | undefined; // The maximum value for the parameter that we might test below
 }
 
-export interface SymbolRequest {
-  name: string;
-  symbol_type: "CRYPTO" | "STOCK";
-  symbol: string;
-  binance_ticker: string;
-  cg_id: string;
-}
-
-export interface SymbolsResponse extends SymbolRequest {
+export interface StrategyResponse extends StrategyRequest {
   id: number;
-  market_cap: number | undefined; // Express in Millions
-  day_change_percent: number;
-  hour_change_percent: number;
-  cg_rank: number | undefined;
-  option_score: number;
-  option_score_prev: number;
-}
-
-export interface SymbolResponse extends SymbolsResponse {
-  earliest_date: Date | undefined; // The earliest date of price data
-  latest_date: Date | undefined; // The latest date of price data
-  count_data: number; // The count of price data
 }
 
 export interface StrategyTestRunsResponse {
   id: number;
-  strategy: Strategy | undefined;
+  strategy: StrategyResponse | undefined;
   created_at: number;
   name: string;
   symbol_ids: number[];
@@ -137,9 +165,33 @@ export interface StrategyTestRunPermutationResultResponse {
   sqn: number;
 }
 
+export interface SymbolRequest {
+  name: string;
+  symbol_type: SymbolType;
+  symbol: string;
+  binance_ticker: string;
+  cg_id: string;
+}
+
+export interface SymbolsResponse extends SymbolRequest {
+  id: number;
+  market_cap: number | undefined; // Express in Millions
+  day_change_percent: number;
+  hour_change_percent: number;
+  cg_rank: number | undefined;
+  option_score: number;
+  option_score_prev: number;
+}
+
+export interface SymbolResponse extends SymbolsResponse {
+  earliest_date: Date | undefined; // The earliest date of price data
+  latest_date: Date | undefined; // The latest date of price data
+  count_data: number; // The count of price data
+}
+
 export interface OptionsDataRequest {
   symbol_id: number;
-  type: "CALL_BUY" | "CALL_SELL" | "PUT_BUY" | "PUT_SELL";
+  type: OptionType;
   trade_date: Date;
   asset_price: number;
   strike_price: number;

@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { getStrategies, createStrategy, updateStrategy } from "@/utils/api";
-import { isGenericResponse, type Strategy } from "@/types";
+import {
+  isGenericResponse,
+  StrategyRequest,
+  type StrategyResponse,
+} from "@/types";
 import { toast } from "sonner";
 
 export const useStrategies = () => {
-  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [strategies, setStrategies] = useState<StrategyResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -31,11 +35,11 @@ export const useStrategies = () => {
     fetchAll();
   }, []);
 
-  const add = async (data: Omit<Strategy, "id">) => {
+  const add = async (data: StrategyRequest) => {
     await createStrategy(data);
     fetchAll();
   };
-  const edit = async (data: Strategy) => {
+  const edit = async (data: StrategyResponse) => {
     await updateStrategy(data);
     fetchAll();
   };

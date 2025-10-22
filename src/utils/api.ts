@@ -1,9 +1,10 @@
 import {
   GenericResponse,
-  MarketState,
+  MarketStateResponse,
   OptionsDataRequest,
   OptionsDataResponse,
-  Strategy,
+  StrategyRequest,
+  StrategyResponse,
   StrategyTestRunResponse,
   StrategyTestRunsResponse,
   SymbolRequest,
@@ -52,30 +53,30 @@ export const getHistoricMarketState = async (
   if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
   if (end) params.set("end", `${end.toISOString().slice(0, 10)}`);
   const res = await fetch(`${BASE}/market/historic?${params.toString()}`);
-  return (await res.json()) as MarketState[] | GenericResponse;
+  return (await res.json()) as MarketStateResponse[] | GenericResponse;
 };
 
 export const getStrategies = async () => {
   const res = await fetch(`${BASE}/strategy`);
-  return (await res.json()) as Strategy[] | GenericResponse;
+  return (await res.json()) as StrategyResponse[] | GenericResponse;
 };
 
-export const createStrategy = async (payload: Omit<Strategy, "id">) => {
+export const createStrategy = async (payload: StrategyRequest) => {
   const res = await fetch(`${BASE}/strategy`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return (await res.json()) as Strategy | GenericResponse;
+  return (await res.json()) as StrategyResponse | GenericResponse;
 };
 
-export const updateStrategy = async (payload: Partial<Strategy>) => {
+export const updateStrategy = async (payload: StrategyResponse) => {
   const res = await fetch(`${BASE}/strategy`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return (await res.json()) as Strategy | GenericResponse;
+  return (await res.json()) as StrategyResponse | GenericResponse;
 };
 
 export const getSymbols = async () => {

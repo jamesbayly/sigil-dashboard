@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSymbol } from "@/hooks/useSymbol";
-import type { SymbolRequest } from "@/types";
+import { SymbolType, type SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
 import OptionsTable from "./OptionsTable";
 import { getNumberStyling } from "@/lib/utils";
@@ -31,7 +31,7 @@ import { getNumberStyling } from "@/lib/utils";
 // Zod schema for symbol form
 const symbolSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  symbol_type: z.enum(["CRYPTO", "STOCK"]),
+  symbol_type: z.nativeEnum(SymbolType),
   symbol: z.string().min(1, "Symbol is required").max(20),
   binance_ticker: z.string().max(20).optional(),
   cg_id: z.string().optional(),
@@ -56,7 +56,7 @@ export default function SymbolPage() {
     resolver: zodResolver(symbolSchema),
     defaultValues: {
       name: "",
-      symbol_type: "CRYPTO",
+      symbol_type: SymbolType.STOCK,
       symbol: "",
       binance_ticker: "",
       cg_id: "",
@@ -104,7 +104,7 @@ export default function SymbolPage() {
     } else if (!isEdit) {
       form.reset({
         name: "",
-        symbol_type: "CRYPTO",
+        symbol_type: SymbolType.STOCK,
         symbol: "",
         binance_ticker: "",
         cg_id: "",
