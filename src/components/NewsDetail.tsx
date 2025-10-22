@@ -3,7 +3,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Trash2 } from "lucide-react";
+import { format } from "date-fns";
 import {
   Form,
   FormControl,
@@ -24,6 +25,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -37,6 +44,7 @@ import {
 import { useNewsItem } from "@/hooks/useNewsItem";
 import { useSymbols } from "@/hooks/useSymbols";
 import { NewsType, type NewsRequest } from "@/types";
+import { cn } from "@/lib/utils";
 import SymbolSelector from "./SymbolSelector";
 import ParsedNewsList from "./ParsedNewsList";
 
@@ -44,7 +52,7 @@ import ParsedNewsList from "./ParsedNewsList";
 const newsSchema = z.object({
   date: z.string().min(1, "Date is required"),
   type: z.nativeEnum(NewsType),
-  symbol_id: z.number().nullable(),
+  symbol_id: z.number().optional().nullable(),
   source_link: z
     .string()
     .url("Must be a valid URL")
@@ -67,6 +75,7 @@ export default function NewsDetail() {
   } = useNewsItem(newsId);
   const { symbols } = useSymbols();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const isEdit = !!id;
 
@@ -82,6 +91,7 @@ export default function NewsDetail() {
   });
 
   const onSubmit = async (values: NewsFormValues) => {
+    setIsSaving(true);
     try {
       const newsData: NewsRequest = {
         date: new Date(values.date + "T00:00:00.000Z"), // Force UTC at midnight
@@ -108,6 +118,8 @@ export default function NewsDetail() {
       }
     } catch (error) {
       console.error("Failed to save news:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -229,11 +241,40 @@ export default function NewsDetail() {
                     name="date"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="flex flex-col">
                         <FormLabel>Date</FormLabel>
-                        <FormControl>
-                          <Input type="date" {...field} />
-                        </FormControl>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(new Date(field.value), "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={
+                                field.value ? new Date(field.value) : undefined
+                              }
+                              onSelect={(date) => {
+                                field.onChange(
+                                  date ? format(date, "yyyy-MM-dd") : ""
+                                );
+                              }}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -337,11 +378,18 @@ export default function NewsDetail() {
                     type="button"
                     variant="outline"
                     onClick={handleCancel}
+                    disabled={isSaving}
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">
-                    {isEdit ? "Update News" : "Create News"}
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving
+                      ? isEdit
+                        ? "Updating..."
+                        : "Creating..."
+                      : isEdit
+                      ? "Update News"
+                      : "Create News"}
                   </Button>
                 </div>
               </form>
