@@ -1,5 +1,6 @@
 import {
   GenericResponse,
+  IndustryTag,
   MarketStateResponse,
   NewsParsedResponse,
   NewsRequest,
@@ -230,12 +231,17 @@ export const deleteNews = async (id: number) => {
   return (await res.json()) as GenericResponse;
 };
 
-export const getNews = async (symbolId?: number, type?: NewsType) => {
+export const getAllNews = async (symbolId?: number, type?: NewsType) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   if (type) params.set("type", type);
   const res = await fetch(`${BASE}/news?${params.toString()}`);
   return (await res.json()) as NewsResponse[] | GenericResponse;
+};
+
+export const getNews = async (newsId: number) => {
+  const res = await fetch(`${BASE}/news/${newsId}`);
+  return (await res.json()) as NewsResponse | GenericResponse;
 };
 
 export const getNewsParsed = async (symbolId?: number, type?: NewsType) => {
@@ -244,4 +250,9 @@ export const getNewsParsed = async (symbolId?: number, type?: NewsType) => {
   if (type) params.set("type", type);
   const res = await fetch(`${BASE}/news/parsed?${params.toString()}`);
   return (await res.json()) as NewsParsedResponse[] | GenericResponse;
+};
+
+export const getIndustries = async () => {
+  const res = await fetch(`${BASE}/industry`);
+  return (await res.json()) as IndustryTag[] | GenericResponse;
 };

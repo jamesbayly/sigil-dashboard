@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getNews } from "@/utils/api";
+import { getAllNews } from "@/utils/api";
 import { NewsResponse, NewsType, isGenericResponse } from "@/types";
 import { toast } from "sonner";
 
@@ -12,7 +12,7 @@ export function useNews(symbolId?: number, type?: NewsType) {
     const fetchNews = async () => {
       try {
         setIsLoading(true);
-        const response = await getNews(symbolId, type);
+        const response = await getAllNews(symbolId, type);
 
         if (isGenericResponse(response)) {
           setError(new Error(response.message));

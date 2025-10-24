@@ -16,23 +16,15 @@ export function useNewsItem(id?: number) {
 
     try {
       setIsLoading(true);
-      // Fetch all news and find the specific one
-      const response = await getNews();
+      const response = await getNews(id);
 
       if (isGenericResponse(response)) {
         setError(new Error(response.message));
         toast.error(response.message);
         setNewsItem(null);
       } else {
-        const found = response.find((n) => n.id === id);
-        if (found) {
-          setNewsItem(found);
-          setError(null);
-        } else {
-          setError(new Error("News item not found"));
-          toast.error("News item not found");
-          setNewsItem(null);
-        }
+        setNewsItem(response);
+        setError(null);
       }
     } catch (err) {
       const error = err as Error;

@@ -30,6 +30,7 @@ import ParsedNewsList from "./ParsedNewsList";
 import { useParsedNews } from "@/hooks/useParsedNews";
 import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -64,8 +65,8 @@ export default function SymbolPage() {
       name: "",
       symbol_type: SymbolType.STOCK,
       symbol: "",
-      binance_ticker: "",
-      cg_id: "",
+      binance_ticker: undefined,
+      cg_id: undefined,
     },
   });
 
@@ -75,6 +76,7 @@ export default function SymbolPage() {
         ...values,
         binance_ticker: values.binance_ticker || "",
         cg_id: values.cg_id || "",
+        industry_tags: symbol?.industry_tags || [],
       };
 
       let result;
@@ -106,8 +108,8 @@ export default function SymbolPage() {
         name: symbol.name,
         symbol_type: symbol.symbol_type,
         symbol: symbol.symbol,
-        binance_ticker: symbol.binance_ticker,
-        cg_id: symbol.cg_id,
+        binance_ticker: symbol.binance_ticker || undefined,
+        cg_id: symbol.cg_id || undefined,
       });
     } else if (!isEdit) {
       form.reset({
@@ -282,6 +284,27 @@ export default function SymbolPage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Industry Tags */}
+                {isEdit &&
+                  symbol &&
+                  symbol.industry_tags &&
+                  symbol.industry_tags.length > 0 && (
+                    <div className="space-y-2">
+                      <FormLabel>Industry Tags</FormLabel>
+                      <div className="flex flex-wrap gap-2">
+                        {symbol.industry_tags.map((tag) => (
+                          <Badge
+                            key={tag.id}
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            {tag.name}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                 {isEditMode && (
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">

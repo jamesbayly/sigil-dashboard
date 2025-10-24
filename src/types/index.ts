@@ -189,6 +189,7 @@ export interface SymbolRequest {
   symbol: string;
   binance_ticker: string;
   cg_id: string;
+  industry_tags: IndustryTag[];
 }
 
 export interface SymbolsResponse extends SymbolRequest {
@@ -245,4 +246,10 @@ export interface NewsParsedResponse {
   date: Date;
   type: NewsType;
   source_link: string;
+  industry_tags: IndustryTag[];
+}
+
+export interface IndustryTag {
+  id: number;
+  name: string;
 }

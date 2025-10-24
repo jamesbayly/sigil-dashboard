@@ -83,6 +83,18 @@ export default function ParsedNewsList({
             </CardHeader>
             <CardContent>
               <p className="text-sm">{item.content}</p>
+
+              {/* Industry Tags */}
+              {item.industry_tags && item.industry_tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {item.industry_tags.map((tag) => (
+                    <Badge key={tag.id} variant="secondary" className="text-xs">
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
               {item.source_link && (
                 <a
                   href={item.source_link}
