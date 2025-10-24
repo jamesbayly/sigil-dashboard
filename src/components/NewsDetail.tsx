@@ -161,10 +161,10 @@ export default function NewsDetail() {
   }, [newsItem, form, isEdit]);
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="container mx-auto p-3 sm:p-6 max-w-4xl">
       {/* Navigation Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3 mb-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
           <Button
             variant="ghost"
             size="sm"
@@ -175,7 +175,7 @@ export default function NewsDetail() {
             Back to News
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">
+            <h1 className="text-xl sm:text-2xl font-bold">
               {isEdit
                 ? newsLoading
                   ? "Edit News: Loading..."
@@ -184,7 +184,7 @@ export default function NewsDetail() {
                   : "Edit News: Not Found"
                 : "Create New News"}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {isEdit
                 ? "Update the news information below"
                 : "Add a new news item to the system"}
@@ -196,7 +196,11 @@ export default function NewsDetail() {
         {isEdit && newsItem && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="sm">
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete
               </Button>
@@ -373,16 +377,21 @@ export default function NewsDetail() {
                   )}
                 />
 
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleCancel}
                     disabled={isSaving}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={isSaving}>
+                  <Button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full sm:w-auto"
+                  >
                     {isSaving
                       ? isEdit
                         ? "Updating..."

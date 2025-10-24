@@ -291,20 +291,20 @@ export default function TradesTable({
       <h3 className="text-xl font-semibold">{title}</h3>
 
       {/* filters */}
-      <div className="flex flex-wrap gap-4 align-end">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 align-end">
+        <div className="w-full sm:w-auto">
           <Label>Date Range</Label>
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <Button
                 id="date"
                 variant={"outline"}
                 className={cn(
-                  "w-[300px] justify-start text-left font-normal",
+                  "w-full sm:w-[300px] justify-start text-left font-normal",
                   !date && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon />
+                <CalendarIcon className="mr-2 h-4 w-4" />
                 {date?.from ? (
                   date.to ? (
                     <>
@@ -349,14 +349,24 @@ export default function TradesTable({
                   defaultMonth={date?.from}
                   selected={date}
                   onSelect={setDate}
+                  numberOfMonths={1}
+                  className="sm:hidden"
+                />
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={date?.from}
+                  selected={date}
+                  onSelect={setDate}
                   numberOfMonths={2}
+                  className="hidden sm:block"
                 />
               </div>
             </PopoverContent>
           </Popover>
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <Label>Strategy</Label>
           <Select
             onValueChange={(v) => {
@@ -369,7 +379,7 @@ export default function TradesTable({
           >
             <SelectTrigger
               className={cn(
-                "w-40",
+                "w-full sm:w-40",
                 globalStrategyFilter !== undefined && "opacity-60"
               )}
             >
@@ -388,7 +398,7 @@ export default function TradesTable({
           </Select>
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <SymbolSelector
             value={symFilter}
             onChange={(v) => {
@@ -400,23 +410,27 @@ export default function TradesTable({
           />
         </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <Tabs
             value={tradeTypesFilter}
             onValueChange={(value) =>
               setTradeTypesFilter(value as "REAL" | "ALL")
             }
-            className="w-[400px]"
+            className="w-full sm:w-[400px]"
           >
-            <TabsList>
-              <TabsTrigger value="REAL">Real Trades Only</TabsTrigger>
-              <TabsTrigger value="ALL">ALL Trades</TabsTrigger>
+            <TabsList className="w-full">
+              <TabsTrigger value="REAL" className="flex-1">
+                Real Trades Only
+              </TabsTrigger>
+              <TabsTrigger value="ALL" className="flex-1">
+                ALL Trades
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </div>
 
-      <div className="h-64 bg-white dark:bg-gray-800 p-4 rounded">
+      <div className="h-64 bg-white dark:bg-gray-800 p-2 sm:p-4 rounded">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={graphData}>
             <XAxis dataKey="date" tickFormatter={(tick) => tick.slice(0, 10)} />
@@ -452,14 +466,14 @@ export default function TradesTable({
 
       <div>
         <h4 className="text-lg font-medium mb-3">Summary</h4>
-        <div className="flex flex-wrap gap-4">
-          <Card className="flex-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <Card>
             <CardHeader>
               <CardTitle>{calculateZellaScore(filteredTrades)}</CardTitle>
               <CardDescription>Zella Score</CardDescription>
             </CardHeader>
           </Card>
-          <Card className="flex-auto">
+          <Card>
             <CardHeader>
               <CardTitle>
                 $
@@ -470,13 +484,13 @@ export default function TradesTable({
               <CardDescription>Total PNL</CardDescription>
             </CardHeader>
           </Card>
-          <Card className="flex-auto">
+          <Card>
             <CardHeader>
               <CardTitle>{filteredTrades.length.toLocaleString()}</CardTitle>
               <CardDescription>Total Trades</CardDescription>
             </CardHeader>
           </Card>
-          <Card className="flex-auto">
+          <Card>
             <CardHeader>
               <CardTitle>
                 {filteredTrades.length > 0
@@ -492,7 +506,7 @@ export default function TradesTable({
               <CardDescription>Win Rate</CardDescription>
             </CardHeader>
           </Card>
-          <Card className="flex-auto">
+          <Card>
             <CardHeader>
               <CardTitle>
                 {marketState && marketState.length > 0
@@ -512,7 +526,7 @@ export default function TradesTable({
 
       <div>
         <h4 className="text-lg font-medium mb-3">Daily Breakdown</h4>
-        <div className="flex flex-nowrap gap-4 overflow-scroll">
+        <div className="flex flex-nowrap gap-4 overflow-x-auto pb-2">
           {[
             ...new Set(
               filteredTrades
@@ -522,9 +536,9 @@ export default function TradesTable({
           ].map((date) => {
             const breakdown = getDayBreakdown(new Date(date || ""));
             return (
-              <Card key={date} className="flex-auto">
+              <Card key={date} className="flex-shrink-0 min-w-[200px]">
                 <CardHeader>
-                  <CardTitle>{date}</CardTitle>
+                  <CardTitle className="text-base">{date}</CardTitle>
                   <CardDescription>
                     <p>{breakdown.trade_count} trades</p>
                     <p>Total PNL: ${breakdown.total_pnl.toFixed(2)}</p>
@@ -538,7 +552,7 @@ export default function TradesTable({
       </div>
 
       {/* trades table */}
-      <div className="overflow-auto">
+      <div>
         <DataTable data={filteredTrades} columns={columns} />
       </div>
 

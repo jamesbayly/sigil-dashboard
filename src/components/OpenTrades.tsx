@@ -277,11 +277,13 @@ export default function OpenTrades() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Open Trades</h2>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive">Close All</Button>
+            <Button variant="destructive" className="w-full sm:w-auto">
+              Close All
+            </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <p>
@@ -302,8 +304,8 @@ export default function OpenTrades() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 items-end">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 items-stretch sm:items-end">
+        <div className="w-full sm:w-auto">
           <Label>Strategy</Label>
           <Select
             onValueChange={(v) =>
@@ -311,7 +313,7 @@ export default function OpenTrades() {
             }
             value={strategyFilter?.toString() ?? "all"}
           >
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-full sm:w-40">
               <SelectValue>
                 {strategies.find((s) => s.id === strategyFilter)?.name ?? "All"}
               </SelectValue>
@@ -327,26 +329,32 @@ export default function OpenTrades() {
           </Select>
         </div>
 
-        <SymbolSelector value={symbolFilter} onChange={setSymbolFilter} />
+        <div className="w-full sm:w-auto">
+          <SymbolSelector value={symbolFilter} onChange={setSymbolFilter} />
+        </div>
 
-        <div>
+        <div className="w-full sm:w-auto">
           <Tabs
             value={tradeTypesFilter}
             onValueChange={(value) =>
               setTradeTypesFilter(value as "REAL" | "ALL")
             }
-            className="w-[400px]"
+            className="w-full sm:w-[400px]"
           >
-            <TabsList>
-              <TabsTrigger value="REAL">Real Trades Only</TabsTrigger>
-              <TabsTrigger value="ALL">ALL Trades</TabsTrigger>
+            <TabsList className="w-full">
+              <TabsTrigger value="REAL" className="flex-1">
+                Real Trades Only
+              </TabsTrigger>
+              <TabsTrigger value="ALL" className="flex-1">
+                ALL Trades
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <Card className="flex-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card>
           <CardHeader>
             <CardTitle>
               $
@@ -357,13 +365,13 @@ export default function OpenTrades() {
             <CardDescription>Current Open PNL</CardDescription>
           </CardHeader>
         </Card>
-        <Card className="flex-auto">
+        <Card>
           <CardHeader>
             <CardTitle>{filteredTrades.length.toLocaleString()}</CardTitle>
             <CardDescription>Total Trades</CardDescription>
           </CardHeader>
         </Card>
-        <Card className="flex-auto">
+        <Card>
           <CardHeader>
             <CardTitle>
               {filteredTrades.length > 0
@@ -381,7 +389,7 @@ export default function OpenTrades() {
         </Card>
       </div>
 
-      <div className="overflow-auto">
+      <div>
         <DataTable data={filteredTrades} columns={columns} />
       </div>
       <TradeView

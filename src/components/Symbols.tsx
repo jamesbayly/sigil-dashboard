@@ -233,27 +233,31 @@ export default function SymbolsView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Symbols</h2>
-        <Button onClick={handleCreateSymbol}>Create Symbol</Button>
+        <Button onClick={handleCreateSymbol} className="w-full sm:w-auto">
+          Create Symbol
+        </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="relative">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
               type="text"
               placeholder="Search symbols..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-[250px]"
+              className="pl-10 w-full sm:w-[250px]"
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">Filter by Type:</span>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <span className="text-sm font-medium whitespace-nowrap">
+              Filter by Type:
+            </span>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-full sm:w-[150px]">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -269,7 +273,7 @@ export default function SymbolsView() {
         </div>
       </div>
 
-      <div className="overflow-auto">
+      <div>
         <DataTable
           data={filteredSymbols}
           columns={columns}

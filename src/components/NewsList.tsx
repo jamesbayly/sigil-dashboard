@@ -107,9 +107,12 @@ export default function NewsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">News</h2>
-        <Button onClick={() => navigate("/news/create")}>
+        <Button
+          onClick={() => navigate("/news/create")}
+          className="w-full sm:w-auto"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Create News
         </Button>
@@ -121,8 +124,8 @@ export default function NewsList() {
           <CardTitle>Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 items-end flex-wrap">
-            <div>
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
+            <div className="w-full sm:w-auto">
               <Label>Type</Label>
               <Select
                 value={typeFilter}
@@ -130,7 +133,7 @@ export default function NewsList() {
                   setTypeFilter(v === "ALL" ? undefined : (v as NewsType))
                 }
               >
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -143,7 +146,7 @@ export default function NewsList() {
               </Select>
             </div>
 
-            <div>
+            <div className="w-full sm:w-auto">
               <Label>Symbol</Label>
               <Select
                 value={symbolFilter?.toString()}
@@ -151,7 +154,7 @@ export default function NewsList() {
                   setSymbolFilter(v === "ALL" ? undefined : Number(v))
                 }
               >
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue placeholder="All Symbols" />
                 </SelectTrigger>
                 <SelectContent>

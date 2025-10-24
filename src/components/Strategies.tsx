@@ -16,22 +16,25 @@ export default function StrategiesView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Strategies</h2>
-        <Button onClick={() => navigate("/strategies/create")}>
+        <Button
+          onClick={() => navigate("/strategies/create")}
+          className="w-full sm:w-auto"
+        >
           Create Strategy
         </Button>
       </div>
-      <div className="overflow-auto">
-        <Table className="w-full table-auto">
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table className="min-w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Symbols</TableHead>
-              <TableHead>Strategy Code</TableHead>
+              <TableHead className="whitespace-nowrap">ID</TableHead>
+              <TableHead className="whitespace-nowrap">Name</TableHead>
+              <TableHead className="whitespace-nowrap">Status</TableHead>
+              <TableHead className="whitespace-nowrap">Type</TableHead>
+              <TableHead className="whitespace-nowrap">Symbols</TableHead>
+              <TableHead className="whitespace-nowrap">Strategy Code</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,12 +49,18 @@ export default function StrategiesView() {
                 className="cursor-pointer hover:bg-muted"
                 onClick={() => navigate(`/strategies/${s.id}`)}
               >
-                <TableCell>{s.id}</TableCell>
-                <TableCell>{s.name}</TableCell>
-                <TableCell>{s.status}</TableCell>
-                <TableCell>{s.strategy_type}</TableCell>
-                <TableCell>{s.symbol_ids.length ?? "All"}</TableCell>
-                <TableCell>{s.strategy_code}</TableCell>
+                <TableCell className="whitespace-nowrap">{s.id}</TableCell>
+                <TableCell className="whitespace-nowrap">{s.name}</TableCell>
+                <TableCell className="whitespace-nowrap">{s.status}</TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {s.strategy_type}
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {s.symbol_ids.length ?? "All"}
+                </TableCell>
+                <TableCell className="whitespace-nowrap">
+                  {s.strategy_code}
+                </TableCell>
               </TableRow>
             ))}
             {strategies.length === 0 && !isLoading && (

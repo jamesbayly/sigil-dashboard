@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit2, X } from "lucide-react";
 import {
   Form,
   FormControl,
@@ -56,6 +56,7 @@ export default function SymbolPage() {
   const { parsedNews, isLoading: parsedNewsLoading } = useParsedNews(symbolId);
 
   const isEdit = !!id;
+  const [isEditMode, setIsEditMode] = useState(!isEdit); // For new symbols, always in edit mode
 
   const form = useForm<SymbolFormValues>({
     resolver: zodResolver(symbolSchema),
@@ -79,13 +80,15 @@ export default function SymbolPage() {
       let result;
       if (isEdit && symbol) {
         result = await update({ id: symbol.id, ...symbolData });
+        if (result) {
+          setIsEditMode(false); // Exit edit mode after successful update
+        }
       } else {
         result = await create(symbolData);
-      }
-
-      if (result) {
-        form.reset();
-        navigate(`/symbols/${result.id}`);
+        if (result) {
+          form.reset();
+          navigate(`/symbols/${result.id}`);
+        }
       }
     } catch (error) {
       console.error("Failed to save symbol:", error);
@@ -118,9 +121,9 @@ export default function SymbolPage() {
   }, [symbol, form, isEdit]);
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="space-y-6">
       {/* Navigation Header */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <Button
           variant="ghost"
           size="sm"
@@ -130,23 +133,45 @@ export default function SymbolPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Symbols
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold">
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold">
             {isEdit
-              ? `Edit Symbol: ${
+              ? `Symbol: ${
                   symbolLoading ? "Loading..." : symbol?.name || "Not Found"
                 }`
               : "Create New Symbol"}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {isEdit
-              ? "Update the symbol information below"
+              ? isEditMode
+                ? "Update the symbol information below"
+                : "View symbol details"
               : "Add a new symbol to the system"}
           </p>
         </div>
+        {isEdit && (
+          <Button
+            variant={isEditMode ? "outline" : "default"}
+            size="sm"
+            onClick={() => setIsEditMode(!isEditMode)}
+            className="flex items-center gap-2"
+          >
+            {isEditMode ? (
+              <>
+                <X className="h-4 w-4" />
+                Cancel Edit
+              </>
+            ) : (
+              <>
+                <Edit2 className="h-4 w-4" />
+                Edit Symbol
+              </>
+            )}
+          </Button>
+        )}
       </div>
 
-      <div className="grid gap-6">
+      <div className="space-y-6">
         {/* Main Form Card */}
         <Card>
           <CardHeader>
@@ -165,7 +190,11 @@ export default function SymbolPage() {
                     <FormItem>
                       <FormLabel>Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="Bitcoin" {...field} />
+                        <Input
+                          placeholder="Bitcoin"
+                          {...field}
+                          disabled={!isEditMode}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -182,6 +211,7 @@ export default function SymbolPage() {
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
+                          disabled={!isEditMode}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select symbol type" />
@@ -205,7 +235,11 @@ export default function SymbolPage() {
                       <FormItem>
                         <FormLabel>Symbol</FormLabel>
                         <FormControl>
-                          <Input placeholder="BTC" {...field} />
+                          <Input
+                            placeholder="BTC"
+                            {...field}
+                            disabled={!isEditMode}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -219,7 +253,11 @@ export default function SymbolPage() {
                       <FormItem>
                         <FormLabel>Binance Ticker</FormLabel>
                         <FormControl>
-                          <Input placeholder="BTCUSDT" {...field} />
+                          <Input
+                            placeholder="BTCUSDT"
+                            {...field}
+                            disabled={!isEditMode}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -234,25 +272,48 @@ export default function SymbolPage() {
                     <FormItem>
                       <FormLabel>CoinGecko ID</FormLabel>
                       <FormControl>
-                        <Input placeholder="bitcoin" {...field} />
+                        <Input
+                          placeholder="bitcoin"
+                          {...field}
+                          disabled={!isEditMode}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    {isEdit ? "Update Symbol" : "Create Symbol"}
-                  </Button>
-                </div>
+                {isEditMode && (
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (isEdit) {
+                          setIsEditMode(false);
+                          // Reset form to original values
+                          if (symbol) {
+                            form.reset({
+                              name: symbol.name,
+                              symbol_type: symbol.symbol_type,
+                              symbol: symbol.symbol,
+                              binance_ticker: symbol.binance_ticker,
+                              cg_id: symbol.cg_id,
+                            });
+                          }
+                        } else {
+                          handleCancel();
+                        }
+                      }}
+                      className="w-full sm:w-auto"
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="w-full sm:w-auto">
+                      {isEdit ? "Update Symbol" : "Create Symbol"}
+                    </Button>
+                  </div>
+                )}
               </form>
             </Form>
           </CardContent>
@@ -265,27 +326,29 @@ export default function SymbolPage() {
               <CardTitle>Current Symbol Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-sm">
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     Market Cap (M)
                   </div>
-                  <div className="text-lg">
+                  <div className="text-base sm:text-lg font-semibold">
                     {symbol.market_cap?.toLocaleString() ?? "N/A"}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     CG Rank
                   </div>
-                  <div className="text-lg">{symbol.cg_rank ?? "N/A"}</div>
+                  <div className="text-base sm:text-lg font-semibold">
+                    {symbol.cg_rank ?? "N/A"}
+                  </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     24h Change
                   </div>
                   <div
-                    className={`text-lg ${getNumberStyling(
+                    className={`text-base sm:text-lg font-semibold ${getNumberStyling(
                       symbol.day_change_percent
                     )}`}
                   >
@@ -294,11 +357,11 @@ export default function SymbolPage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     1h Change
                   </div>
                   <div
-                    className={`text-lg ${getNumberStyling(
+                    className={`text-base sm:text-lg font-semibold ${getNumberStyling(
                       symbol.hour_change_percent
                     )}`}
                   >
@@ -307,34 +370,36 @@ export default function SymbolPage() {
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     Data Points
                   </div>
-                  <div className="text-lg">
+                  <div className="text-base sm:text-lg font-semibold">
                     {symbol.count_data.toLocaleString()}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     Symbol ID
                   </div>
-                  <div className="text-lg">#{symbol.id}</div>
+                  <div className="text-base sm:text-lg font-semibold">
+                    #{symbol.id}
+                  </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     Earliest Date
                   </div>
-                  <div className="text-lg">
+                  <div className="text-base sm:text-lg font-semibold">
                     {symbol.earliest_date
                       ? new Date(symbol.earliest_date).toLocaleDateString()
                       : "N/A"}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground">
+                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                     Latest Date
                   </div>
-                  <div className="text-lg">
+                  <div className="text-base sm:text-lg font-semibold">
                     {symbol.latest_date
                       ? new Date(symbol.latest_date).toLocaleDateString()
                       : "N/A"}
@@ -347,46 +412,53 @@ export default function SymbolPage() {
 
         {/* Show trades table when editing existing symbol */}
         {isEdit && symbol && (
-          <div className="mt-8">
-            <TradesTable
-              globalSymbolFilter={symbol.id}
-              title={`Trades for ${symbol.name} (${symbol.symbol})`}
-            />
+          <div className="space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold">
+              Trades for {symbol.name} ({symbol.symbol})
+            </h2>
+            <TradesTable globalSymbolFilter={symbol.id} title="" />
           </div>
         )}
 
         {/* Show options table when editing existing STOCK symbol */}
         {isEdit && symbol && symbol.symbol_type === "STOCK" && (
           <>
-            <div className="mt-8">
-              <div className="w-full">
-                <div className="bg-white dark:bg-gray-900 rounded-lg shadow p-6 mb-6">
-                  <h2 className="text-xl font-semibold mb-2">Option Score</h2>
-                  <div className="text-3xl font-bold">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl">
+                  Option Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                  <div className="text-2xl sm:text-3xl font-bold">
                     <span className={getNumberStyling(symbol.option_score)}>
                       {symbol.option_score.toFixed(3) || "N/A"}
                     </span>
-                    <span
-                      className={getNumberStyling(
-                        symbol.option_score - symbol.option_score_prev
-                      )}
-                    >
-                      {symbol.option_score - symbol.option_score_prev > 0
-                        ? " (Δ +"
-                        : " (Δ "}
-                      {(symbol.option_score - symbol.option_score_prev).toFixed(
-                        3
-                      ) || "N/A"}
-                      {")"}
-                    </span>
+                  </div>
+                  <div
+                    className={`text-lg sm:text-xl font-semibold ${getNumberStyling(
+                      symbol.option_score - symbol.option_score_prev
+                    )}`}
+                  >
+                    {symbol.option_score - symbol.option_score_prev > 0
+                      ? "(Δ +"
+                      : "(Δ "}
+                    {(symbol.option_score - symbol.option_score_prev).toFixed(
+                      3
+                    ) || "N/A"}
+                    {")"}
                   </div>
                 </div>
-              </div>
-            </div>
-            <div className="mt-8">
+              </CardContent>
+            </Card>
+            <div className="space-y-4">
+              <h2 className="text-lg sm:text-xl font-semibold">
+                Options for {symbol.name} ({symbol.symbol})
+              </h2>
               <OptionsTable
                 globalSymbolFilter={symbol.id}
-                title={`Options for ${symbol.name} (${symbol.symbol})`}
+                title=""
                 showUploadButton={false}
                 showFilters={true}
               />
@@ -396,11 +468,14 @@ export default function SymbolPage() {
 
         {/* Show parsed news when editing existing symbol */}
         {isEdit && symbol && !parsedNewsLoading && parsedNews.length > 0 && (
-          <div className="mt-8">
+          <div className="space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold">
+              Parsed News for {symbol.name} ({symbol.symbol})
+            </h2>
             <ParsedNewsList
               parsedItems={parsedNews}
               symbols={symbols}
-              title={`Parsed News for ${symbol.name} (${symbol.symbol})`}
+              title=""
             />
           </div>
         )}

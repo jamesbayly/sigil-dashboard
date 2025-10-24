@@ -270,11 +270,11 @@ export default function StrategyView() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto p-3 sm:p-0">
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <CardTitle className="text-lg sm:text-xl">
               {mode === "create" ? "Create Strategy" : `Edit Strategy #${id}`}
             </CardTitle>
             {mode === "edit" && strategy && (
@@ -283,7 +283,9 @@ export default function StrategyView() {
                 onOpenChange={setIsTestRunDialogOpen}
               >
                 <DialogTrigger asChild>
-                  <Button variant="outline">Create Test Run</Button>
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    Create Test Run
+                  </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
@@ -604,8 +606,12 @@ export default function StrategyView() {
                   ))}
                 </div>
               </div>
-              <div className="flex gap-2 mt-4">
-                <Button type="submit" disabled={loading}>
+              <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full sm:w-auto"
+                >
                   {mode === "create" ? "Create" : "Save"}
                 </Button>
                 <Button
@@ -613,6 +619,7 @@ export default function StrategyView() {
                   variant="outline"
                   onClick={() => navigate("/strategies")}
                   disabled={loading}
+                  className="w-full sm:w-auto"
                 >
                   Cancel
                 </Button>

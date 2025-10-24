@@ -301,12 +301,13 @@ export default function OptionsTable({
     return (
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <CardTitle>{title}</CardTitle>
             {showUploadButton && (
               <Button
                 onClick={() => setShowUploadModal(true)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full sm:w-auto"
+                size="sm"
               >
                 <Upload className="h-4 w-4" />
                 Upload Options Data
@@ -326,12 +327,13 @@ export default function OptionsTable({
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <CardTitle>{title}</CardTitle>
           {showUploadButton && (
             <Button
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              size="sm"
             >
               <Upload className="h-4 w-4" />
               Upload Options Data
@@ -341,11 +343,13 @@ export default function OptionsTable({
       </CardHeader>
       <CardContent className="space-y-6">
         {showFilters && !globalSymbolFilter && (
-          <div className="flex gap-4 items-center flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Filter by Type:</span>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap">
+                Filter by Type:
+              </span>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -357,13 +361,15 @@ export default function OptionsTable({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Filter by Symbol:</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap">
+                Filter by Symbol:
+              </span>
               <SymbolSelector
                 value={symbolFilter}
                 onChange={setSymbolFilter}
                 showLabel={false}
-                className="w-[200px]"
+                className="w-full sm:w-[200px]"
                 filterType="STOCK"
                 showName={true}
               />
@@ -372,11 +378,13 @@ export default function OptionsTable({
         )}
 
         {showFilters && globalSymbolFilter && (
-          <div className="flex gap-4 items-center flex-wrap">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Filter by Type:</span>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap">
+                Filter by Type:
+              </span>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
@@ -395,7 +403,7 @@ export default function OptionsTable({
           Showing {filteredOptions.length} of {optionsData.length} options
         </div>
 
-        <div className="overflow-auto">
+        <div>
           <DataTable data={filteredOptions} columns={columns} />
         </div>
 

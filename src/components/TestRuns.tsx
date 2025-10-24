@@ -23,21 +23,26 @@ export default function TestRunsView() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
         <h2 className="text-2xl font-semibold">Strategy Test Runs</h2>
-        <Button onClick={() => window.location.reload()}>Refresh</Button>
+        <Button
+          onClick={() => window.location.reload()}
+          className="w-full sm:w-auto"
+        >
+          Refresh
+        </Button>
       </div>
 
-      <div className="overflow-auto">
-        <Table className="w-full table-auto">
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table className="min-w-full">
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead>Strategy</TableHead>
-              <TableHead>Symbol Count</TableHead>
-              <TableHead>Permutations</TableHead>
-              <TableHead>Results</TableHead>
+              <TableHead className="whitespace-nowrap">Name</TableHead>
+              <TableHead className="whitespace-nowrap">Created</TableHead>
+              <TableHead className="whitespace-nowrap">Strategy</TableHead>
+              <TableHead className="whitespace-nowrap">Symbol Count</TableHead>
+              <TableHead className="whitespace-nowrap">Permutations</TableHead>
+              <TableHead className="whitespace-nowrap">Results</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -56,16 +61,24 @@ export default function TestRunsView() {
                   className="cursor-pointer hover:bg-muted"
                   onClick={() => openTestRun(testRun)}
                 >
-                  <TableCell>{testRun.name}</TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {testRun.name}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <TimeAgo date={new Date(testRun.created_at)} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {strategy?.name || testRun.strategy?.name || "Unknown"}
                   </TableCell>
-                  <TableCell>{testRun.symbol_ids.length}</TableCell>
-                  <TableCell>{testRun.count_permutations}</TableCell>
-                  <TableCell>{testRun.count_results}</TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {testRun.symbol_ids.length}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {testRun.count_permutations}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
+                    {testRun.count_results}
+                  </TableCell>
                 </TableRow>
               );
             })}
