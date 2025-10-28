@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Edit2, X } from "lucide-react";
 import {
@@ -54,10 +54,21 @@ export default function SymbolPage() {
     isLoading: symbolLoading,
   } = useSymbol(symbolId);
   const { symbols } = useSymbols();
-  const { parsedNews, isLoading: parsedNewsLoading } = useParsedNews(symbolId);
 
-  const isEdit = !!id;
-  const [isEditMode, setIsEditMode] = useState(!isEdit); // For new symbols, always in edit mode
+  // Memoize industry IDs to prevent unnecessary re-renders
+  const industryIds = useMemo(
+    () => symbol?.industry_tags?.map((tag) => tag.id),
+    [symbol?.industry_tags]
+  );
+
+  const {
+    parsedNews,
+    relatedIndustryNews,
+    isLoading: parsedNewsLoading,
+  } = useParsedNews(symbol ? symbolId : undefined, undefined, industryIds);
+
+  const existingSymbol = !!id;
+  const [isEditMode, setIsEditMode] = useState(!existingSymbol); // For new symbols, always in edit mode
 
   const form = useForm<SymbolFormValues>({
     resolver: zodResolver(symbolSchema),
@@ -80,7 +91,7 @@ export default function SymbolPage() {
       };
 
       let result;
-      if (isEdit && symbol) {
+      if (existingSymbol && symbol) {
         result = await update({ id: symbol.id, ...symbolData });
         if (result) {
           setIsEditMode(false); // Exit edit mode after successful update
@@ -111,7 +122,7 @@ export default function SymbolPage() {
         binance_ticker: symbol.binance_ticker || undefined,
         cg_id: symbol.cg_id || undefined,
       });
-    } else if (!isEdit) {
+    } else if (!existingSymbol) {
       form.reset({
         name: "",
         symbol_type: SymbolType.STOCK,
@@ -120,7 +131,7 @@ export default function SymbolPage() {
         cg_id: "",
       });
     }
-  }, [symbol, form, isEdit]);
+  }, [symbol, form, existingSymbol]);
 
   return (
     <div className="space-y-6">
@@ -137,21 +148,21 @@ export default function SymbolPage() {
         </Button>
         <div className="flex-1">
           <h1 className="text-xl sm:text-2xl font-bold">
-            {isEdit
+            {existingSymbol
               ? `Symbol: ${
                   symbolLoading ? "Loading..." : symbol?.name || "Not Found"
                 }`
               : "Create New Symbol"}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {isEdit
+            {existingSymbol
               ? isEditMode
                 ? "Update the symbol information below"
                 : "View symbol details"
               : "Add a new symbol to the system"}
           </p>
         </div>
-        {isEdit && (
+        {existingSymbol && (
           <Button
             variant={isEditMode ? "outline" : "default"}
             size="sm"
@@ -286,14 +297,12 @@ export default function SymbolPage() {
                 />
 
                 {/* Industry Tags */}
-                {isEdit &&
-                  symbol &&
-                  symbol.industry_tags &&
-                  symbol.industry_tags.length > 0 && (
-                    <div className="space-y-2">
-                      <FormLabel>Industry Tags</FormLabel>
-                      <div className="flex flex-wrap gap-2">
-                        {symbol.industry_tags.map((tag) => (
+                {existingSymbol && symbol && (
+                  <div className="space-y-2">
+                    <FormLabel>Industry Tags</FormLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {symbol.industry_tags?.length > 0 ? (
+                        symbol.industry_tags.map((tag) => (
                           <Badge
                             key={tag.id}
                             variant="secondary"
@@ -301,10 +310,13 @@ export default function SymbolPage() {
                           >
                             {tag.name}
                           </Badge>
-                        ))}
-                      </div>
+                        ))
+                      ) : (
+                        <p className="text-xs">No industry tags found.</p>
+                      )}
                     </div>
-                  )}
+                  </div>
+                )}
 
                 {isEditMode && (
                   <div className="flex flex-col sm:flex-row gap-3 pt-4">
@@ -312,7 +324,7 @@ export default function SymbolPage() {
                       type="button"
                       variant="outline"
                       onClick={() => {
-                        if (isEdit) {
+                        if (existingSymbol) {
                           setIsEditMode(false);
                           // Reset form to original values
                           if (symbol) {
@@ -333,7 +345,7 @@ export default function SymbolPage() {
                       Cancel
                     </Button>
                     <Button type="submit" className="w-full sm:w-auto">
-                      {isEdit ? "Update Symbol" : "Create Symbol"}
+                      {existingSymbol ? "Update Symbol" : "Create Symbol"}
                     </Button>
                   </div>
                 )}
@@ -434,7 +446,7 @@ export default function SymbolPage() {
         )}
 
         {/* Show trades table when editing existing symbol */}
-        {isEdit && symbol && (
+        {existingSymbol && symbol && (
           <div className="space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold">
               Trades for {symbol.name} ({symbol.symbol})
@@ -444,7 +456,7 @@ export default function SymbolPage() {
         )}
 
         {/* Show options table when editing existing STOCK symbol */}
-        {isEdit && symbol && symbol.symbol_type === "STOCK" && (
+        {existingSymbol && symbol && symbol.symbol_type === "STOCK" && (
           <>
             <Card>
               <CardHeader>
@@ -490,16 +502,37 @@ export default function SymbolPage() {
         )}
 
         {/* Show parsed news when editing existing symbol */}
-        {isEdit && symbol && !parsedNewsLoading && parsedNews.length > 0 && (
+        {existingSymbol && symbol && !parsedNewsLoading && (
           <div className="space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold">
               Parsed News for {symbol.name} ({symbol.symbol})
             </h2>
-            <ParsedNewsList
-              parsedItems={parsedNews}
-              symbols={symbols}
-              title=""
-            />
+            {parsedNews.length > 0 ? (
+              <ParsedNewsList
+                parsedItems={parsedNews}
+                symbols={symbols}
+                title=""
+              />
+            ) : (
+              <p>No parsed news items found.</p>
+            )}
+          </div>
+        )}
+
+        {existingSymbol && symbol && !parsedNewsLoading && (
+          <div className="space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold">
+              Related Industry News for {symbol.name} ({symbol.symbol})
+            </h2>
+            {relatedIndustryNews.length > 0 ? (
+              <ParsedNewsList
+                parsedItems={relatedIndustryNews}
+                symbols={symbols}
+                title=""
+              />
+            ) : (
+              <p>No related industry news items found.</p>
+            )}
           </div>
         )}
       </div>

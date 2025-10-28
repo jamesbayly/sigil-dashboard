@@ -244,12 +244,23 @@ export const getNews = async (newsId: number) => {
   return (await res.json()) as NewsResponse | GenericResponse;
 };
 
-export const getNewsParsed = async (symbolId?: number, type?: NewsType) => {
+export const getNewsParsed = async (
+  symbolId?: number,
+  type?: NewsType,
+  industry_ids?: number[]
+) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   if (type) params.set("type", type);
-  const res = await fetch(`${BASE}/news/parsed?${params.toString()}`);
-  return (await res.json()) as NewsParsedResponse[] | GenericResponse;
+  if (industry_ids)
+    params.set("industry_ids", `${JSON.stringify(industry_ids)}`);
+  const res = await fetch(`${BASE}/news-parsed?${params.toString()}`);
+  return (await res.json()) as
+    | {
+        asset_news: NewsParsedResponse[];
+        related_industry_news: NewsParsedResponse[];
+      }
+    | GenericResponse;
 };
 
 export const getIndustries = async () => {

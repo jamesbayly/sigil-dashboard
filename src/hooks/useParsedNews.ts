@@ -6,8 +6,15 @@ import {
   type NewsType,
 } from "@/types";
 
-export const useParsedNews = (symbolId?: number, type?: NewsType) => {
+export const useParsedNews = (
+  symbolId?: number,
+  type?: NewsType,
+  industry_ids?: number[]
+) => {
   const [parsedNews, setParsedNews] = useState<NewsParsedResponse[]>([]);
+  const [relatedIndustryNews, setRelatedIndustryNews] = useState<
+    NewsParsedResponse[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -16,12 +23,13 @@ export const useParsedNews = (symbolId?: number, type?: NewsType) => {
       setIsLoading(true);
       setError(null);
       try {
-        const result = await getNewsParsed(symbolId, type);
+        const result = await getNewsParsed(symbolId, type, industry_ids);
         if (isGenericResponse(result)) {
           setError(result.message);
           setParsedNews([]);
         } else {
-          setParsedNews(result);
+          setParsedNews(result.asset_news);
+          setRelatedIndustryNews(result.related_industry_news);
         }
       } catch (err) {
         setError(
@@ -34,7 +42,7 @@ export const useParsedNews = (symbolId?: number, type?: NewsType) => {
     };
 
     fetchParsedNews();
-  }, [symbolId, type]);
+  }, [symbolId, type, industry_ids]);
 
-  return { parsedNews, isLoading, error };
+  return { parsedNews, relatedIndustryNews, isLoading, error };
 };
