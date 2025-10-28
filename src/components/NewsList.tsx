@@ -139,8 +139,9 @@ export default function NewsList() {
                 <SelectContent>
                   <SelectItem value="ALL">All Types</SelectItem>
                   <SelectItem value="PREMARKET">Premarket</SelectItem>
-                  <SelectItem value="INTRADAY_OPTIONS">
-                    Intraday Options
+                  <SelectItem value="GENERAL_NEWS">General News</SelectItem>
+                  <SelectItem value="NOTABLE_OPTIONS">
+                    Notable Options
                   </SelectItem>
                 </SelectContent>
               </Select>

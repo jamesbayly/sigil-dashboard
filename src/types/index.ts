@@ -46,12 +46,8 @@ export enum OptionType {
 
 export enum NewsType {
   PREMARKET = "PREMARKET",
-  INTRADAY_OPTIONS = "INTRADAY_OPTIONS",
-}
-
-export enum NewsTypeDB {
-  PREMARKET = "PREMARKET",
-  INTRADAY_OPTIONS = "INTRADAY_OPTIONS",
+  GENERAL_NEWS = "GENERAL_NEWS",
+  NOTABLE_OPTIONS = "NOTABLE_OPTIONS",
 }
 
 export enum NewsSentiment {

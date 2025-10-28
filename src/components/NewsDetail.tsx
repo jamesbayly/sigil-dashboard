@@ -83,7 +83,7 @@ export default function NewsDetail() {
     resolver: zodResolver(newsSchema),
     defaultValues: {
       date: new Date().toISOString().split("T")[0],
-      type: NewsType.INTRADAY_OPTIONS,
+      type: NewsType.GENERAL_NEWS,
       symbol_id: undefined,
       source_link: "",
       content: "",
@@ -152,7 +152,7 @@ export default function NewsDetail() {
     } else if (!isEdit) {
       form.reset({
         date: new Date().toISOString().split("T")[0],
-        type: NewsType.INTRADAY_OPTIONS,
+        type: NewsType.GENERAL_NEWS,
         symbol_id: undefined,
         source_link: "",
         content: "",
@@ -302,8 +302,11 @@ export default function NewsDetail() {
                               <SelectItem value="PREMARKET">
                                 Premarket
                               </SelectItem>
-                              <SelectItem value="INTRADAY_OPTIONS">
-                                Intraday Options
+                              <SelectItem value="GENERAL_NEWS">
+                                General News
+                              </SelectItem>
+                              <SelectItem value="NOTABLE_OPTIONS">
+                                Notable Options
                               </SelectItem>
                             </SelectContent>
                           </Select>
