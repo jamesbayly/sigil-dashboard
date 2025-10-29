@@ -267,3 +267,11 @@ export const getIndustries = async () => {
   const res = await fetch(`${BASE}/industry`);
   return (await res.json()) as IndustryTag[] | GenericResponse;
 };
+
+export const runAIDailyStockStrategy = async () => {
+  const res = await fetch(`${BASE}/strategy/ai/stock/daily-analysis`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  return (await res.json()) as GenericResponse;
+};

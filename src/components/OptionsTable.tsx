@@ -13,23 +13,25 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
-import { ArrowUpDown, Upload } from "lucide-react";
+import { ArrowUpDown, Upload, Sparkles } from "lucide-react";
 import OptionsUploadModal from "./OptionsUploadModal";
 import type { OptionsDataResponse } from "@/types";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
 import SymbolSelector from "./SymbolSelector";
+import { runAIDailyStockStrategy } from "@/utils/api";
+import { toast } from "sonner";
 
 interface OptionsTableProps {
   title?: string;
-  showUploadButton?: boolean;
+  showActions?: boolean;
   globalSymbolFilter?: number;
   showFilters?: boolean;
 }
 
 export default function OptionsTable({
   title = "Options Data",
-  showUploadButton = false,
+  showActions = false,
   globalSymbolFilter,
   showFilters = true,
 }: OptionsTableProps) {
@@ -37,9 +39,29 @@ export default function OptionsTable({
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [isRunningAI, setIsRunningAI] = useState(false);
 
   const { optionsData, isLoading, error, isCreating, createOptions } =
     useOptionsData(globalSymbolFilter);
+
+  const handleRunAIStrategy = async () => {
+    setIsRunningAI(true);
+    try {
+      const result = await runAIDailyStockStrategy();
+      if ("message" in result) {
+        toast.success(
+          result.message || "AI daily stock strategy completed successfully!"
+        );
+      } else {
+        toast.success("AI daily stock strategy completed!");
+      }
+    } catch (error) {
+      toast.error("An error occurred while running the AI strategy");
+      console.error("AI Strategy error:", error);
+    } finally {
+      setIsRunningAI(false);
+    }
+  };
 
   const formatCurrency = (num: number | undefined, showZeros = true) => {
     if (num === undefined || num === null) return "N/A";
@@ -303,15 +325,27 @@ export default function OptionsTable({
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <CardTitle>{title}</CardTitle>
-            {showUploadButton && (
-              <Button
-                onClick={() => setShowUploadModal(true)}
-                className="flex items-center gap-2 w-full sm:w-auto"
-                size="sm"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Options Data
-              </Button>
+            {showActions && (
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload Options Data
+                </Button>
+                <Button
+                  onClick={handleRunAIStrategy}
+                  disabled={isRunningAI}
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                  size="sm"
+                  variant="outline"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {isRunningAI ? "Running..." : "Run AI Strategy"}
+                </Button>
+              </div>
             )}
           </div>
         </CardHeader>
@@ -329,15 +363,27 @@ export default function OptionsTable({
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <CardTitle>{title}</CardTitle>
-          {showUploadButton && (
-            <Button
-              onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2 w-full sm:w-auto"
-              size="sm"
-            >
-              <Upload className="h-4 w-4" />
-              Upload Options Data
-            </Button>
+          {showActions && (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <Button
+                onClick={() => setShowUploadModal(true)}
+                className="flex items-center gap-2 w-full sm:w-auto"
+                size="sm"
+              >
+                <Upload className="h-4 w-4" />
+                Upload Options Data
+              </Button>
+              <Button
+                onClick={handleRunAIStrategy}
+                disabled={isRunningAI}
+                className="flex items-center gap-2 w-full sm:w-auto"
+                size="sm"
+                variant="outline"
+              >
+                <Sparkles className="h-4 w-4" />
+                {isRunningAI ? "Running..." : "Run AI Strategy"}
+              </Button>
+            </div>
           )}
         </div>
       </CardHeader>
@@ -407,7 +453,7 @@ export default function OptionsTable({
           <DataTable data={filteredOptions} columns={columns} />
         </div>
 
-        {showUploadButton && (
+        {showActions && (
           <OptionsUploadModal
             open={showUploadModal}
             onOpenChange={setShowUploadModal}

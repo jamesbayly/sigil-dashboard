@@ -5,7 +5,7 @@ export default function OptionsView() {
     <div className="space-y-6">
       <OptionsTable
         title="Options Data"
-        showUploadButton={true}
+        showActions={true}
         showFilters={true}
       />
     </div>

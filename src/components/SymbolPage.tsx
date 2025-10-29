@@ -494,7 +494,7 @@ export default function SymbolPage() {
               <OptionsTable
                 globalSymbolFilter={symbol.id}
                 title=""
-                showUploadButton={false}
+                showActions={false}
                 showFilters={true}
               />
             </div>
