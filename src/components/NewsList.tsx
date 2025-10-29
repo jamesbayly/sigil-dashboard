@@ -64,12 +64,14 @@ export default function NewsList() {
       cell: ({ row }) => {
         const type = row.original.type;
         const color =
-          type === "PREMARKET"
+          type === NewsType.PREMARKET
             ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-            : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+            : type === NewsType.GENERAL_NEWS
+            ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
         return (
           <Badge className={color} variant="outline">
-            {type === "PREMARKET" ? "Premarket" : "Intraday Options"}
+            {type}
           </Badge>
         );
       },
