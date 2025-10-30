@@ -11,6 +11,7 @@ import SymbolPage from "./components/SymbolPage";
 import OptionsView from "./components/Options";
 import NewsList from "./components/NewsList";
 import NewsDetail from "./components/NewsDetail";
+import ParsedNews from "./components/ParsedNews";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="news" element={<NewsList />} />
           <Route path="news/create" element={<NewsDetail />} />
           <Route path="news/:id" element={<NewsDetail />} />
+          <Route path="parsed-news" element={<ParsedNews />} />
         </Route>
       </Routes>
     </BrowserRouter>

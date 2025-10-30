@@ -24,6 +24,7 @@ export default function Nav() {
     { to: "/symbols", label: "Symbols" },
     { to: "/options", label: "Options" },
     { to: "/news", label: "News" },
+    { to: "/parsed-news", label: "Parsed News" },
   ];
 
   return (

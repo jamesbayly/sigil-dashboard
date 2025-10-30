@@ -6,6 +6,8 @@ import {
   type SymbolsResponse,
 } from "@/types";
 import SymbolPopover from "./SymbolPopover";
+import { Link } from "react-router-dom";
+import { Link2 } from "lucide-react";
 
 interface ParsedNewsListProps {
   parsedItems: NewsParsedResponse[];
@@ -95,16 +97,24 @@ export default function ParsedNewsList({
                 </div>
               )}
 
-              {item.source_link && (
-                <a
-                  href={item.source_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <div className="flex gap-4 items-center">
+                {item.source_link && (
+                  <Link
+                    to={item.source_link}
+                    target="_blank"
+                    className="text-xs text-blue-500 hover:underline mt-2 inline-block"
+                  >
+                    Source <Link2 className="inline-block ml-1 w-4 h-4" />
+                  </Link>
+                )}
+
+                <Link
+                  to={`/news/${item.news_id}`}
                   className="text-xs text-blue-500 hover:underline mt-2 inline-block"
                 >
-                  Source
-                </a>
-              )}
+                  Original News Record
+                </Link>
+              </div>
             </CardContent>
           </Card>
         ))}
