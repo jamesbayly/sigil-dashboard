@@ -502,7 +502,7 @@ export default function SymbolPage() {
         )}
 
         {/* Show parsed news when editing existing symbol */}
-        {existingSymbol && symbol && !parsedNewsLoading && (
+        {existingSymbol && symbol && !parsedNewsLoading && parsedNews && (
           <div className="space-y-4">
             <h2 className="text-lg sm:text-xl font-semibold">
               Parsed News for {symbol.name} ({symbol.symbol})
@@ -519,22 +519,25 @@ export default function SymbolPage() {
           </div>
         )}
 
-        {existingSymbol && symbol && !parsedNewsLoading && (
-          <div className="space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold">
-              Related Industry News for {symbol.name} ({symbol.symbol})
-            </h2>
-            {relatedIndustryNews.length > 0 ? (
-              <ParsedNewsList
-                parsedItems={relatedIndustryNews}
-                symbols={symbols}
-                title=""
-              />
-            ) : (
-              <p>No related industry news items found.</p>
-            )}
-          </div>
-        )}
+        {existingSymbol &&
+          symbol &&
+          !parsedNewsLoading &&
+          relatedIndustryNews && (
+            <div className="space-y-4">
+              <h2 className="text-lg sm:text-xl font-semibold">
+                Related Industry News for {symbol.name} ({symbol.symbol})
+              </h2>
+              {relatedIndustryNews.length > 0 ? (
+                <ParsedNewsList
+                  parsedItems={relatedIndustryNews}
+                  symbols={symbols}
+                  title=""
+                />
+              ) : (
+                <p>No related industry news items found.</p>
+              )}
+            </div>
+          )}
       </div>
     </div>
   );
