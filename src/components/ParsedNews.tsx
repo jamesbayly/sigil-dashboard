@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParsedNews } from "@/hooks/useParsedNews";
 import { useSymbols } from "@/hooks/useSymbols";
+import { useIndustries } from "@/hooks/useIndustries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
@@ -18,12 +19,14 @@ type TimeRange = "24h" | "3d" | "7d" | "all";
 export default function ParsedNews() {
   const [typeFilter, setTypeFilter] = useState<NewsType | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
+  const [industryFilter, setIndustryFilter] = useState<number | undefined>();
   const [timeRange, setTimeRange] = useState<TimeRange>("3d");
-  const { parsedNews, relatedIndustryNews, isLoading, error } = useParsedNews(
+  const { parsedNews, isLoading, error } = useParsedNews(
     symbolFilter,
     typeFilter
   );
   const { symbols } = useSymbols();
+  const { industries } = useIndustries();
 
   // Filter news by time range
   const filterByTimeRange = useMemo(() => {
@@ -49,15 +52,22 @@ export default function ParsedNews() {
     };
   }, [timeRange]);
 
-  const filteredParsedNews = useMemo(
-    () => filterByTimeRange(parsedNews),
-    [parsedNews, filterByTimeRange]
-  );
+  // Filter news by industry tag
+  const filterByIndustry = useMemo(() => {
+    return (items: NewsParsedResponse[]) => {
+      if (!industryFilter) return items;
+      return items.filter((item) =>
+        item.industry_tags?.some((tag) => tag.id === industryFilter)
+      );
+    };
+  }, [industryFilter]);
 
-  const filteredRelatedIndustryNews = useMemo(
-    () => filterByTimeRange(relatedIndustryNews),
-    [relatedIndustryNews, filterByTimeRange]
-  );
+  const filteredParsedNews = useMemo(() => {
+    let filtered = parsedNews;
+    filtered = filterByTimeRange(filtered);
+    filtered = filterByIndustry(filtered);
+    return filtered;
+  }, [parsedNews, filterByTimeRange, filterByIndustry]);
 
   return (
     <div className="space-y-6">
@@ -135,6 +145,33 @@ export default function ParsedNews() {
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="w-full sm:w-auto">
+              <Label>Industry</Label>
+              <Select
+                value={industryFilter?.toString()}
+                onValueChange={(v) =>
+                  setIndustryFilter(v === "ALL" ? undefined : Number(v))
+                }
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="All Industries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All Industries</SelectItem>
+                  {industries
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((industry) => (
+                      <SelectItem
+                        key={industry.id}
+                        value={industry.id.toString()}
+                      >
+                        {industry.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -166,24 +203,15 @@ export default function ParsedNews() {
             />
           )}
 
-          {filteredRelatedIndustryNews.length > 0 && (
-            <ParsedNewsList
-              parsedItems={filteredRelatedIndustryNews}
-              symbols={symbols}
-              title="Related Industry News"
-            />
+          {filteredParsedNews.length === 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground text-center">
+                  No parsed news items found for the selected filters.
+                </p>
+              </CardContent>
+            </Card>
           )}
-
-          {filteredParsedNews.length === 0 &&
-            filteredRelatedIndustryNews.length === 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground text-center">
-                    No parsed news items found for the selected filters.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
         </>
       )}
     </div>
