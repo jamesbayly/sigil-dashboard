@@ -10,9 +10,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NewsType, NewsParsedResponse } from "@/types";
 import ParsedNewsList from "./ParsedNewsList";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type TimeRange = "24h" | "3d" | "7d" | "all";
 
@@ -21,6 +37,8 @@ export default function ParsedNews() {
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [industryFilter, setIndustryFilter] = useState<number | undefined>();
   const [timeRange, setTimeRange] = useState<TimeRange>("3d");
+  const [symbolOpen, setSymbolOpen] = useState(false);
+  const [industryOpen, setIndustryOpen] = useState(false);
   const { parsedNews, isLoading, error } = useParsedNews(
     symbolFilter,
     typeFilter
@@ -124,53 +142,134 @@ export default function ParsedNews() {
 
             <div className="w-full sm:w-auto">
               <Label>Symbol</Label>
-              <Select
-                value={symbolFilter?.toString()}
-                onValueChange={(v) =>
-                  setSymbolFilter(v === "ALL" ? undefined : Number(v))
-                }
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="All Symbols" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Symbols</SelectItem>
-                  {symbols
-                    .sort((a, b) => a.symbol.localeCompare(b.symbol))
-                    .map((symbol) => (
-                      <SelectItem key={symbol.id} value={symbol.id.toString()}>
-                        {symbol.symbol}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Popover open={symbolOpen} onOpenChange={setSymbolOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={symbolOpen}
+                    className="w-full sm:w-[200px] justify-between"
+                  >
+                    {symbolFilter
+                      ? symbols.find((s) => s.id === symbolFilter)?.symbol
+                      : "All Symbols"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search symbol..." />
+                    <CommandList>
+                      <CommandEmpty>No symbol found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="all-symbols"
+                          onSelect={() => {
+                            setSymbolFilter(undefined);
+                            setSymbolOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              !symbolFilter ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          All Symbols
+                        </CommandItem>
+                        {symbols
+                          .sort((a, b) => a.symbol.localeCompare(b.symbol))
+                          .map((symbol) => (
+                            <CommandItem
+                              key={symbol.id}
+                              value={symbol.symbol}
+                              onSelect={() => {
+                                setSymbolFilter(symbol.id);
+                                setSymbolOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  symbolFilter === symbol.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {symbol.symbol}
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div className="w-full sm:w-auto">
               <Label>Industry</Label>
-              <Select
-                value={industryFilter?.toString()}
-                onValueChange={(v) =>
-                  setIndustryFilter(v === "ALL" ? undefined : Number(v))
-                }
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue placeholder="All Industries" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Industries</SelectItem>
-                  {industries
-                    .sort((a, b) => a.name.localeCompare(b.name))
-                    .map((industry) => (
-                      <SelectItem
-                        key={industry.id}
-                        value={industry.id.toString()}
-                      >
-                        {industry.name}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
+              <Popover open={industryOpen} onOpenChange={setIndustryOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={industryOpen}
+                    className="w-full sm:w-[600px] justify-between"
+                  >
+                    {industryFilter
+                      ? industries.find((i) => i.id === industryFilter)?.name
+                      : "All Industries"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[800px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search industry..." />
+                    <CommandList>
+                      <CommandEmpty>No industry found.</CommandEmpty>
+                      <CommandGroup>
+                        <CommandItem
+                          value="all-industries"
+                          onSelect={() => {
+                            setIndustryFilter(undefined);
+                            setIndustryOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              !industryFilter ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          All Industries
+                        </CommandItem>
+                        {industries
+                          .sort((a, b) => a.name.localeCompare(b.name))
+                          .map((industry) => (
+                            <CommandItem
+                              key={industry.id}
+                              value={industry.name}
+                              onSelect={() => {
+                                setIndustryFilter(industry.id);
+                                setIndustryOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  industryFilter === industry.id
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                )}
+                              />
+                              {industry.name}
+                            </CommandItem>
+                          ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         </CardContent>
