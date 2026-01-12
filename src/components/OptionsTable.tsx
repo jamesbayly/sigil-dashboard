@@ -1,67 +1,24 @@
-import { useState } from "react";
-import { useOptionsData } from "@/hooks/useOptionsData";
 import { useSymbols } from "@/hooks/useSymbols";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
-import { ArrowUpDown, Upload, Sparkles } from "lucide-react";
-import OptionsUploadModal from "./OptionsUploadModal";
+import { ArrowUpDown } from "lucide-react";
 import type { OptionsDataResponse } from "@/types";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
-import SymbolSelector from "./SymbolSelector";
-import { runAIDailyStockStrategy } from "@/utils/api";
-import { toast } from "sonner";
 
 interface OptionsTableProps {
-  title?: string;
-  showActions?: boolean;
-  globalSymbolFilter?: number;
-  showFilters?: boolean;
+  data: OptionsDataResponse[];
+  isSymbolFiltered: boolean;
 }
 
 export default function OptionsTable({
-  title = "Options Data",
-  showActions = false,
-  globalSymbolFilter,
-  showFilters = true,
+  data,
+  isSymbolFiltered,
 }: OptionsTableProps) {
   const { symbols } = useSymbols();
-  const [typeFilter, setTypeFilter] = useState<string>("ALL");
-  const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [isRunningAI, setIsRunningAI] = useState(false);
-
-  const { optionsData, isLoading, error, isCreating, createOptions } =
-    useOptionsData(globalSymbolFilter);
-
-  const handleRunAIStrategy = async () => {
-    setIsRunningAI(true);
-    try {
-      const result = await runAIDailyStockStrategy();
-      if ("message" in result) {
-        toast.success(
-          result.message || "AI daily stock strategy completed successfully!"
-        );
-      } else {
-        toast.success("AI daily stock strategy completed!");
-      }
-    } catch (error) {
-      toast.error("An error occurred while running the AI strategy");
-      console.error("AI Strategy error:", error);
-    } finally {
-      setIsRunningAI(false);
-    }
-  };
 
   const formatCurrency = (num: number | undefined, showZeros = true) => {
     if (num === undefined || num === null) return "N/A";
@@ -112,7 +69,7 @@ export default function OptionsTable({
       },
     },
     // Only show symbol column if not filtered to a specific symbol
-    ...(globalSymbolFilter
+    ...(isSymbolFiltered
       ? []
       : ([
           {
@@ -202,7 +159,17 @@ export default function OptionsTable({
         );
       },
       cell: ({ row }) => {
-        return formatDate(row.original.expiration_date);
+        const exp = row.original.expiration_date;
+        const isExpired = exp ? new Date(exp) < new Date() : false;
+        return (
+          <span
+            className={
+              isExpired ? "text-red-700 dark:text-red-300 font-semibold" : ""
+            }
+          >
+            {formatDate(exp)}
+          </span>
+        );
       },
     },
     {
@@ -279,79 +246,12 @@ export default function OptionsTable({
     },
   ];
 
-  // Filter options based on type, symbol, and global symbol filter
-  const filteredOptions = optionsData.filter((option) => {
-    const typeMatch = typeFilter === "ALL" || option.type === typeFilter;
-    const symbolMatch =
-      symbolFilter === undefined || option.symbol_id === symbolFilter;
-    const globalSymbolMatch =
-      !globalSymbolFilter || option.symbol_id === globalSymbolFilter;
-    return typeMatch && symbolMatch && globalSymbolMatch;
-  });
-
-  if (isLoading) {
+  if (data.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg">Loading options data...</div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex justify-center items-center h-64">
-            <div className="text-lg text-red-600">Error: {error.message}</div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (filteredOptions.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <CardTitle>{title}</CardTitle>
-            {showActions && (
-              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <Button
-                  onClick={() => setShowUploadModal(true)}
-                  className="flex items-center gap-2 w-full sm:w-auto"
-                  size="sm"
-                >
-                  <Upload className="h-4 w-4" />
-                  Upload Options Data
-                </Button>
-                <Button
-                  onClick={handleRunAIStrategy}
-                  disabled={isRunningAI}
-                  className="flex items-center gap-2 w-full sm:w-auto"
-                  size="sm"
-                  variant="outline"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  {isRunningAI ? "Running..." : "Run AI Strategy"}
-                </Button>
-              </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center text-muted-foreground py-8">
-            No options data available for this symbol.
+        <CardContent className="py-8">
+          <div className="text-center text-muted-foreground">
+            No options data available.
           </div>
         </CardContent>
       </Card>
@@ -360,107 +260,8 @@ export default function OptionsTable({
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <CardTitle>{title}</CardTitle>
-          {showActions && (
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                onClick={() => setShowUploadModal(true)}
-                className="flex items-center gap-2 w-full sm:w-auto"
-                size="sm"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Options Data
-              </Button>
-              <Button
-                onClick={handleRunAIStrategy}
-                disabled={isRunningAI}
-                className="flex items-center gap-2 w-full sm:w-auto"
-                size="sm"
-                variant="outline"
-              >
-                <Sparkles className="h-4 w-4" />
-                {isRunningAI ? "Running..." : "Run AI Strategy"}
-              </Button>
-            </div>
-          )}
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {showFilters && !globalSymbolFilter && (
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-              <span className="text-sm font-medium whitespace-nowrap">
-                Filter by Type:
-              </span>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-[150px]">
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="CALL_BUY">Call Buy</SelectItem>
-                  <SelectItem value="CALL_SELL">Call Sell</SelectItem>
-                  <SelectItem value="PUT_BUY">Put Buy</SelectItem>
-                  <SelectItem value="PUT_SELL">Put Sell</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-              <span className="text-sm font-medium whitespace-nowrap">
-                Filter by Symbol:
-              </span>
-              <SymbolSelector
-                value={symbolFilter}
-                onChange={setSymbolFilter}
-                showLabel={false}
-                className="w-full sm:w-[200px]"
-                filterType="STOCK"
-                showName={true}
-              />
-            </div>
-          </div>
-        )}
-
-        {showFilters && globalSymbolFilter && (
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-              <span className="text-sm font-medium whitespace-nowrap">
-                Filter by Type:
-              </span>
-              <Select value={typeFilter} onValueChange={setTypeFilter}>
-                <SelectTrigger className="w-full sm:w-[150px]">
-                  <SelectValue placeholder="All Types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All Types</SelectItem>
-                  <SelectItem value="CALL_BUY">Call Buy</SelectItem>
-                  <SelectItem value="CALL_SELL">Call Sell</SelectItem>
-                  <SelectItem value="PUT_BUY">Put Buy</SelectItem>
-                  <SelectItem value="PUT_SELL">Put Sell</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
-
-        <div className="text-sm text-muted-foreground">
-          Showing {filteredOptions.length} of {optionsData.length} options
-        </div>
-
-        <div>
-          <DataTable data={filteredOptions} columns={columns} />
-        </div>
-
-        {showActions && (
-          <OptionsUploadModal
-            open={showUploadModal}
-            onOpenChange={setShowUploadModal}
-            createOptions={createOptions}
-            isCreating={isCreating}
-          />
-        )}
+      <CardContent className="pt-6">
+        <DataTable data={data} columns={columns} />
       </CardContent>
     </Card>
   );

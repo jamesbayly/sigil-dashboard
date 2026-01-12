@@ -31,11 +31,12 @@ import { useParsedNews } from "@/hooks/useParsedNews";
 import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useOptionsData } from "@/hooks/useOptionsData";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  symbol_type: z.nativeEnum(SymbolType),
+  symbol_type: z.enum(SymbolType),
   symbol: z.string().min(1, "Symbol is required").max(20),
   binance_ticker: z.string().max(20).optional(),
   cg_id: z.string().optional(),
@@ -54,6 +55,11 @@ export default function SymbolPage() {
     isLoading: symbolLoading,
   } = useSymbol(symbolId);
   const { symbols } = useSymbols();
+  const {
+    optionsData,
+    isLoading: optionsLoading,
+    error: optionsError,
+  } = useOptionsData(symbolId);
 
   // Memoize industry IDs to prevent unnecessary re-renders
   const industryIds = useMemo(
@@ -491,12 +497,15 @@ export default function SymbolPage() {
               <h2 className="text-lg sm:text-xl font-semibold">
                 Options for {symbol.name} ({symbol.symbol})
               </h2>
-              <OptionsTable
-                globalSymbolFilter={symbol.id}
-                title=""
-                showActions={false}
-                showFilters={true}
-              />
+              {optionsLoading ? (
+                <div>Loading options data...</div>
+              ) : optionsError ? (
+                <div className="text-red-600">
+                  Error loading options data: {optionsError.message}
+                </div>
+              ) : (
+                <OptionsTable isSymbolFiltered={true} data={optionsData} />
+              )}
             </div>
           </>
         )}

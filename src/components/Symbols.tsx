@@ -20,7 +20,7 @@ import { getNumberStyling } from "@/lib/utils";
 export default function SymbolsView() {
   const navigate = useNavigate();
   const { symbols } = useSymbols();
-  const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [typeFilter, setTypeFilter] = useState<string>("STOCK");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const formatNumber = (num: number | undefined) => {
