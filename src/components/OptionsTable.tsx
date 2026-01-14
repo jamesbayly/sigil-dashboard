@@ -140,7 +140,7 @@ export default function OptionsTable({
         );
       },
       cell: ({ row }) => (
-        <span className={getNumberStyling(row.original.score, 20)}>
+        <span className={getNumberStyling(row.original.score, 10)}>
           {(row.original.score || 0).toFixed(2)}
         </span>
       ),
