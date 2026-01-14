@@ -25,6 +25,7 @@ export default function Nav() {
     { to: "/options", label: "Options" },
     { to: "/news", label: "News" },
     { to: "/parsed-news", label: "Parsed News" },
+    { to: "/polymarket", label: "Polymarket" },
   ];
 
   return (

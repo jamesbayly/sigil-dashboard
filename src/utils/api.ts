@@ -8,6 +8,8 @@ import {
   NewsType,
   OptionsDataRequest,
   OptionsDataResponse,
+  PolymarketMarketResponse,
+  PolymarketMarketsResponse,
   StrategyRequest,
   StrategyResponse,
   StrategyTestRunResponse,
@@ -274,4 +276,14 @@ export const runAIDailyStockStrategy = async () => {
     headers: { "Content-Type": "application/json" },
   });
   return (await res.json()) as GenericResponse;
+};
+
+export const getPolymarketMarkets = async () => {
+  const res = await fetch(`${BASE}/polymarkets`);
+  return (await res.json()) as PolymarketMarketsResponse[] | GenericResponse;
+};
+
+export const getPolymarketMarket = async (marketId: number) => {
+  const res = await fetch(`${BASE}/polymarkets/${marketId}`);
+  return (await res.json()) as PolymarketMarketResponse | GenericResponse;
 };

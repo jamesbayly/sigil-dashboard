@@ -13,6 +13,7 @@ export enum StrategyCodes {
   CRYPTO_STRATEGY_11 = "CRYPTO_STRATEGY_11",
   CRYPTO_STRATEGY_12 = "CRYPTO_STRATEGY_12",
   STOCK_STRATEGY_1 = "STOCK_STRATEGY_1",
+  AI_STOCK_STRATEGY_1 = "AI_STOCK_STRATEGY_1",
 }
 export enum StrategyStatus {
   ACTIVE = "active",
@@ -248,4 +249,37 @@ export interface NewsParsedResponse {
 export interface IndustryTag {
   id: number;
   name: string;
+}
+
+export interface PolymarketMarketsResponse {
+  id: number;
+  polymarket_market_id: string;
+  polymarket_condition_id: string;
+  title: string;
+  description: string;
+  category: string;
+  slug: string;
+  created_at: Date;
+  start_date: Date;
+  resolution_date: Date;
+  status: string;
+  insider_trading_score: number;
+  significant_trades_count: number;
+  latest_trade_date?: Date;
+}
+
+export interface PolymarketMarketResponse {
+  significant_trades: PolymarketTradeResponse[];
+}
+
+export interface PolymarketTradeResponse {
+  id: number;
+  transaction_hash: string;
+  market_id: number;
+  user_id: string;
+  user_trade_count: number;
+  outcome: string;
+  amount: number;
+  price: number;
+  trade_date: Date;
 }
