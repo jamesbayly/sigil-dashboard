@@ -1,17 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { getPolymarketMarket, getPolymarketMarkets } from "@/utils/api";
-import {
-  PolymarketMarketResponse,
-  PolymarketMarketsResponse,
-  isGenericResponse,
-} from "@/types";
+import { getPolymarketMarket } from "@/utils/api";
+import { PolymarketMarketResponse, isGenericResponse } from "@/types";
 import { toast } from "sonner";
 
 export function usePolymarketMarket(marketId?: number) {
-  const [marketInfo, setMarketInfo] =
-    useState<PolymarketMarketsResponse | null>(null);
-  const [marketTrades, setMarketTrades] =
-    useState<PolymarketMarketResponse | null>(null);
+  const [marketInfo, setMarketInfo] = useState<PolymarketMarketResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -24,11 +19,8 @@ export function usePolymarketMarket(marketId?: number) {
     try {
       setIsLoading(true);
 
-      // Fetch both the market list (to get full market info) and the specific market trades
-      const [marketsResponse, tradesResponse] = await Promise.all([
-        getPolymarketMarkets(),
-        getPolymarketMarket(marketId),
-      ]);
+      // Fetch the specific market info
+      const marketsResponse = await getPolymarketMarket(marketId);
 
       // Handle market info
       if (isGenericResponse(marketsResponse)) {
@@ -36,7 +28,7 @@ export function usePolymarketMarket(marketId?: number) {
         toast.error(marketsResponse.message);
         setMarketInfo(null);
       } else {
-        const market = marketsResponse.find((m) => m.id === marketId);
+        const market = marketsResponse;
         if (market) {
           setMarketInfo(market);
         } else {
@@ -45,22 +37,11 @@ export function usePolymarketMarket(marketId?: number) {
           setMarketInfo(null);
         }
       }
-
-      // Handle trades
-      if (isGenericResponse(tradesResponse)) {
-        setError(new Error(tradesResponse.message));
-        toast.error(tradesResponse.message);
-        setMarketTrades(null);
-      } else {
-        setMarketTrades(tradesResponse);
-        setError(null);
-      }
     } catch (err) {
       const error = err as Error;
       setError(error);
       toast.error(`Failed to fetch Polymarket market: ${error.message}`);
       setMarketInfo(null);
-      setMarketTrades(null);
     } finally {
       setIsLoading(false);
     }
@@ -70,5 +51,5 @@ export function usePolymarketMarket(marketId?: number) {
     fetchMarket();
   }, [fetchMarket]);
 
-  return { marketInfo, marketTrades, isLoading, error };
+  return { marketInfo, isLoading, error };
 }

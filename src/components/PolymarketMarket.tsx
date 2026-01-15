@@ -11,7 +11,7 @@ export default function PolymarketMarket() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const marketId = id ? parseInt(id, 10) : undefined;
-  const { marketInfo, marketTrades, isLoading } = usePolymarketMarket(marketId);
+  const { marketInfo, isLoading } = usePolymarketMarket(marketId);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const handleBack = () => {
@@ -26,7 +26,7 @@ export default function PolymarketMarket() {
     );
   }
 
-  if (!marketInfo || !marketTrades) {
+  if (!marketInfo) {
     return (
       <div className="space-y-6">
         <Button onClick={handleBack} variant="ghost" className="mb-4">
@@ -111,17 +111,17 @@ export default function PolymarketMarket() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Significant Trades ({marketTrades.significant_trades.length})
+            Significant Trades ({marketInfo.significant_trades.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {marketTrades.significant_trades.length === 0 ? (
+          {marketInfo.significant_trades.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No significant trades found for this market
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {marketTrades.significant_trades.map((trade) => (
+              {marketInfo.significant_trades.map((trade) => (
                 <TradeCard key={trade.id} trade={trade} />
               ))}
             </div>

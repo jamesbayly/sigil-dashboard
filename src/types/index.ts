@@ -256,8 +256,6 @@ export interface PolymarketMarketsResponse {
   polymarket_market_id: string;
   polymarket_condition_id: string;
   title: string;
-  description: string;
-  category: string;
   slug: string;
   created_at: Date;
   start_date: Date;
@@ -268,7 +266,9 @@ export interface PolymarketMarketsResponse {
   latest_trade_date?: Date;
 }
 
-export interface PolymarketMarketResponse {
+export interface PolymarketMarketResponse extends PolymarketMarketsResponse {
+  description: string;
+  category: string;
   significant_trades: PolymarketTradeResponse[];
 }
 
