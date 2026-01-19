@@ -13,6 +13,7 @@ export enum StrategyCodes {
   CRYPTO_STRATEGY_11 = "CRYPTO_STRATEGY_11",
   CRYPTO_STRATEGY_12 = "CRYPTO_STRATEGY_12",
   STOCK_STRATEGY_1 = "STOCK_STRATEGY_1",
+  STOCK_STRATEGY_2 = "STOCK_STRATEGY_2",
   AI_STOCK_STRATEGY_1 = "AI_STOCK_STRATEGY_1",
 }
 export enum StrategyStatus {
@@ -186,7 +187,7 @@ export interface SymbolRequest {
   symbol: string;
   binance_ticker: string;
   cg_id: string;
-  industry_tags: IndustryTag[];
+  industry_tags: IndustryTags[];
 }
 
 export interface SymbolsResponse extends SymbolRequest {
@@ -243,12 +244,18 @@ export interface NewsParsedResponse {
   date: Date;
   type: NewsType;
   source_link: string;
-  industry_tags: IndustryTag[];
+  industry_tags: IndustryTags[];
 }
 
-export interface IndustryTag {
+export interface IndustryTags {
   id: number;
   name: string;
+}
+
+export interface IndustryTagResponse extends IndustryTags {
+  related_industry_tags: IndustryTags[];
+  symbols: SymbolsResponse[];
+  news: NewsParsedResponse[];
 }
 
 export interface PolymarketMarketsResponse {

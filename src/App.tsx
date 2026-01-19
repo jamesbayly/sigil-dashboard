@@ -14,6 +14,8 @@ import NewsDetail from "./components/NewsDetail";
 import ParsedNews from "./components/ParsedNews";
 import PolymarketMarkets from "./components/PolymarketMarkets";
 import PolymarketMarket from "./components/PolymarketMarket";
+import Industries from "./components/Industries";
+import Industry from "./components/Industry";
 
 export default function App() {
   return (
@@ -38,6 +40,8 @@ export default function App() {
           <Route path="parsed-news" element={<ParsedNews />} />
           <Route path="polymarket" element={<PolymarketMarkets />} />
           <Route path="polymarket/:id" element={<PolymarketMarket />} />
+          <Route path="industries" element={<Industries />} />
+          <Route path="industries/:id" element={<Industry />} />
         </Route>
       </Routes>
     </BrowserRouter>

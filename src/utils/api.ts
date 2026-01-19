@@ -1,6 +1,7 @@
 import {
   GenericResponse,
-  IndustryTag,
+  IndustryTagResponse,
+  IndustryTags,
   MarketStateResponse,
   NewsParsedResponse,
   NewsRequest,
@@ -41,7 +42,7 @@ export const getHistoricTrades = async (
   start: Date | undefined,
   end: Date | undefined,
   strategyId?: number,
-  symbolId?: number
+  symbolId?: number,
 ) => {
   const params = new URLSearchParams({});
   if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
@@ -54,7 +55,7 @@ export const getHistoricTrades = async (
 
 export const getHistoricMarketState = async (
   start: Date | undefined,
-  end: Date | undefined
+  end: Date | undefined,
 ) => {
   const params = new URLSearchParams({});
   if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
@@ -108,7 +109,7 @@ export const createSymbol = async (payload: SymbolRequest) => {
 export const updateSymbol = async (
   payload: SymbolRequest & {
     id: number;
-  }
+  },
 ) => {
   const res = await fetch(`${BASE}/symbol`, {
     method: "PUT",
@@ -131,7 +132,7 @@ export const getTestRun = async (testRunID: number) => {
 export const createTestRun = async (
   strategyID: number,
   permutation_count: number | undefined,
-  symbol_ids: number[] | undefined
+  symbol_ids: number[] | undefined,
 ) => {
   const params = new URLSearchParams();
   if (permutation_count !== undefined) {
@@ -154,7 +155,7 @@ export const createTestRun = async (
 export const createTestRunForSymbol = async (
   strategyID: number,
   symbolID: number,
-  permutation_count: number | undefined
+  permutation_count: number | undefined,
 ) => {
   const res = await fetch(
     permutation_count
@@ -163,7 +164,7 @@ export const createTestRunForSymbol = async (
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-    }
+    },
   );
   return (await res.json()) as GenericResponse;
 };
@@ -177,7 +178,7 @@ export const deleteTestRun = async (testRunID: number) => {
 
 export const refreshTestRun = async (
   testRunID: number,
-  permutationID: number | undefined
+  permutationID: number | undefined,
 ) => {
   const res = await fetch(
     permutationID
@@ -186,7 +187,7 @@ export const refreshTestRun = async (
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-    }
+    },
   );
   return (await res.json()) as GenericResponse;
 };
@@ -249,7 +250,7 @@ export const getNews = async (newsId: number) => {
 export const getNewsParsed = async (
   symbolId?: number,
   type?: NewsType,
-  industry_ids?: number[]
+  industry_ids?: number[],
 ) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
@@ -267,7 +268,12 @@ export const getNewsParsed = async (
 
 export const getIndustries = async () => {
   const res = await fetch(`${BASE}/industry`);
-  return (await res.json()) as IndustryTag[] | GenericResponse;
+  return (await res.json()) as IndustryTags[] | GenericResponse;
+};
+
+export const getIndustry = async (id: number) => {
+  const res = await fetch(`${BASE}/industry/${id}`);
+  return (await res.json()) as IndustryTagResponse | GenericResponse;
 };
 
 export const runAIDailyStockStrategy = async () => {

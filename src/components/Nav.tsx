@@ -26,6 +26,7 @@ export default function Nav() {
     { to: "/news", label: "News" },
     { to: "/parsed-news", label: "Parsed News" },
     { to: "/polymarket", label: "Polymarket" },
+    { to: "/industries", label: "Industries" },
   ];
 
   return (

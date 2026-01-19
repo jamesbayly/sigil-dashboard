@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { getIndustries } from "@/utils/api";
-import { isGenericResponse, type IndustryTag } from "@/types";
+import { isGenericResponse, type IndustryTags } from "@/types";
 
 export const useIndustries = () => {
-  const [industries, setIndustries] = useState<IndustryTag[]>([]);
+  const [industries, setIndustries] = useState<IndustryTags[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -21,7 +21,7 @@ export const useIndustries = () => {
         }
       } catch (err) {
         setError(
-          err instanceof Error ? err : new Error("Failed to fetch industries")
+          err instanceof Error ? err : new Error("Failed to fetch industries"),
         );
         setIndustries([]);
       } finally {
