@@ -40,6 +40,7 @@ const symbolSchema = z.object({
   symbol: z.string().min(1, "Symbol is required").max(20),
   binance_ticker: z.string().max(20).optional(),
   cg_id: z.string().optional(),
+  description: z.string().optional(),
 });
 
 type SymbolFormValues = z.infer<typeof symbolSchema>;
@@ -64,7 +65,7 @@ export default function SymbolPage() {
   // Memoize industry IDs to prevent unnecessary re-renders
   const industryIds = useMemo(
     () => symbol?.industry_tags?.map((tag) => tag.id),
-    [symbol?.industry_tags]
+    [symbol?.industry_tags],
   );
 
   const {
@@ -84,6 +85,7 @@ export default function SymbolPage() {
       symbol: "",
       binance_ticker: undefined,
       cg_id: undefined,
+      description: "",
     },
   });
 
@@ -93,6 +95,7 @@ export default function SymbolPage() {
         ...values,
         binance_ticker: values.binance_ticker || "",
         cg_id: values.cg_id || "",
+        description: values.description || "",
         industry_tags: symbol?.industry_tags || [],
       };
 
@@ -127,6 +130,7 @@ export default function SymbolPage() {
         symbol: symbol.symbol,
         binance_ticker: symbol.binance_ticker || undefined,
         cg_id: symbol.cg_id || undefined,
+        description: symbol.description || "",
       });
     } else if (!existingSymbol) {
       form.reset({
@@ -135,6 +139,7 @@ export default function SymbolPage() {
         symbol: "",
         binance_ticker: "",
         cg_id: "",
+        description: "",
       });
     }
   }, [symbol, form, existingSymbol]);
@@ -220,6 +225,34 @@ export default function SymbolPage() {
                   )}
                 />
 
+                {isEditMode ? (
+                  <FormField
+                    name="description"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <textarea
+                            className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm"
+                            placeholder="Enter symbol description..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  symbol?.description && (
+                    <div className="space-y-2">
+                      <FormLabel>Description</FormLabel>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {symbol.description}
+                      </p>
+                    </div>
+                  )
+                )}
                 <FormField
                   name="symbol_type"
                   control={form.control}
@@ -340,6 +373,7 @@ export default function SymbolPage() {
                               symbol: symbol.symbol,
                               binance_ticker: symbol.binance_ticker,
                               cg_id: symbol.cg_id,
+                              description: symbol.description,
                             });
                           }
                         } else {
@@ -390,7 +424,7 @@ export default function SymbolPage() {
                   </div>
                   <div
                     className={`text-base sm:text-lg font-semibold ${getNumberStyling(
-                      symbol.day_change_percent
+                      symbol.day_change_percent,
                     )}`}
                   >
                     {(symbol.day_change_percent || 0) > 0 ? "+" : ""}
@@ -403,7 +437,7 @@ export default function SymbolPage() {
                   </div>
                   <div
                     className={`text-base sm:text-lg font-semibold ${getNumberStyling(
-                      symbol.hour_change_percent
+                      symbol.hour_change_percent,
                     )}`}
                   >
                     {(symbol.hour_change_percent || 0) > 0 ? "+" : ""}
@@ -479,14 +513,14 @@ export default function SymbolPage() {
                   </div>
                   <div
                     className={`text-lg sm:text-xl font-semibold ${getNumberStyling(
-                      symbol.option_score - symbol.option_score_prev
+                      symbol.option_score - symbol.option_score_prev,
                     )}`}
                   >
                     {symbol.option_score - symbol.option_score_prev > 0
                       ? "(Δ +"
                       : "(Δ "}
                     {(symbol.option_score - symbol.option_score_prev).toFixed(
-                      3
+                      3,
                     ) || "N/A"}
                     {")"}
                   </div>

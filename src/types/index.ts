@@ -187,6 +187,7 @@ export interface SymbolRequest {
   symbol: string;
   binance_ticker: string;
   cg_id: string;
+  description: string;
   industry_tags: IndustryTags[];
 }
 
