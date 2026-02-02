@@ -16,6 +16,7 @@ import {
   AlertDialogTrigger,
 } from "./ui/alert-dialog";
 import { useOpenTrades } from "@/hooks/useOpenTrades";
+import { useAuth } from "@/hooks/useAuth";
 
 interface TradeViewProps {
   trade: Trades | undefined;
@@ -24,6 +25,7 @@ interface TradeViewProps {
 
 const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
   const { onClose } = useOpenTrades();
+  const { isAuthenticated } = useAuth();
   const { symbols } = useSymbols();
   const symbol = symbols.find((s) => s.id === trade?.symbol_id);
 
@@ -37,7 +39,7 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
             Trade {trade?.id} - {symbol?.name}
           </DialogTitle>
           <DialogDescription>
-            {isOpen ? (
+            {isAuthenticated && isOpen ? (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button size="sm" variant="outline" className="text-red-600">

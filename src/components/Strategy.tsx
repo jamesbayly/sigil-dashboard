@@ -43,6 +43,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import TradesTable from "./TradesTable";
+import { useAuth } from "@/hooks/useAuth";
 
 // Zod schema for strategy parameter
 const parameterSchema = z.object({
@@ -70,6 +71,7 @@ type Mode = "create" | "edit";
 
 export default function StrategyView() {
   const { id } = useParams();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const mode: Mode = !id ? "create" : "edit";
   const [loading, setLoading] = useState(false);
@@ -83,7 +85,7 @@ export default function StrategyView() {
   const [permutationCount, setPermutationCount] = useState<string>("");
   const [isCreatingTestRun, setIsCreatingTestRun] = useState(false);
   const [selectedSymbolIds, setSelectedSymbolIds] = useState<string[]>(
-    strategy?.symbol_ids.map((s) => s.toString()) || []
+    strategy?.symbol_ids.map((s) => s.toString()) || [],
   ); // array for multi-select
 
   // Fetch strategy if editing
@@ -164,7 +166,7 @@ export default function StrategyView() {
         }
       } catch {
         toast.error(
-          "Invalid symbol IDs format. Please use a valid JSON array like [1,2,3]"
+          "Invalid symbol IDs format. Please use a valid JSON array like [1,2,3]",
         );
         return;
       }
@@ -231,14 +233,14 @@ export default function StrategyView() {
         result = await createTestRunForSymbol(
           strategy.id,
           symbolId,
-          permutations
+          permutations,
         );
       } else if (selectedSymbolIds.length > 1) {
         // Multiple symbols selected
         result = await createTestRun(
           strategy.id,
           permutations,
-          selectedSymbolIds.map((id) => parseInt(id))
+          selectedSymbolIds.map((id) => parseInt(id)),
         );
       } else {
         // All symbols (send no symbols)
@@ -251,7 +253,7 @@ export default function StrategyView() {
         let symbolName = "all symbols";
         if (selectedSymbolIds.length === 1) {
           const found = symbols.find(
-            (s) => s.id === parseInt(selectedSymbolIds[0])
+            (s) => s.id === parseInt(selectedSymbolIds[0]),
           );
           symbolName = found ? found.name : selectedSymbolIds[0];
         } else if (selectedSymbolIds.length > 1) {
@@ -277,7 +279,7 @@ export default function StrategyView() {
             <CardTitle className="text-lg sm:text-xl">
               {mode === "create" ? "Create Strategy" : `Edit Strategy #${id}`}
             </CardTitle>
-            {mode === "edit" && strategy && (
+            {isAuthenticated && mode === "edit" && strategy && (
               <Dialog
                 open={isTestRunDialogOpen}
                 onOpenChange={setIsTestRunDialogOpen}
@@ -559,7 +561,7 @@ export default function StrategyView() {
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : Number(e.target.value)
+                                        : Number(e.target.value),
                                     )
                                   }
                                 />
@@ -583,7 +585,7 @@ export default function StrategyView() {
                                     field.onChange(
                                       e.target.value === ""
                                         ? undefined
-                                        : Number(e.target.value)
+                                        : Number(e.target.value),
                                     )
                                   }
                                 />
@@ -606,24 +608,26 @@ export default function StrategyView() {
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full sm:w-auto"
-                >
-                  {mode === "create" ? "Create" : "Save"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate("/strategies")}
-                  disabled={loading}
-                  className="w-full sm:w-auto"
-                >
-                  Cancel
-                </Button>
-              </div>
+              {isAuthenticated && (
+                <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full sm:w-auto"
+                  >
+                    {mode === "create" ? "Create" : "Save"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate("/strategies")}
+                    disabled={loading}
+                    className="w-full sm:w-auto"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              )}
             </form>
           </Form>
         </CardContent>

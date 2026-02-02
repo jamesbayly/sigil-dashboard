@@ -15,8 +15,10 @@ import OptionsUploadModal from "./OptionsUploadModal";
 import SymbolSelector from "./SymbolSelector";
 import { runAIDailyStockStrategy } from "@/utils/api";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function OptionsView() {
+  const { isAuthenticated } = useAuth();
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -31,7 +33,7 @@ export default function OptionsView() {
       const result = await runAIDailyStockStrategy();
       if ("message" in result) {
         toast.success(
-          result.message || "AI daily stock strategy completed successfully!"
+          result.message || "AI daily stock strategy completed successfully!",
         );
       } else {
         toast.success("AI daily stock strategy completed!");
@@ -58,26 +60,28 @@ export default function OptionsView() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <CardTitle>Options Data</CardTitle>
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-              <Button
-                onClick={() => setShowUploadModal(true)}
-                className="flex items-center gap-2 w-full sm:w-auto"
-                size="sm"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Options Data
-              </Button>
-              <Button
-                onClick={handleRunAIStrategy}
-                disabled={isRunningAI}
-                className="flex items-center gap-2 w-full sm:w-auto"
-                size="sm"
-                variant="outline"
-              >
-                <Sparkles className="h-4 w-4" />
-                {isRunningAI ? "Running..." : "Run AI Strategy"}
-              </Button>
-            </div>
+            {isAuthenticated && (
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  onClick={() => setShowUploadModal(true)}
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                  size="sm"
+                >
+                  <Upload className="h-4 w-4" />
+                  Upload Options Data
+                </Button>
+                <Button
+                  onClick={handleRunAIStrategy}
+                  disabled={isRunningAI}
+                  className="flex items-center gap-2 w-full sm:w-auto"
+                  size="sm"
+                  variant="outline"
+                >
+                  <Sparkles className="h-4 w-4" />
+                  {isRunningAI ? "Running..." : "Run AI Strategy"}
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

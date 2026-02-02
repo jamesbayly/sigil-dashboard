@@ -9,21 +9,25 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function StrategiesView() {
   const { strategies, isLoading } = useStrategies();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Strategies</h2>
-        <Button
-          onClick={() => navigate("/strategies/create")}
-          className="w-full sm:w-auto"
-        >
-          Create Strategy
-        </Button>
+        {isAuthenticated && (
+          <Button
+            onClick={() => navigate("/strategies/create")}
+            className="w-full sm:w-auto"
+          >
+            Create Strategy
+          </Button>
+        )}
       </div>
       <div className="w-full overflow-x-auto rounded-md border">
         <Table className="min-w-full">

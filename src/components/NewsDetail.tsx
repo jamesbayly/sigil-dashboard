@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CalendarIcon, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Trash2, Edit2, X } from "lucide-react";
 import { format } from "date-fns";
 import {
   Form,
@@ -47,6 +47,7 @@ import { NewsType, type NewsRequest } from "@/types";
 import { cn } from "@/lib/utils";
 import SymbolSelector from "./SymbolSelector";
 import ParsedNewsList from "./ParsedNewsList";
+import { useAuth } from "@/hooks/useAuth";
 
 // Zod schema for news form
 const newsSchema = z.object({
@@ -64,6 +65,7 @@ type NewsFormValues = z.infer<typeof newsSchema>;
 
 export default function NewsDetail() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { id } = useParams<{ id: string }>();
   const newsId = id ? parseInt(id, 10) : undefined;
   const {
@@ -78,6 +80,7 @@ export default function NewsDetail() {
   const [isSaving, setIsSaving] = useState(false);
 
   const isEdit = !!id;
+  const [isEditMode, setIsEditMode] = useState(!isEdit); // For new news, always in edit mode
 
   const form = useForm<NewsFormValues>({
     resolver: zodResolver(newsSchema),
@@ -108,6 +111,9 @@ export default function NewsDetail() {
           ...newsData,
           parsed_items: newsItem.parsed_items,
         });
+        if (result) {
+          setIsEditMode(false); // Exit edit mode after successful update
+        }
       } else {
         result = await create(newsData);
       }
@@ -180,52 +186,78 @@ export default function NewsDetail() {
                 ? newsLoading
                   ? "Edit News: Loading..."
                   : newsItem
-                  ? `Edit News: #${newsItem.id}`
-                  : "Edit News: Not Found"
+                    ? `Edit News: #${newsItem.id}`
+                    : "Edit News: Not Found"
                 : "Create New News"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {isEdit
-                ? "Update the news information below"
+                ? isEditMode
+                  ? "Update the news information below"
+                  : "View news details"
                 : "Add a new news item to the system"}
             </p>
           </div>
         </div>
 
-        {/* Delete Button (only show when editing) */}
-        {isEdit && newsItem && (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full sm:w-auto"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete News Item</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this news item? This action
-                  cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          {/* Edit Button (only show when viewing existing news) */}
+          {isAuthenticated && isEdit && newsItem && (
+            <Button
+              variant={isEditMode ? "outline" : "default"}
+              size="sm"
+              onClick={() => setIsEditMode(!isEditMode)}
+              className="flex items-center gap-2 w-full sm:w-auto"
+            >
+              {isEditMode ? (
+                <>
+                  <X className="h-4 w-4" />
+                  Cancel Edit
+                </>
+              ) : (
+                <>
+                  <Edit2 className="h-4 w-4" />
+                  Edit News
+                </>
+              )}
+            </Button>
+          )}
+
+          {/* Delete Button (only show when editing) */}
+          {isAuthenticated && isEdit && newsItem && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full sm:w-auto"
                 >
-                  {isDeleting ? "Deleting..." : "Delete"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete News Item</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this news item? This action
+                    cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6">
@@ -253,8 +285,9 @@ export default function NewsDetail() {
                               variant="outline"
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}
+                              disabled={!isEditMode}
                             >
                               {field.value ? (
                                 format(new Date(field.value), "PPP")
@@ -272,10 +305,11 @@ export default function NewsDetail() {
                               }
                               onSelect={(date) => {
                                 field.onChange(
-                                  date ? format(date, "yyyy-MM-dd") : ""
+                                  date ? format(date, "yyyy-MM-dd") : "",
                                 );
                               }}
                               initialFocus
+                              disabled={!isEditMode}
                             />
                           </PopoverContent>
                         </Popover>
@@ -294,6 +328,7 @@ export default function NewsDetail() {
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}
+                            disabled={!isEditMode}
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select news type" />
@@ -329,6 +364,7 @@ export default function NewsDetail() {
                           onChange={field.onChange}
                           showLabel={false}
                           className="w-full"
+                          disabled={!isEditMode}
                         />
                       </FormControl>
                       <FormDescription>
@@ -349,6 +385,7 @@ export default function NewsDetail() {
                         <Input
                           placeholder="https://example.com/article"
                           {...field}
+                          disabled={!isEditMode}
                         />
                       </FormControl>
                       <FormDescription>
@@ -370,6 +407,7 @@ export default function NewsDetail() {
                           className="w-full min-h-[200px] p-3 rounded-md border border-input bg-background text-sm"
                           placeholder="Enter news content here..."
                           {...field}
+                          disabled={!isEditMode}
                         />
                       </FormControl>
                       <FormDescription>
@@ -379,31 +417,50 @@ export default function NewsDetail() {
                     </FormItem>
                   )}
                 />
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancel}
-                    disabled={isSaving}
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSaving}
-                    className="w-full sm:w-auto"
-                  >
-                    {isSaving
-                      ? isEdit
-                        ? "Updating..."
-                        : "Creating..."
-                      : isEdit
-                      ? "Update News"
-                      : "Create News"}
-                  </Button>
-                </div>
+                {isEditMode && (
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (isEdit) {
+                          setIsEditMode(false);
+                          // Reset form to original values
+                          if (newsItem) {
+                            form.reset({
+                              date: new Date(newsItem.date)
+                                .toISOString()
+                                .split("T")[0],
+                              type: newsItem.type,
+                              symbol_id: newsItem.symbol_id,
+                              source_link: newsItem.source_link,
+                              content: newsItem.content,
+                            });
+                          }
+                        } else {
+                          handleCancel();
+                        }
+                      }}
+                      disabled={isSaving}
+                      className="w-full sm:w-auto"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isSaving}
+                      className="w-full sm:w-auto"
+                    >
+                      {isSaving
+                        ? isEdit
+                          ? "Updating..."
+                          : "Creating..."
+                        : isEdit
+                          ? "Update News"
+                          : "Create News"}
+                    </Button>
+                  </div>
+                )}
               </form>
             </Form>
           </CardContent>

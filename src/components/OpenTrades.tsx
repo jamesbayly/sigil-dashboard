@@ -29,18 +29,20 @@ import { Link } from "react-router-dom";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
 import SymbolSelector from "./SymbolSelector";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function OpenTrades() {
   const { trades, onCloseAll } = useOpenTrades();
+  const { isAuthenticated } = useAuth();
   const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
   const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
-    undefined
+    undefined,
   );
 
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
-    "ALL"
+    "ALL",
   );
   const [strategyFilter, setStrategyFilter] = useState<number | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
@@ -159,7 +161,7 @@ export default function OpenTrades() {
           <span>
             $
             {parseFloat(
-              (row.original.size * row.original.open_price).toFixed(2)
+              (row.original.size * row.original.open_price).toFixed(2),
             ).toLocaleString()}
           </span>
         );
@@ -222,7 +224,7 @@ export default function OpenTrades() {
             {row.original.take_profit_price
               ? "$" +
                 parseFloat(
-                  row.original.take_profit_price.toFixed(2)
+                  row.original.take_profit_price.toFixed(2),
                 ).toLocaleString()
               : ""}
           </span>
@@ -272,6 +274,7 @@ export default function OpenTrades() {
       filtered = filtered.filter((t) => t.symbol_id === symbolFilter);
     }
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredTrades(filtered);
   }, [trades, tradeTypesFilter, strategyFilter, symbolFilter]);
 
@@ -279,28 +282,30 @@ export default function OpenTrades() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Open Trades</h2>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="destructive" className="w-full sm:w-auto">
-              Close All
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <p>
-              Are you sure you want to close ALL open trades (both real and
-              test)?
-            </p>
-            <AlertDialogAction
-              onClick={async () => {
-                setClosingAll(true);
-                await onCloseAll();
-                setClosingAll(false);
-              }}
-            >
-              {closingAll ? "Closing…" : "Yes, close all"}
-            </AlertDialogAction>
-          </AlertDialogContent>
-        </AlertDialog>
+        {isAuthenticated ?? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="w-full sm:w-auto">
+                Close All
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <p>
+                Are you sure you want to close ALL open trades (both real and
+                test)?
+              </p>
+              <AlertDialogAction
+                onClick={async () => {
+                  setClosingAll(true);
+                  await onCloseAll();
+                  setClosingAll(false);
+                }}
+              >
+                {closingAll ? "Closing…" : "Yes, close all"}
+              </AlertDialogAction>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
 
       {/* Filters */}

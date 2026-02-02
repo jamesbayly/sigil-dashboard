@@ -16,9 +16,11 @@ import { DataTable } from "./ui/data-table";
 import { ArrowUpDown, Search } from "lucide-react";
 import type { SymbolsResponse } from "@/types";
 import { getNumberStyling } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SymbolsView() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { symbols } = useSymbols();
   const [typeFilter, setTypeFilter] = useState<string>("STOCK");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -118,7 +120,7 @@ export default function SymbolsView() {
             </span>{" "}
             <span
               className={getNumberStyling(
-                row.original.option_score - row.original.option_score_prev
+                row.original.option_score - row.original.option_score_prev,
               )}
             >
               (Δ{" "}
@@ -235,9 +237,11 @@ export default function SymbolsView() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Symbols</h2>
-        <Button onClick={handleCreateSymbol} className="w-full sm:w-auto">
-          Create Symbol
-        </Button>
+        {isAuthenticated && (
+          <Button onClick={handleCreateSymbol} className="w-full sm:w-auto">
+            Create Symbol
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-4">

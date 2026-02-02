@@ -1,33 +1,46 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { DarkModeToggle } from "./DarkModeToggle";
-import { Menu } from "lucide-react";
+import { LoginDialog } from "./LoginDialog";
+import { useAuth } from "@/hooks/useAuth";
+import { Menu, LogIn, LogOut } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
 export default function Nav() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const { isAuthenticated, logout } = useAuth();
 
   // Helper function to determine if a route is active
   const isActive = (path: string) => {
     return (
       location.pathname === path ||
-      (location.pathname === "/" && path === "/open")
+      (location.pathname === "/" && path === "/symbols")
     );
   };
 
-  const navLinks = [
-    { to: "/open", label: "Open" },
-    { to: "/history", label: "History" },
-    { to: "/strategies", label: "Strategies" },
-    { to: "/tests", label: "Test Runs" },
-    { to: "/symbols", label: "Symbols" },
-    { to: "/options", label: "Options" },
-    { to: "/news", label: "News" },
-    { to: "/parsed-news", label: "Parsed News" },
-    { to: "/polymarket", label: "Polymarket" },
-    { to: "/industries", label: "Industries" },
-  ];
+  const navLinks = isAuthenticated
+    ? [
+        { to: "/open", label: "Open" },
+        { to: "/history", label: "History" },
+        { to: "/strategies", label: "Strategies" },
+        { to: "/tests", label: "Test Runs" },
+        { to: "/symbols", label: "Symbols" },
+        { to: "/options", label: "Options" },
+        { to: "/news", label: "News" },
+        { to: "/parsed-news", label: "Parsed News" },
+        { to: "/polymarket", label: "Polymarket" },
+        { to: "/industries", label: "Industries" },
+      ]
+    : [
+        { to: "/symbols", label: "Symbols" },
+        { to: "/options", label: "Options" },
+        { to: "/news", label: "News" },
+        { to: "/parsed-news", label: "Parsed News" },
+        { to: "/polymarket", label: "Polymarket" },
+        { to: "/industries", label: "Industries" },
+      ];
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -50,7 +63,30 @@ export default function Nav() {
               </Link>
             ))}
           </nav>
-          <DarkModeToggle />
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={logout}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsLoginDialogOpen(true)}
+                className="gap-2"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Button>
+            )}
+            <DarkModeToggle />
+          </div>
         </div>
 
         {/* Mobile Header */}
@@ -60,6 +96,25 @@ export default function Nav() {
               Sigil Trading
             </h1>
             <div className="flex items-center gap-2">
+              {isAuthenticated ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={logout}
+                  className="p-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsLoginDialogOpen(true)}
+                  className="p-2"
+                >
+                  <LogIn className="h-4 w-4" />
+                </Button>
+              )}
               <DarkModeToggle />
               <Button
                 variant="ghost"
@@ -97,6 +152,10 @@ export default function Nav() {
         {/* Content will be rendered by React Router */}
         <Outlet />
       </main>
+      <LoginDialog
+        open={isLoginDialogOpen}
+        onOpenChange={setIsLoginDialogOpen}
+      />
     </div>
   );
 }

@@ -32,6 +32,7 @@ import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useOptionsData } from "@/hooks/useOptionsData";
+import { useAuth } from "@/hooks/useAuth";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -47,6 +48,7 @@ type SymbolFormValues = z.infer<typeof symbolSchema>;
 
 export default function SymbolPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const { id } = useParams<{ id: string }>();
   const symbolId = id ? parseInt(id, 10) : undefined;
   const {
@@ -173,7 +175,7 @@ export default function SymbolPage() {
               : "Add a new symbol to the system"}
           </p>
         </div>
-        {existingSymbol && (
+        {isAuthenticated && existingSymbol && (
           <Button
             variant={isEditMode ? "outline" : "default"}
             size="sm"

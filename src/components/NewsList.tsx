@@ -18,9 +18,11 @@ import { useNavigate } from "react-router-dom";
 import { NewsResponse, NewsType } from "@/types";
 import { Badge } from "./ui/badge";
 import SymbolPopover from "./SymbolPopover";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function NewsList() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [typeFilter, setTypeFilter] = useState<NewsType | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const { news, isLoading, error } = useNews(symbolFilter, typeFilter);
@@ -67,8 +69,8 @@ export default function NewsList() {
           type === NewsType.PREMARKET
             ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
             : type === NewsType.GENERAL_NEWS
-            ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+              ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+              : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
         return (
           <Badge className={color} variant="outline">
             {type}
@@ -111,13 +113,15 @@ export default function NewsList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">News</h2>
-        <Button
-          onClick={() => navigate("/news/create")}
-          className="w-full sm:w-auto"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Create News
-        </Button>
+        {isAuthenticated ?? (
+          <Button
+            onClick={() => navigate("/news/create")}
+            className="w-full sm:w-auto"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Create News
+          </Button>
+        )}
       </div>
 
       {/* Filters */}

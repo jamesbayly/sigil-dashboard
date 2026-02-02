@@ -22,7 +22,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Nav />}>
-          <Route index element={<Navigate to="/open" replace />} />
+          <Route index element={<Navigate to="/symbols" replace />} />
           <Route path="open" element={<OpenTrades />} />
           <Route path="history" element={<HistoricTrades />} />
           <Route path="strategies" element={<StrategiesView />} />
