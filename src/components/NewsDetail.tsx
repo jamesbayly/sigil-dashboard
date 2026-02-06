@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, CalendarIcon, Trash2, Edit2, X } from "lucide-react";
+import { ArrowLeft, CalendarIcon, Trash2, Edit2, X, Plus } from "lucide-react";
 import { format } from "date-fns";
 import {
   Form,
@@ -52,7 +52,7 @@ import { useAuth } from "@/hooks/useAuth";
 // Zod schema for news form
 const newsSchema = z.object({
   date: z.string().min(1, "Date is required"),
-  type: z.nativeEnum(NewsType),
+  type: z.enum(NewsType),
   symbol_id: z.number().optional().nullable(),
   source_link: z
     .string()
@@ -126,6 +126,7 @@ export default function NewsDetail() {
       console.error("Failed to save news:", error);
     } finally {
       setIsSaving(false);
+      setIsEditMode(false);
     }
   };
 
@@ -199,65 +200,75 @@ export default function NewsDetail() {
             </p>
           </div>
         </div>
-
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          {/* Edit Button (only show when viewing existing news) */}
-          {isAuthenticated && isEdit && newsItem && (
+        {isAuthenticated && (
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button
-              variant={isEditMode ? "outline" : "default"}
+              variant="outline"
               size="sm"
-              onClick={() => setIsEditMode(!isEditMode)}
+              onClick={() => (window.location.href = "/news/create")}
               className="flex items-center gap-2 w-full sm:w-auto"
             >
-              {isEditMode ? (
-                <>
-                  <X className="h-4 w-4" />
-                  Cancel Edit
-                </>
-              ) : (
-                <>
-                  <Edit2 className="h-4 w-4" />
-                  Edit News
-                </>
-              )}
+              <Plus className="h-4 w-4" />
+              Create New
             </Button>
-          )}
+            {/* Edit Button (only show when viewing existing news) */}
+            {isEdit && newsItem && (
+              <Button
+                variant={isEditMode ? "outline" : "default"}
+                size="sm"
+                onClick={() => setIsEditMode(!isEditMode)}
+                className="flex items-center gap-2 w-full sm:w-auto"
+              >
+                {isEditMode ? (
+                  <>
+                    <X className="h-4 w-4" />
+                    Cancel Edit
+                  </>
+                ) : (
+                  <>
+                    <Edit2 className="h-4 w-4" />
+                    Edit News
+                  </>
+                )}
+              </Button>
+            )}
 
-          {/* Delete Button (only show when editing) */}
-          {isAuthenticated && isEdit && newsItem && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="w-full sm:w-auto"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete News Item</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this news item? This action
-                    cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            {/* Delete Button (only show when editing) */}
+            {isEdit && newsItem && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-full sm:w-auto"
                   >
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete News Item</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this news item? This
+                      action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      disabled={isDeleting}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6">

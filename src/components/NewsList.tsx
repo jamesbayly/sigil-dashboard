@@ -113,7 +113,7 @@ export default function NewsList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">News</h2>
-        {isAuthenticated ?? (
+        {isAuthenticated && (
           <Button
             onClick={() => navigate("/news/create")}
             className="w-full sm:w-auto"

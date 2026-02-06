@@ -282,7 +282,7 @@ export default function OpenTrades() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <h2 className="text-2xl font-semibold">Open Trades</h2>
-        {isAuthenticated ?? (
+        {isAuthenticated && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" className="w-full sm:w-auto">

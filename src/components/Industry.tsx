@@ -7,6 +7,7 @@ import { Badge } from "./ui/badge";
 import { DataTable } from "./ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { SymbolsResponse, NewsParsedResponse, IndustryTags } from "@/types";
+import IndustryPopover from "./IndustryPopover";
 
 export default function Industry() {
   const navigate = useNavigate();
@@ -188,14 +189,7 @@ export default function Industry() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {industry.related_industry_tags.map((tag: IndustryTags) => (
-                <Badge
-                  key={tag.id}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80"
-                  onClick={() => navigate(`/industries/${tag.id}`)}
-                >
-                  {tag.name}
-                </Badge>
+                <IndustryPopover key={tag.id} industry={tag} />
               ))}
             </div>
           </CardContent>

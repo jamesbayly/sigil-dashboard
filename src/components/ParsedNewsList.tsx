@@ -6,8 +6,10 @@ import {
   type SymbolsResponse,
 } from "@/types";
 import SymbolPopover from "./SymbolPopover";
+import IndustryPopover from "./IndustryPopover";
 import { Link } from "react-router-dom";
 import { Link2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ParsedNewsListProps {
   parsedItems: NewsParsedResponse[];
@@ -20,6 +22,8 @@ export default function ParsedNewsList({
   symbols,
   title,
 }: ParsedNewsListProps) {
+  const { isAuthenticated } = useAuth();
+
   const getSentimentColor = (sentiment: NewsSentiment) => {
     switch (sentiment) {
       case "VERY_POSITIVE":
@@ -90,15 +94,17 @@ export default function ParsedNewsList({
               {item.industry_tags && item.industry_tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-3">
                   {item.industry_tags.map((tag) => (
-                    <Badge key={tag.id} variant="secondary" className="text-xs">
-                      {tag.name}
-                    </Badge>
+                    <IndustryPopover
+                      key={tag.id}
+                      industry={tag}
+                      className="text-xs"
+                    />
                   ))}
                 </div>
               )}
 
               <div className="flex gap-4 items-center">
-                {item.source_link && (
+                {isAuthenticated && item.source_link && (
                   <Link
                     to={item.source_link}
                     target="_blank"

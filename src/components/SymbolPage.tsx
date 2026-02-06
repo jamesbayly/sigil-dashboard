@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSymbol } from "@/hooks/useSymbol";
 import { SymbolType, type SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
@@ -30,9 +31,9 @@ import ParsedNewsList from "./ParsedNewsList";
 import { useParsedNews } from "@/hooks/useParsedNews";
 import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { useOptionsData } from "@/hooks/useOptionsData";
 import { useAuth } from "@/hooks/useAuth";
+import IndustryPopover from "./IndustryPopover";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -149,7 +150,7 @@ export default function SymbolPage() {
   return (
     <div className="space-y-6">
       {/* Navigation Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <Button
           variant="ghost"
           size="sm"
@@ -159,22 +160,11 @@ export default function SymbolPage() {
           <ArrowLeft className="h-4 w-4" />
           Back to Symbols
         </Button>
-        <div className="flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold">
-            {existingSymbol
-              ? `Symbol: ${
-                  symbolLoading ? "Loading..." : symbol?.name || "Not Found"
-                }`
-              : "Create New Symbol"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {existingSymbol
-              ? isEditMode
-                ? "Update the symbol information below"
-                : "View symbol details"
-              : "Add a new symbol to the system"}
-          </p>
-        </div>
+        <h1 className="text-xl sm:text-2xl font-bold">
+          {existingSymbol
+            ? `${symbolLoading ? "Loading..." : symbol?.name + " (" + symbol?.symbol + ")" || "Not Found"}`
+            : "Create New Symbol"}
+        </h1>
         {isAuthenticated && existingSymbol && (
           <Button
             variant={isEditMode ? "outline" : "default"}
@@ -197,37 +187,426 @@ export default function SymbolPage() {
         )}
       </div>
 
-      <div className="space-y-6">
-        {/* Main Form Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Symbol Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <FormField
-                  name="name"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Bitcoin"
-                          {...field}
-                          disabled={!isEditMode}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+      {/* Tabs for existing symbols */}
+      {existingSymbol && symbol ? (
+        <Tabs defaultValue="details" className="space-y-6">
+          <TabsList
+            className={`grid w-full ${symbol.symbol_type === "STOCK" ? "grid-cols-4" : "grid-cols-3"}`}
+          >
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="trades">Trades</TabsTrigger>
+            {symbol.symbol_type === "STOCK" && (
+              <TabsTrigger value="options">Options</TabsTrigger>
+            )}
+            <TabsTrigger value="news">News</TabsTrigger>
+          </TabsList>
 
-                {isEditMode ? (
+          {/* Details Tab */}
+          <TabsContent value="details" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Symbol Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
+                    <FormField
+                      name="name"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Bitcoin"
+                              {...field}
+                              disabled={!isEditMode}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {isEditMode ? (
+                      <FormField
+                        name="description"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <textarea
+                                className="w-full min-h-[100px] p-3 rounded-md border border-input bg-background text-sm"
+                                placeholder="Enter symbol description..."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ) : (
+                      symbol?.description && (
+                        <div className="space-y-2">
+                          <FormLabel>Description</FormLabel>
+                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                            {symbol.description}
+                          </p>
+                        </div>
+                      )
+                    )}
+                    <FormField
+                      name="symbol_type"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Symbol Type</FormLabel>
+                          <FormControl>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              disabled={!isEditMode}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select symbol type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="CRYPTO">Crypto</SelectItem>
+                                <SelectItem value="STOCK">Stock</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        name="symbol"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Symbol</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="BTC"
+                                {...field}
+                                disabled={!isEditMode}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        name="binance_ticker"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Binance Ticker</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="BTCUSDT"
+                                {...field}
+                                disabled={!isEditMode}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      name="cg_id"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>CoinGecko ID</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="bitcoin"
+                              {...field}
+                              disabled={!isEditMode}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Industry Tags */}
+                    {existingSymbol && symbol && (
+                      <div className="space-y-2">
+                        <FormLabel>Industry Tags</FormLabel>
+                        <div className="flex flex-wrap gap-2">
+                          {symbol.industry_tags?.length > 0 ? (
+                            symbol.industry_tags.map((tag) => (
+                              <IndustryPopover key={tag.id} industry={tag} />
+                            ))
+                          ) : (
+                            <p className="text-xs">No industry tags found.</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {isEditMode && (
+                      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            if (existingSymbol) {
+                              setIsEditMode(false);
+                              // Reset form to original values
+                              if (symbol) {
+                                form.reset({
+                                  name: symbol.name,
+                                  symbol_type: symbol.symbol_type,
+                                  symbol: symbol.symbol,
+                                  binance_ticker: symbol.binance_ticker,
+                                  cg_id: symbol.cg_id,
+                                  description: symbol.description,
+                                });
+                              }
+                            } else {
+                              handleCancel();
+                            }
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="w-full sm:w-auto">
+                          {existingSymbol ? "Update Symbol" : "Create Symbol"}
+                        </Button>
+                      </div>
+                    )}
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+
+            {/* Current Symbol Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Symbol Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-sm">
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      Market Cap (M)
+                    </div>
+                    <div className="text-base sm:text-lg font-semibold">
+                      {symbol.market_cap?.toLocaleString() ?? "N/A"}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      CG Rank
+                    </div>
+                    <div className="text-base sm:text-lg font-semibold">
+                      {symbol.cg_rank ?? "N/A"}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      24h Change
+                    </div>
+                    <div
+                      className={`text-base sm:text-lg font-semibold ${getNumberStyling(
+                        symbol.day_change_percent,
+                      )}`}
+                    >
+                      {(symbol.day_change_percent || 0) > 0 ? "+" : ""}
+                      {(symbol.day_change_percent || 0).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      1h Change
+                    </div>
+                    <div
+                      className={`text-base sm:text-lg font-semibold ${getNumberStyling(
+                        symbol.hour_change_percent,
+                      )}`}
+                    >
+                      {(symbol.hour_change_percent || 0) > 0 ? "+" : ""}
+                      {(symbol.hour_change_percent || 0).toFixed(2)}%
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      Data Points
+                    </div>
+                    <div className="text-base sm:text-lg font-semibold">
+                      {symbol.count_data.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      Symbol ID
+                    </div>
+                    <div className="text-base sm:text-lg font-semibold">
+                      #{symbol.id}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      Earliest Date
+                    </div>
+                    <div className="text-base sm:text-lg font-semibold">
+                      {symbol.earliest_date
+                        ? new Date(symbol.earliest_date).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
+                      Latest Date
+                    </div>
+                    <div className="text-base sm:text-lg font-semibold">
+                      {symbol.latest_date
+                        ? new Date(symbol.latest_date).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Trades Tab */}
+          <TabsContent value="trades" className="space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold">
+              Trades for {symbol.name} ({symbol.symbol})
+            </h2>
+            <TradesTable globalSymbolFilter={symbol.id} title="" />
+          </TabsContent>
+
+          {/* Options Tab */}
+          {symbol.symbol_type === "STOCK" && (
+            <TabsContent value="options" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg sm:text-xl">
+                    Option Score
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                    <div className="text-2xl sm:text-3xl font-bold">
+                      <span className={getNumberStyling(symbol.option_score)}>
+                        {symbol.option_score.toFixed(3) || "N/A"}
+                      </span>
+                    </div>
+                    <div
+                      className={`text-lg sm:text-xl font-semibold ${getNumberStyling(
+                        symbol.option_score - symbol.option_score_prev,
+                      )}`}
+                    >
+                      {symbol.option_score - symbol.option_score_prev > 0
+                        ? "(Δ +"
+                        : "(Δ "}
+                      {(symbol.option_score - symbol.option_score_prev).toFixed(
+                        3,
+                      ) || "N/A"}
+                      {")"}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <h2 className="text-lg sm:text-xl font-semibold">
+                Options for {symbol.name} ({symbol.symbol})
+              </h2>
+              {optionsLoading ? (
+                <div>Loading options data...</div>
+              ) : optionsError ? (
+                <div className="text-red-600">
+                  Error loading options data: {optionsError.message}
+                </div>
+              ) : (
+                <OptionsTable isSymbolFiltered={true} data={optionsData} />
+              )}
+            </TabsContent>
+          )}
+
+          {/* News Tab */}
+          <TabsContent value="news" className="space-y-6">
+            {!parsedNewsLoading && parsedNews && (
+              <div className="space-y-4">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Parsed News for {symbol.name} ({symbol.symbol})
+                </h2>
+                {parsedNews.length > 0 ? (
+                  <ParsedNewsList
+                    parsedItems={parsedNews}
+                    symbols={symbols}
+                    title=""
+                  />
+                ) : (
+                  <p>No parsed news items found.</p>
+                )}
+              </div>
+            )}
+
+            {!parsedNewsLoading && relatedIndustryNews && (
+              <div className="space-y-4">
+                <h2 className="text-lg sm:text-xl font-semibold">
+                  Related Industry News for {symbol.name} ({symbol.symbol})
+                </h2>
+                {relatedIndustryNews.length > 0 ? (
+                  <ParsedNewsList
+                    parsedItems={relatedIndustryNews}
+                    symbols={symbols}
+                    title=""
+                  />
+                ) : (
+                  <p>No related industry news items found.</p>
+                )}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <div className="space-y-6">
+          {/* Main Form Card for creating new symbol */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Symbol Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-6"
+                >
+                  <FormField
+                    name="name"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Bitcoin"
+                            {...field}
+                            disabled={!isEditMode}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     name="description"
                     control={form.control}
@@ -245,345 +624,110 @@ export default function SymbolPage() {
                       </FormItem>
                     )}
                   />
-                ) : (
-                  symbol?.description && (
-                    <div className="space-y-2">
-                      <FormLabel>Description</FormLabel>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {symbol.description}
-                      </p>
-                    </div>
-                  )
-                )}
-                <FormField
-                  name="symbol_type"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Symbol Type</FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          disabled={!isEditMode}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select symbol type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="CRYPTO">Crypto</SelectItem>
-                            <SelectItem value="STOCK">Stock</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
-                    name="symbol"
+                    name="symbol_type"
                     control={form.control}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Symbol</FormLabel>
+                        <FormLabel>Symbol Type</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="BTC"
-                            {...field}
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
                             disabled={!isEditMode}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    name="binance_ticker"
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Binance Ticker</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="BTCUSDT"
-                            {...field}
-                            disabled={!isEditMode}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  name="cg_id"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>CoinGecko ID</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="bitcoin"
-                          {...field}
-                          disabled={!isEditMode}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* Industry Tags */}
-                {existingSymbol && symbol && (
-                  <div className="space-y-2">
-                    <FormLabel>Industry Tags</FormLabel>
-                    <div className="flex flex-wrap gap-2">
-                      {symbol.industry_tags?.length > 0 ? (
-                        symbol.industry_tags.map((tag) => (
-                          <Badge
-                            key={tag.id}
-                            variant="secondary"
-                            className="text-xs"
                           >
-                            {tag.name}
-                          </Badge>
-                        ))
-                      ) : (
-                        <p className="text-xs">No industry tags found.</p>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select symbol type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="CRYPTO">Crypto</SelectItem>
+                              <SelectItem value="STOCK">Stock</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      name="symbol"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Symbol</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="BTC"
+                              {...field}
+                              disabled={!isEditMode}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
+                    />
+
+                    <FormField
+                      name="binance_ticker"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Binance Ticker</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="BTCUSDT"
+                              {...field}
+                              disabled={!isEditMode}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    name="cg_id"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>CoinGecko ID</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="bitcoin"
+                            {...field}
+                            disabled={!isEditMode}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {isEditMode && (
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancel}
+                        className="w-full sm:w-auto"
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" className="w-full sm:w-auto">
+                        Create Symbol
+                      </Button>
                     </div>
-                  </div>
-                )}
-
-                {isEditMode && (
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        if (existingSymbol) {
-                          setIsEditMode(false);
-                          // Reset form to original values
-                          if (symbol) {
-                            form.reset({
-                              name: symbol.name,
-                              symbol_type: symbol.symbol_type,
-                              symbol: symbol.symbol,
-                              binance_ticker: symbol.binance_ticker,
-                              cg_id: symbol.cg_id,
-                              description: symbol.description,
-                            });
-                          }
-                        } else {
-                          handleCancel();
-                        }
-                      }}
-                      className="w-full sm:w-auto"
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="w-full sm:w-auto">
-                      {existingSymbol ? "Update Symbol" : "Create Symbol"}
-                    </Button>
-                  </div>
-                )}
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-
-        {/* Symbol Information Card (only show when editing) */}
-        {symbol && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Symbol Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-sm">
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    Market Cap (M)
-                  </div>
-                  <div className="text-base sm:text-lg font-semibold">
-                    {symbol.market_cap?.toLocaleString() ?? "N/A"}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    CG Rank
-                  </div>
-                  <div className="text-base sm:text-lg font-semibold">
-                    {symbol.cg_rank ?? "N/A"}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    24h Change
-                  </div>
-                  <div
-                    className={`text-base sm:text-lg font-semibold ${getNumberStyling(
-                      symbol.day_change_percent,
-                    )}`}
-                  >
-                    {(symbol.day_change_percent || 0) > 0 ? "+" : ""}
-                    {(symbol.day_change_percent || 0).toFixed(2)}%
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    1h Change
-                  </div>
-                  <div
-                    className={`text-base sm:text-lg font-semibold ${getNumberStyling(
-                      symbol.hour_change_percent,
-                    )}`}
-                  >
-                    {(symbol.hour_change_percent || 0) > 0 ? "+" : ""}
-                    {(symbol.hour_change_percent || 0).toFixed(2)}%
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    Data Points
-                  </div>
-                  <div className="text-base sm:text-lg font-semibold">
-                    {symbol.count_data.toLocaleString()}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    Symbol ID
-                  </div>
-                  <div className="text-base sm:text-lg font-semibold">
-                    #{symbol.id}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    Earliest Date
-                  </div>
-                  <div className="text-base sm:text-lg font-semibold">
-                    {symbol.earliest_date
-                      ? new Date(symbol.earliest_date).toLocaleDateString()
-                      : "N/A"}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                    Latest Date
-                  </div>
-                  <div className="text-base sm:text-lg font-semibold">
-                    {symbol.latest_date
-                      ? new Date(symbol.latest_date).toLocaleDateString()
-                      : "N/A"}
-                  </div>
-                </div>
-              </div>
+                  )}
+                </form>
+              </Form>
             </CardContent>
           </Card>
-        )}
-
-        {/* Show trades table when editing existing symbol */}
-        {existingSymbol && symbol && (
-          <div className="space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold">
-              Trades for {symbol.name} ({symbol.symbol})
-            </h2>
-            <TradesTable globalSymbolFilter={symbol.id} title="" />
-          </div>
-        )}
-
-        {/* Show options table when editing existing STOCK symbol */}
-        {existingSymbol && symbol && symbol.symbol_type === "STOCK" && (
-          <>
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg sm:text-xl">
-                  Option Score
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
-                  <div className="text-2xl sm:text-3xl font-bold">
-                    <span className={getNumberStyling(symbol.option_score)}>
-                      {symbol.option_score.toFixed(3) || "N/A"}
-                    </span>
-                  </div>
-                  <div
-                    className={`text-lg sm:text-xl font-semibold ${getNumberStyling(
-                      symbol.option_score - symbol.option_score_prev,
-                    )}`}
-                  >
-                    {symbol.option_score - symbol.option_score_prev > 0
-                      ? "(Δ +"
-                      : "(Δ "}
-                    {(symbol.option_score - symbol.option_score_prev).toFixed(
-                      3,
-                    ) || "N/A"}
-                    {")"}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <div className="space-y-4">
-              <h2 className="text-lg sm:text-xl font-semibold">
-                Options for {symbol.name} ({symbol.symbol})
-              </h2>
-              {optionsLoading ? (
-                <div>Loading options data...</div>
-              ) : optionsError ? (
-                <div className="text-red-600">
-                  Error loading options data: {optionsError.message}
-                </div>
-              ) : (
-                <OptionsTable isSymbolFiltered={true} data={optionsData} />
-              )}
-            </div>
-          </>
-        )}
-
-        {/* Show parsed news when editing existing symbol */}
-        {existingSymbol && symbol && !parsedNewsLoading && parsedNews && (
-          <div className="space-y-4">
-            <h2 className="text-lg sm:text-xl font-semibold">
-              Parsed News for {symbol.name} ({symbol.symbol})
-            </h2>
-            {parsedNews.length > 0 ? (
-              <ParsedNewsList
-                parsedItems={parsedNews}
-                symbols={symbols}
-                title=""
-              />
-            ) : (
-              <p>No parsed news items found.</p>
-            )}
-          </div>
-        )}
-
-        {existingSymbol &&
-          symbol &&
-          !parsedNewsLoading &&
-          relatedIndustryNews && (
-            <div className="space-y-4">
-              <h2 className="text-lg sm:text-xl font-semibold">
-                Related Industry News for {symbol.name} ({symbol.symbol})
-              </h2>
-              {relatedIndustryNews.length > 0 ? (
-                <ParsedNewsList
-                  parsedItems={relatedIndustryNews}
-                  symbols={symbols}
-                  title=""
-                />
-              ) : (
-                <p>No related industry news items found.</p>
-              )}
-            </div>
-          )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
