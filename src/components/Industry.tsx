@@ -6,8 +6,9 @@ import { useIndustry } from "@/hooks/useIndustry";
 import { Badge } from "./ui/badge";
 import { DataTable } from "./ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { SymbolsResponse, NewsParsedResponse, IndustryTags } from "@/types";
+import { SymbolsResponse, IndustryTags } from "@/types";
 import IndustryPopover from "./IndustryPopover";
+import ParsedNewsList from "./ParsedNewsList";
 
 export default function Industry() {
   const navigate = useNavigate();
@@ -100,63 +101,6 @@ export default function Industry() {
     },
   ];
 
-  const newsColumns: ColumnDef<NewsParsedResponse>[] = [
-    {
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ row }) => {
-        return (
-          <div className="text-sm">
-            {new Date(row.original.date).toLocaleDateString()}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "content",
-      header: "Content",
-      cell: ({ row }) => {
-        return (
-          <div className="max-w-md truncate text-sm">
-            {row.original.content}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "sentiment",
-      header: "Sentiment",
-      cell: ({ row }) => {
-        const sentiment = row.original.sentiment;
-        const colorMap = {
-          VERY_POSITIVE: "bg-green-600 text-white",
-          POSITIVE:
-            "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-          NEUTRAL:
-            "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-          NEGATIVE: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-          VERY_NEGATIVE: "bg-red-600 text-white",
-        };
-        return (
-          <Badge variant="outline" className={colorMap[sentiment]}>
-            {sentiment.replace("_", " ")}
-          </Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "type",
-      header: "Type",
-      cell: ({ row }) => {
-        return (
-          <Badge variant="outline" className="capitalize">
-            {row.original.type.replace("_", " ").toLowerCase()}
-          </Badge>
-        );
-      },
-    },
-  ];
-
   return (
     <div className="space-y-6">
       <Button onClick={handleBack} variant="ghost" className="mb-4">
@@ -223,7 +167,10 @@ export default function Industry() {
               No news found for this industry
             </div>
           ) : (
-            <DataTable data={industry.news} columns={newsColumns} />
+            <ParsedNewsList
+              parsedItems={industry.news}
+              symbols={industry.symbols}
+            />
           )}
         </CardContent>
       </Card>

@@ -102,25 +102,26 @@ export default function ParsedNewsList({
                   ))}
                 </div>
               )}
+              {isAuthenticated && (
+                <div className="flex gap-4 items-center">
+                  {item.source_link && (
+                    <Link
+                      to={item.source_link}
+                      target="_blank"
+                      className="text-xs text-blue-500 hover:underline mt-2 inline-block"
+                    >
+                      Source <Link2 className="inline-block ml-1 w-4 h-4" />
+                    </Link>
+                  )}
 
-              <div className="flex gap-4 items-center">
-                {isAuthenticated && item.source_link && (
                   <Link
-                    to={item.source_link}
-                    target="_blank"
+                    to={`/news/${item.news_id}`}
                     className="text-xs text-blue-500 hover:underline mt-2 inline-block"
                   >
-                    Source <Link2 className="inline-block ml-1 w-4 h-4" />
+                    Original News Record
                   </Link>
-                )}
-
-                <Link
-                  to={`/news/${item.news_id}`}
-                  className="text-xs text-blue-500 hover:underline mt-2 inline-block"
-                >
-                  Original News Record
-                </Link>
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

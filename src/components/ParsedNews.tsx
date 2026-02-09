@@ -36,12 +36,12 @@ export default function ParsedNews() {
   const [typeFilter, setTypeFilter] = useState<NewsType | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [industryFilter, setIndustryFilter] = useState<number | undefined>();
-  const [timeRange, setTimeRange] = useState<TimeRange>("3d");
+  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const [symbolOpen, setSymbolOpen] = useState(false);
   const [industryOpen, setIndustryOpen] = useState(false);
   const { parsedNews, isLoading, error } = useParsedNews(
     symbolFilter,
-    typeFilter
+    typeFilter,
   );
   const { symbols } = useSymbols();
   const { industries } = useIndustries();
@@ -75,7 +75,7 @@ export default function ParsedNews() {
     return (items: NewsParsedResponse[]) => {
       if (!industryFilter) return items;
       return items.filter((item) =>
-        item.industry_tags?.some((tag) => tag.id === industryFilter)
+        item.industry_tags?.some((tag) => tag.id === industryFilter),
       );
     };
   }, [industryFilter]);
@@ -172,7 +172,7 @@ export default function ParsedNews() {
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              !symbolFilter ? "opacity-100" : "opacity-0"
+                              !symbolFilter ? "opacity-100" : "opacity-0",
                             )}
                           />
                           All Symbols
@@ -193,7 +193,7 @@ export default function ParsedNews() {
                                   "mr-2 h-4 w-4",
                                   symbolFilter === symbol.id
                                     ? "opacity-100"
-                                    : "opacity-0"
+                                    : "opacity-0",
                                 )}
                               />
                               {symbol.symbol}
@@ -238,7 +238,7 @@ export default function ParsedNews() {
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              !industryFilter ? "opacity-100" : "opacity-0"
+                              !industryFilter ? "opacity-100" : "opacity-0",
                             )}
                           />
                           All Industries
@@ -259,7 +259,7 @@ export default function ParsedNews() {
                                   "mr-2 h-4 w-4",
                                   industryFilter === industry.id
                                     ? "opacity-100"
-                                    : "opacity-0"
+                                    : "opacity-0",
                                 )}
                               />
                               {industry.name}
