@@ -22,6 +22,23 @@ export default function Industries() {
 
   const columns: ColumnDef<IndustryTags>[] = [
     {
+      accessorKey: "theme",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Theme
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <div className="font-medium">{row.original.theme}</div>;
+      },
+    },
+    {
       accessorKey: "name",
       header: ({ column }) => {
         return (
@@ -29,30 +46,13 @@ export default function Industries() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Industry Name
+            Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         );
       },
       cell: ({ row }) => {
         return <div className="font-medium">{row.original.name}</div>;
-      },
-    },
-    {
-      accessorKey: "id",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            ID
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return <div className="text-center font-mono">{row.original.id}</div>;
       },
     },
   ];

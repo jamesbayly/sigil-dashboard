@@ -1,7 +1,13 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useIndustry } from "@/hooks/useIndustry";
 import { Badge } from "./ui/badge";
 import { DataTable } from "./ui/data-table";
@@ -111,15 +117,12 @@ export default function Industry() {
       {/* Industry Header */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">{industry.name}</CardTitle>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline">ID: {industry.id}</Badge>
-              </div>
-            </div>
-          </div>
+          <CardTitle className="text-2xl mb-2">{industry.name}</CardTitle>
+          <CardDescription>{industry.theme}</CardDescription>
         </CardHeader>
+        <CardContent>
+          <p>{industry.description}</p>
+        </CardContent>
       </Card>
 
       {/* Related Industries */}

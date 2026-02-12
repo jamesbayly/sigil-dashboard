@@ -42,8 +42,8 @@ export default function PolymarketMarket() {
     marketInfo.status === "active"
       ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
       : marketInfo.status === "closed"
-      ? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-      : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        ? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+        : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
 
   return (
     <div className="space-y-6">
@@ -195,7 +195,9 @@ export default function PolymarketMarket() {
                 Resolution Date
               </h3>
               <p className="text-sm">
-                {new Date(marketInfo.resolution_date).toLocaleDateString()}
+                {marketInfo.resolution_date
+                  ? new Date(marketInfo.resolution_date).toLocaleDateString()
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -255,8 +257,8 @@ function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
                 trade.outcome.toLowerCase() === "yes"
                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                   : trade.outcome.toLowerCase() === "no"
-                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                  : ""
+                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                    : ""
               }
             >
               {trade.outcome}

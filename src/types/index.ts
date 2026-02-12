@@ -250,11 +250,13 @@ export interface NewsParsedResponse {
 
 export interface IndustryTags {
   id: number;
+  theme: string;
   name: string;
 }
 
 export interface IndustryTagResponse extends IndustryTags {
   related_industry_tags: IndustryTags[];
+  description: string;
   symbols: SymbolsResponse[];
   news: NewsParsedResponse[];
 }
@@ -267,7 +269,7 @@ export interface PolymarketMarketsResponse {
   slug: string;
   created_at: Date;
   start_date: Date;
-  resolution_date: Date;
+  resolution_date: Date | undefined;
   status: string;
   insider_trading_score: number;
   significant_trades_count: number;
