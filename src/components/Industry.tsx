@@ -86,7 +86,9 @@ export default function Industry() {
         const marketCap = row.original.market_cap;
         return (
           <div className="text-right font-mono">
-            {marketCap ? `$${marketCap.toLocaleString()}` : "N/A"}
+            {marketCap
+              ? `$${marketCap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+              : "N/A"}
           </div>
         );
       },
@@ -122,6 +124,72 @@ export default function Industry() {
         </CardHeader>
         <CardContent>
           <p>{industry.description}</p>
+        </CardContent>
+      </Card>
+
+      {/* Industry Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Industry Stats</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-4 bg-muted rounded">
+              <div className="text-sm text-muted-foreground">
+                Market Cap (M)
+              </div>
+              <div className="text-lg font-mono">
+                {industry.market_cap
+                  ? `$${industry.market_cap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+                  : "N/A"}
+              </div>
+            </div>
+            <div className="p-4 bg-muted rounded">
+              <div className="text-sm text-muted-foreground">24h Change %</div>
+              <div
+                className={`text-lg font-mono ${
+                  (industry.day_change_percent || 0) >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {(industry.day_change_percent || 0) > 0 ? "+" : ""}
+                {industry.day_change_percent
+                  ? industry.day_change_percent.toFixed(2) + "%"
+                  : "N/A"}
+              </div>
+            </div>
+            <div className="p-4 bg-muted rounded">
+              <div className="text-sm text-muted-foreground">7d Change %</div>
+              <div
+                className={`text-lg font-mono ${
+                  (industry.week_change_percent || 0) >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {(industry.week_change_percent || 0) > 0 ? "+" : ""}
+                {industry.week_change_percent
+                  ? industry.week_change_percent.toFixed(2) + "%"
+                  : "N/A"}
+              </div>
+            </div>
+            <div className="p-4 bg-muted rounded">
+              <div className="text-sm text-muted-foreground">30d Change %</div>
+              <div
+                className={`text-lg font-mono ${
+                  (industry.month_change_percent || 0) >= 0
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {(industry.month_change_percent || 0) > 0 ? "+" : ""}
+                {industry.month_change_percent
+                  ? industry.month_change_percent.toFixed(2) + "%"
+                  : "N/A"}
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

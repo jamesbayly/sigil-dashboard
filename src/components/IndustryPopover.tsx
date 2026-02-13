@@ -51,6 +51,74 @@ export default function IndustryPopover({
               </p>
             </div>
 
+            {/*Performance*/}
+            <div className="space-y-2 border-t pt-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Market Cap:</span>
+                <span className="text-sm">
+                  {fullIndustry.market_cap
+                    ? `$${fullIndustry.market_cap.toLocaleString(undefined, {
+                        maximumFractionDigits: 0,
+                      })}M`
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Day Change:</span>
+                <span
+                  className={`text-sm ${
+                    fullIndustry.day_change_percent
+                      ? fullIndustry.day_change_percent > 0
+                        ? "text-green-600"
+                        : fullIndustry.day_change_percent < 0
+                          ? "text-red-600"
+                          : ""
+                      : ""
+                  }`}
+                >
+                  {fullIndustry.day_change_percent !== undefined
+                    ? `${fullIndustry.day_change_percent > 0 ? "+" : ""}${fullIndustry.day_change_percent.toFixed(2)}%`
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Weekly Change:</span>
+                <span
+                  className={`text-sm ${
+                    fullIndustry.week_change_percent
+                      ? fullIndustry.week_change_percent > 0
+                        ? "text-green-600"
+                        : fullIndustry.week_change_percent < 0
+                          ? "text-red-600"
+                          : ""
+                      : ""
+                  }`}
+                >
+                  {fullIndustry.week_change_percent !== undefined
+                    ? `${fullIndustry.week_change_percent > 0 ? "+" : ""}${fullIndustry.week_change_percent.toFixed(2)}%`
+                    : "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Monthly Change:</span>
+                <span
+                  className={`text-sm ${
+                    fullIndustry.month_change_percent
+                      ? fullIndustry.month_change_percent > 0
+                        ? "text-green-600"
+                        : fullIndustry.month_change_percent < 0
+                          ? "text-red-600"
+                          : ""
+                      : ""
+                  }`}
+                >
+                  {fullIndustry.month_change_percent !== undefined
+                    ? `${fullIndustry.month_change_percent > 0 ? "+" : ""}${fullIndustry.month_change_percent.toFixed(2)}%`
+                    : "N/A"}
+                </span>
+              </div>
+            </div>
+
             {/* Statistics */}
             <div className="space-y-2 border-t pt-4">
               {fullIndustry.symbols && fullIndustry.symbols.length > 0 && (

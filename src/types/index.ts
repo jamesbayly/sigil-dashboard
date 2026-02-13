@@ -252,6 +252,10 @@ export interface IndustryTags {
   id: number;
   theme: string;
   name: string;
+  market_cap: number | undefined; // Express in Millions
+  day_change_percent: number | undefined;
+  week_change_percent: number | undefined;
+  month_change_percent: number | undefined;
 }
 
 export interface IndustryTagResponse extends IndustryTags {

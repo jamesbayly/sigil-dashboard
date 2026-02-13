@@ -55,6 +55,77 @@ export default function Industries() {
         return <div className="font-medium">{row.original.name}</div>;
       },
     },
+    {
+      accessorKey: "market_cap",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Market Cap (M)
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return (
+          <div className="text-lg font-mono">
+            {row.original.market_cap
+              ? `$${row.original.market_cap.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+              : "N/A"}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "day_change_percent",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            24h %
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const change = row.original.day_change_percent || 0;
+        const colorClass = change >= 0 ? "text-green-600" : "text-red-600";
+        return (
+          <div className={`text-lg font-mono ${colorClass}`}>
+            {change > 0 ? "+" : ""}
+            {change.toFixed(2)}%
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "week_change_percent",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            7d %
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        const change = row.original.week_change_percent || 0;
+        const colorClass = change >= 0 ? "text-green-600" : "text-red-600";
+        return (
+          <div className={`text-lg font-mono ${colorClass}`}>
+            {change > 0 ? "+" : ""}
+            {change.toFixed(2)}%
+          </div>
+        );
+      },
+    },
   ];
 
   return (
