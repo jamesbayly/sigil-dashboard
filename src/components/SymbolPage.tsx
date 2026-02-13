@@ -419,32 +419,6 @@ export default function SymbolPage() {
                   </div>
                   <div className="space-y-1">
                     <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                      24h Change
-                    </div>
-                    <div
-                      className={`text-base sm:text-lg font-semibold ${getNumberStyling(
-                        symbol.day_change_percent,
-                      )}`}
-                    >
-                      {(symbol.day_change_percent || 0) > 0 ? "+" : ""}
-                      {(symbol.day_change_percent || 0).toFixed(2)}%
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
-                      1h Change
-                    </div>
-                    <div
-                      className={`text-base sm:text-lg font-semibold ${getNumberStyling(
-                        symbol.hour_change_percent,
-                      )}`}
-                    >
-                      {(symbol.hour_change_percent || 0) > 0 ? "+" : ""}
-                      {(symbol.hour_change_percent || 0).toFixed(2)}%
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="font-medium text-muted-foreground text-xs sm:text-sm">
                       Data Points
                     </div>
                     <div className="text-base sm:text-lg font-semibold">
@@ -476,6 +450,77 @@ export default function SymbolPage() {
                     <div className="text-base sm:text-lg font-semibold">
                       {symbol.latest_date
                         ? new Date(symbol.latest_date).toLocaleDateString()
+                        : "N/A"}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Performance */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Performance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="p-4 bg-muted rounded">
+                    <div className="text-sm text-muted-foreground">
+                      1h Change %
+                    </div>
+                    <div
+                      className={`text-lg font-mono ${getNumberStyling(
+                        symbol.hour_change_percent,
+                      )}`}
+                    >
+                      {symbol.hour_change_percent > 0 ? "+" : ""}
+                      {symbol.hour_change_percent
+                        ? symbol.hour_change_percent.toFixed(2) + "%"
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div className="p-4 bg-muted rounded">
+                    <div className="text-sm text-muted-foreground">
+                      24h Change %
+                    </div>
+                    <div
+                      className={`text-lg font-mono ${getNumberStyling(
+                        symbol.day_change_percent,
+                      )}`}
+                    >
+                      {symbol.day_change_percent > 0 ? "+" : ""}
+                      {symbol.day_change_percent
+                        ? symbol.day_change_percent.toFixed(2) + "%"
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div className="p-4 bg-muted rounded">
+                    <div className="text-sm text-muted-foreground">
+                      7d Change %
+                    </div>
+                    <div
+                      className={`text-lg font-mono ${getNumberStyling(
+                        symbol.week_change_percent,
+                      )}`}
+                    >
+                      {(symbol.week_change_percent || 0) > 0 ? "+" : ""}
+                      {symbol.week_change_percent
+                        ? symbol.week_change_percent.toFixed(2) + "%"
+                        : "N/A"}
+                    </div>
+                  </div>
+                  <div className="p-4 bg-muted rounded">
+                    <div className="text-sm text-muted-foreground">
+                      30d Change %
+                    </div>
+                    <div
+                      className={`text-lg font-mono ${getNumberStyling(
+                        symbol.month_change_percent,
+                      )}`}
+                    >
+                      {(symbol.month_change_percent || 0) > 0 ? "+" : ""}
+                      {symbol.month_change_percent
+                        ? symbol.month_change_percent.toFixed(2) + "%"
                         : "N/A"}
                     </div>
                   </div>

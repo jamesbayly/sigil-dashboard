@@ -205,6 +205,8 @@ export interface SymbolResponse extends SymbolsResponse {
   earliest_date: Date | undefined; // The earliest date of price data
   latest_date: Date | undefined; // The latest date of price data
   count_data: number; // The count of price data
+  week_change_percent: number | undefined;
+  month_change_percent: number | undefined;
 }
 
 export interface OptionsDataRequest {
