@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "./ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IndustryTags } from "@/types";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -156,9 +156,12 @@ const TreemapContent = (props: {
 
 export default function Industries() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { industries, isLoading, error } = useIndustries();
   const [searchQuery, setSearchQuery] = useState("");
   const [changeRange, setChangeRange] = useState<ChangeRange>("day");
+
+  const activeTab = location.pathname.endsWith("/map") ? "map" : "list";
 
   const treemapIndustries = useMemo<TreemapIndustry[]>(
     () =>
@@ -312,7 +315,11 @@ export default function Industries() {
         <h2 className="text-2xl font-semibold">Industries</h2>
       </div>
 
-      <Tabs defaultValue="list" className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => navigate(`/industries/${value}`)}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="list">List</TabsTrigger>
           <TabsTrigger value="map">Map</TabsTrigger>
@@ -418,7 +425,7 @@ export default function Industries() {
                     />
                     <span>+{getChangeLabel(changeRange)} %</span>
                   </div>
-                  <div className="h-[620px] w-full">
+                  <div className="w-full h-[70vh] min-h-[420px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <Treemap
                         data={treemapIndustries}

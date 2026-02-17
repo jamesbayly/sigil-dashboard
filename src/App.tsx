@@ -40,7 +40,12 @@ export default function App() {
           <Route path="parsed-news" element={<ParsedNews />} />
           <Route path="polymarket" element={<PolymarketMarkets />} />
           <Route path="polymarket/:id" element={<PolymarketMarket />} />
-          <Route path="industries" element={<Industries />} />
+          <Route
+            path="industries"
+            element={<Navigate to="/industries/list" replace />}
+          />
+          <Route path="industries/list" element={<Industries />} />
+          <Route path="industries/map" element={<Industries />} />
           <Route path="industries/:id" element={<Industry />} />
         </Route>
       </Routes>
