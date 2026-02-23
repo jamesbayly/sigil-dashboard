@@ -11,8 +11,7 @@ import { ArrowUpDown } from "lucide-react";
 
 export default function TestRunsView() {
   const navigate = useNavigate();
-  const { testRuns, isLoading, pagination, setPage, setLimit } =
-    useTestRuns();
+  const { testRuns, isLoading, pagination, setPage, setLimit } = useTestRuns();
   const { strategies } = useStrategies();
 
   const openTestRun = (testRun: StrategyTestRunsResponse) =>
