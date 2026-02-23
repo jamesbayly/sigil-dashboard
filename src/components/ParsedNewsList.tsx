@@ -4,23 +4,31 @@ import {
   NewsSentiment,
   type NewsParsedResponse,
   type SymbolsResponse,
+  type PaginationMeta,
 } from "@/types";
 import SymbolPopover from "./SymbolPopover";
 import IndustryPopover from "./IndustryPopover";
 import { Link } from "react-router-dom";
 import { Link2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { PaginationControls } from "./ui/pagination-controls";
 
 interface ParsedNewsListProps {
   parsedItems: NewsParsedResponse[];
   symbols: SymbolsResponse[];
   title?: string;
+  pagination?: PaginationMeta;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
 }
 
 export default function ParsedNewsList({
   parsedItems,
   symbols,
   title,
+  pagination,
+  onPageChange,
+  onLimitChange,
 }: ParsedNewsListProps) {
   const { isAuthenticated } = useAuth();
 
@@ -126,6 +134,13 @@ export default function ParsedNewsList({
           </Card>
         ))}
       </div>
+      {pagination && onPageChange && (
+        <PaginationControls
+          pagination={pagination}
+          onPageChange={onPageChange}
+          onLimitChange={onLimitChange}
+        />
+      )}
     </div>
   );
 }

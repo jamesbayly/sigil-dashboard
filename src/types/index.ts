@@ -73,6 +73,19 @@ export const isGenericResponse = (object: any): object is GenericResponse => {
   return "message" in object;
 };
 
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
 export interface Trades {
   id: number;
   strategy_id: number;

@@ -5,18 +5,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
-import type { OptionsDataResponse } from "@/types";
+import type { OptionsDataResponse, PaginationMeta } from "@/types";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
+import { PaginationControls } from "./ui/pagination-controls";
 
 interface OptionsTableProps {
   data: OptionsDataResponse[];
   isSymbolFiltered: boolean;
+  pagination?: PaginationMeta;
+  onPageChange?: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
 }
 
 export default function OptionsTable({
   data,
   isSymbolFiltered,
+  pagination,
+  onPageChange,
+  onLimitChange,
 }: OptionsTableProps) {
   const { symbols } = useSymbols();
 
@@ -262,6 +269,13 @@ export default function OptionsTable({
     <Card>
       <CardContent className="pt-6">
         <DataTable data={data} columns={columns} />
+        {pagination && onPageChange && (
+          <PaginationControls
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+          />
+        )}
       </CardContent>
     </Card>
   );

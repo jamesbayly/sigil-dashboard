@@ -24,8 +24,16 @@ export default function OptionsView() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isRunningAI, setIsRunningAI] = useState(false);
 
-  const { optionsData, isLoading, error, isCreating, createOptions } =
-    useOptionsData();
+  const {
+    optionsData,
+    isLoading,
+    error,
+    isCreating,
+    createOptions,
+    pagination,
+    setPage,
+    setLimit,
+  } = useOptionsData(symbolFilter);
 
   const handleRunAIStrategy = async () => {
     setIsRunningAI(true);
@@ -144,6 +152,9 @@ export default function OptionsView() {
         <OptionsTable
           data={filteredOptions}
           isSymbolFiltered={!!symbolFilter}
+          pagination={pagination}
+          onPageChange={setPage}
+          onLimitChange={setLimit}
         />
       )}
 

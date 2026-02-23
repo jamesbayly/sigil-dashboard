@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useState } from "react";
 import {
   Select,
@@ -37,6 +38,7 @@ import { DataTable } from "./ui/data-table";
 import { Link } from "react-router-dom";
 import SymbolPopover from "./SymbolPopover";
 import SymbolSelector from "./SymbolSelector";
+import { PaginationControls } from "./ui/pagination-controls";
 
 interface TradesTableProps {
   globalStrategyFilter?: number; // If set, strategy filter will be read-only
@@ -52,23 +54,27 @@ export default function TradesTable({
   const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [stratFilter, setStratFilter] = useState<number | undefined>(
-    globalStrategyFilter
+    globalStrategyFilter,
   );
   const [symFilter, setSymFilter] = useState<number | undefined>(
-    globalSymbolFilter
+    globalSymbolFilter,
   );
   const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
-    undefined
+    undefined,
   );
   const [date, setDate] = useState<DateRange | undefined>({
     from: addDays(new Date(), -7),
     to: new Date(),
   });
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
-    "ALL"
+    "ALL",
   );
   const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
-  const { trades } = useHistoricTrades(date, stratFilter, symFilter);
+  const { trades, pagination, setPage, setLimit } = useHistoricTrades(
+    date,
+    stratFilter,
+    symFilter,
+  );
   const { marketState } = useHistoricMarketState(date);
 
   // Column definitions for the DataTable
@@ -248,7 +254,7 @@ export default function TradesTable({
           .map((t, i, a) => {
             const marketStateAtDate = marketState.find(
               (m) =>
-                new Date(m.created_at) <= new Date(t.close_time || Date.now())
+                new Date(m.created_at) <= new Date(t.close_time || Date.now()),
             );
             const marketPctAtDate =
               (((marketStateAtDate?.market_cap || 0) -
@@ -270,7 +276,7 @@ export default function TradesTable({
     const dayTrades = filteredTrades.filter(
       (t) =>
         t.close_time &&
-        t.close_time.slice(0, 10) === date.toISOString().slice(0, 10)
+        t.close_time.slice(0, 10) === date.toISOString().slice(0, 10),
     );
     return {
       trade_count: dayTrades.length,
@@ -301,7 +307,7 @@ export default function TradesTable({
                 variant={"outline"}
                 className={cn(
                   "w-full sm:w-[300px] justify-start text-left font-normal",
-                  !date && "text-muted-foreground"
+                  !date && "text-muted-foreground",
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
@@ -380,7 +386,7 @@ export default function TradesTable({
             <SelectTrigger
               className={cn(
                 "w-full sm:w-40",
-                globalStrategyFilter !== undefined && "opacity-60"
+                globalStrategyFilter !== undefined && "opacity-60",
               )}
             >
               {strategies.find((s) => s.id === stratFilter)?.name ?? "All"}
@@ -531,7 +537,7 @@ export default function TradesTable({
             ...new Set(
               filteredTrades
                 .filter((t) => t.close_time)
-                .map((t) => t.close_time?.slice(0, 10))
+                .map((t) => t.close_time?.slice(0, 10)),
             ),
           ].map((date) => {
             const breakdown = getDayBreakdown(new Date(date || ""));
@@ -553,6 +559,13 @@ export default function TradesTable({
 
       {/* trades table */}
       <div>
+        {pagination && (
+          <PaginationControls
+            pagination={pagination}
+            onPageChange={setPage}
+            onLimitChange={setLimit}
+          />
+        )}
         <DataTable data={filteredTrades} columns={columns} />
       </div>
 

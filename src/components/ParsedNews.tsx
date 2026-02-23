@@ -25,9 +25,10 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { NewsType, NewsParsedResponse } from "@/types";
 import ParsedNewsList from "./ParsedNewsList";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type TimeRange = "24h" | "3d" | "7d" | "all";
@@ -39,10 +40,18 @@ export default function ParsedNews() {
   const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const [symbolOpen, setSymbolOpen] = useState(false);
   const [industryOpen, setIndustryOpen] = useState(false);
-  const { parsedNews, isLoading, error } = useParsedNews(
-    symbolFilter,
-    typeFilter,
-  );
+  const [searchInput, setSearchInput] = useState("");
+  const {
+    parsedNews,
+    relatedIndustryNews,
+    isLoading,
+    error,
+    assetNewsPagination,
+    relatedNewsPagination,
+    setPage,
+    setLimit,
+    setSearch,
+  } = useParsedNews(symbolFilter, typeFilter);
   const { symbols } = useSymbols();
   const { industries } = useIndustries();
 
@@ -271,6 +280,25 @@ export default function ParsedNews() {
                 </PopoverContent>
               </Popover>
             </div>
+
+            <div className="w-full sm:w-auto">
+              <Label>Search</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search news..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="w-full sm:w-[200px]"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSearch(searchInput)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -299,18 +327,33 @@ export default function ParsedNews() {
               parsedItems={filteredParsedNews}
               symbols={symbols}
               title="Asset News"
+              pagination={assetNewsPagination}
+              onPageChange={setPage}
+              onLimitChange={setLimit}
             />
           )}
 
-          {filteredParsedNews.length === 0 && (
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center">
-                  No parsed news items found for the selected filters.
-                </p>
-              </CardContent>
-            </Card>
+          {relatedIndustryNews.length > 0 && (
+            <ParsedNewsList
+              parsedItems={relatedIndustryNews}
+              symbols={symbols}
+              title="Related Industry News"
+              pagination={relatedNewsPagination}
+              onPageChange={setPage}
+              onLimitChange={setLimit}
+            />
           )}
+
+          {filteredParsedNews.length === 0 &&
+            relatedIndustryNews.length === 0 && (
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-muted-foreground text-center">
+                    No parsed news items found for the selected filters.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
         </>
       )}
     </div>

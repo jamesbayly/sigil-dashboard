@@ -4,22 +4,96 @@ import TimeAgo from "react-timeago";
 import { useStrategies } from "@/hooks/useStrategies";
 import type { StrategyTestRunsResponse } from "@/types";
 import { useNavigate } from "react-router-dom";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "./ui/data-table";
+import { PaginationControls } from "./ui/pagination-controls";
+import { ArrowUpDown } from "lucide-react";
 
 export default function TestRunsView() {
   const navigate = useNavigate();
-  const { testRuns, isLoading } = useTestRuns();
+  const { testRuns, isLoading, pagination, setPage, setLimit } =
+    useTestRuns();
   const { strategies } = useStrategies();
 
   const openTestRun = (testRun: StrategyTestRunsResponse) =>
     navigate(`/tests/${testRun.id}`);
+
+  const columns: ColumnDef<StrategyTestRunsResponse>[] = [
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Name
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Created
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+      cell: ({ row }) => {
+        return <TimeAgo date={new Date(row.original.created_at)} />;
+      },
+    },
+    {
+      id: "strategy",
+      accessorFn: (row) => {
+        const strategy = strategies.find((s) => s.id === row.strategy?.id);
+        return strategy?.name || row.strategy?.name || "Unknown";
+      },
+      header: "Strategy",
+    },
+    {
+      accessorKey: "symbol_ids",
+      header: "Symbol Count",
+      cell: ({ row }) => {
+        return row.original.symbol_ids.length;
+      },
+    },
+    {
+      accessorKey: "count_permutations",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Permutations
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+    },
+    {
+      accessorKey: "count_results",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            Results
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        );
+      },
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -33,58 +107,26 @@ export default function TestRunsView() {
         </Button>
       </div>
 
-      <div className="w-full overflow-x-auto rounded-md border">
-        <Table className="min-w-full">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="whitespace-nowrap">Name</TableHead>
-              <TableHead className="whitespace-nowrap">Created</TableHead>
-              <TableHead className="whitespace-nowrap">Strategy</TableHead>
-              <TableHead className="whitespace-nowrap">Symbol Count</TableHead>
-              <TableHead className="whitespace-nowrap">Permutations</TableHead>
-              <TableHead className="whitespace-nowrap">Results</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading && (
-              <TableRow>
-                <TableCell colSpan={5}>Loading…</TableCell>
-              </TableRow>
-            )}
-            {testRuns.map((testRun) => {
-              const strategy = strategies.find(
-                (s) => s.id === testRun.strategy?.id
-              );
-              return (
-                <TableRow
-                  key={testRun.id}
-                  className="cursor-pointer hover:bg-muted"
-                  onClick={() => openTestRun(testRun)}
-                >
-                  <TableCell className="whitespace-nowrap">
-                    {testRun.name}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <TimeAgo date={new Date(testRun.created_at)} />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {strategy?.name || testRun.strategy?.name || "Unknown"}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {testRun.symbol_ids.length}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {testRun.count_permutations}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    {testRun.count_results}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+      {isLoading && (
+        <div className="text-center py-8">Loading test runs...</div>
+      )}
+
+      {!isLoading && (
+        <>
+          <DataTable
+            data={testRuns}
+            columns={columns}
+            onRowClick={openTestRun}
+          />
+          {pagination && (
+            <PaginationControls
+              pagination={pagination}
+              onPageChange={setPage}
+              onLimitChange={setLimit}
+            />
+          )}
+        </>
+      )}
     </div>
   );
 }

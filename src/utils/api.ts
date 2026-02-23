@@ -9,6 +9,7 @@ import {
   NewsType,
   OptionsDataRequest,
   OptionsDataResponse,
+  PaginatedResponse,
   PolymarketMarketResponse,
   PolymarketMarketsResponse,
   StrategyRequest,
@@ -43,14 +44,18 @@ export const getHistoricTrades = async (
   end: Date | undefined,
   strategyId?: number,
   symbolId?: number,
+  page?: number,
+  limit?: number,
 ) => {
   const params = new URLSearchParams({});
   if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
   if (end) params.set("end", `${end.toISOString().slice(0, 10)}`);
   if (strategyId) params.set("strategy_id", `${strategyId}`);
   if (symbolId) params.set("symbol_id", `${symbolId}`);
+  if (page) params.set("page", `${page}`);
+  if (limit) params.set("limit", `${limit}`);
   const res = await fetch(`${BASE}/trade/historic?${params.toString()}`);
-  return (await res.json()) as Trades[] | GenericResponse;
+  return (await res.json()) as PaginatedResponse<Trades> | GenericResponse;
 };
 
 export const getHistoricMarketState = async (
@@ -119,9 +124,14 @@ export const updateSymbol = async (
   return (await res.json()) as SymbolResponse | GenericResponse;
 };
 
-export const getTestRuns = async () => {
-  const res = await fetch(`${BASE}/strategy/test`);
-  return (await res.json()) as StrategyTestRunsResponse[] | GenericResponse;
+export const getTestRuns = async (page?: number, limit?: number) => {
+  const params = new URLSearchParams({});
+  if (page) params.set("page", `${page}`);
+  if (limit) params.set("limit", `${limit}`);
+  const res = await fetch(`${BASE}/strategy/test?${params.toString()}`);
+  return (await res.json()) as
+    | PaginatedResponse<StrategyTestRunsResponse>
+    | GenericResponse;
 };
 
 export const getTestRun = async (testRunID: number) => {
@@ -192,11 +202,19 @@ export const refreshTestRun = async (
   return (await res.json()) as GenericResponse;
 };
 
-export const getOptionsData = async (symbolId?: number) => {
+export const getOptionsData = async (
+  symbolId?: number,
+  page?: number,
+  limit?: number,
+) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
+  if (page) params.set("page", `${page}`);
+  if (limit) params.set("limit", `${limit}`);
   const res = await fetch(`${BASE}/option?${params.toString()}`);
-  return (await res.json()) as OptionsDataResponse[] | GenericResponse;
+  return (await res.json()) as
+    | PaginatedResponse<OptionsDataResponse>
+    | GenericResponse;
 };
 
 export const createOptionsData = async (payload: OptionsDataRequest[]) => {
@@ -234,12 +252,23 @@ export const deleteNews = async (id: number) => {
   return (await res.json()) as GenericResponse;
 };
 
-export const getAllNews = async (symbolId?: number, type?: NewsType) => {
+export const getAllNews = async (
+  symbolId?: number,
+  type?: NewsType,
+  page?: number,
+  limit?: number,
+  search?: string,
+) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   if (type) params.set("type", type);
+  if (page) params.set("page", `${page}`);
+  if (limit) params.set("limit", `${limit}`);
+  if (search) params.set("search", search);
   const res = await fetch(`${BASE}/news?${params.toString()}`);
-  return (await res.json()) as NewsResponse[] | GenericResponse;
+  return (await res.json()) as
+    | PaginatedResponse<NewsResponse>
+    | GenericResponse;
 };
 
 export const getNews = async (newsId: number) => {
@@ -251,17 +280,23 @@ export const getNewsParsed = async (
   symbolId?: number,
   type?: NewsType,
   industry_ids?: number[],
+  page?: number,
+  limit?: number,
+  search?: string,
 ) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   if (type) params.set("type", type);
   if (industry_ids)
     params.set("industry_ids", `${JSON.stringify(industry_ids)}`);
+  if (page) params.set("page", `${page}`);
+  if (limit) params.set("limit", `${limit}`);
+  if (search) params.set("search", search);
   const res = await fetch(`${BASE}/news-parsed?${params.toString()}`);
   return (await res.json()) as
     | {
-        asset_news: NewsParsedResponse[];
-        related_industry_news: NewsParsedResponse[];
+        asset_news: PaginatedResponse<NewsParsedResponse>;
+        related_industry_news: PaginatedResponse<NewsParsedResponse>;
       }
     | GenericResponse;
 };

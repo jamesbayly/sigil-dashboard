@@ -4,6 +4,7 @@ import {
   isGenericResponse,
   type OptionsDataResponse,
   type OptionsDataRequest,
+  type PaginationMeta,
 } from "@/types";
 import { toast } from "sonner";
 
@@ -12,18 +13,22 @@ export const useOptionsData = (symbolId?: number) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [pagination, setPagination] = useState<PaginationMeta | undefined>();
 
   const fetchAll = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const res = await getOptionsData(symbolId);
+      const res = await getOptionsData(symbolId, page, limit);
       if (isGenericResponse(res)) {
         throw new Error(res.message);
       }
 
-      setOptionsData(res);
+      setOptionsData(res.data);
+      setPagination(res.pagination);
     } catch (err) {
       const newError =
         err instanceof Error ? err : new Error("Failed to fetch options data");
@@ -66,7 +71,7 @@ export const useOptionsData = (symbolId?: number) => {
   useEffect(() => {
     fetchAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [symbolId]);
+  }, [symbolId, page, limit]);
 
   return {
     optionsData,
@@ -75,5 +80,10 @@ export const useOptionsData = (symbolId?: number) => {
     isCreating,
     refetch: fetchAll,
     createOptions,
+    pagination,
+    page,
+    setPage,
+    limit,
+    setLimit,
   };
 };

@@ -11,22 +11,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { DataTable } from "./ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Plus } from "lucide-react";
+import { ArrowUpDown, Plus, Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { NewsResponse, NewsType } from "@/types";
 import { Badge } from "./ui/badge";
 import SymbolPopover from "./SymbolPopover";
 import { useAuth } from "@/hooks/useAuth";
+import { PaginationControls } from "./ui/pagination-controls";
 
 export default function NewsList() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [typeFilter, setTypeFilter] = useState<NewsType | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
-  const { news, isLoading, error } = useNews(symbolFilter, typeFilter);
+  const { news, isLoading, error, pagination, setPage, setLimit, setSearch } =
+    useNews(symbolFilter, typeFilter);
   const { symbols } = useSymbols();
+  const [searchInput, setSearchInput] = useState("");
 
   const columns: ColumnDef<NewsResponse>[] = [
     {
@@ -132,6 +136,24 @@ export default function NewsList() {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
             <div className="w-full sm:w-auto">
+              <Label>Search</Label>
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Search news..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  className="w-full sm:w-[200px]"
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSearch(searchInput)}
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <div className="w-full sm:w-auto">
               <Label>Type</Label>
               <Select
                 value={typeFilter}
@@ -191,14 +213,18 @@ export default function NewsList() {
           )}
           {!isLoading && !error && (
             <>
-              <div className="text-sm text-muted-foreground mb-4">
-                Showing {news.length} news item{news.length !== 1 ? "s" : ""}
-              </div>
               <DataTable
                 data={news}
                 columns={columns}
                 onRowClick={(row) => navigate(`/news/${row.id}`)}
               />
+              {pagination && (
+                <PaginationControls
+                  pagination={pagination}
+                  onPageChange={setPage}
+                  onLimitChange={setLimit}
+                />
+              )}
             </>
           )}
         </CardContent>
