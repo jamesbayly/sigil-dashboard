@@ -282,6 +282,7 @@ export default function SymbolsView() {
           data={filteredSymbols}
           columns={columns}
           onRowClick={handleEditSymbol}
+          defaultSorting={[{ id: "option_score", desc: true }]}
         />
       </div>
     </div>
