@@ -7,6 +7,7 @@ import {
   NewsRequest,
   NewsResponse,
   NewsType,
+  OptionType,
   OptionsDataRequest,
   OptionsDataResponse,
   PaginatedResponse,
@@ -206,11 +207,13 @@ export const getOptionsData = async (
   symbolId?: number,
   page?: number,
   limit?: number,
+  types?: OptionType[],
 ) => {
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   if (page) params.set("page", `${page}`);
   if (limit) params.set("limit", `${limit}`);
+  if (types && types.length > 0) params.set("type", types.join(","));
   const res = await fetch(`${BASE}/option?${params.toString()}`);
   return (await res.json()) as
     | PaginatedResponse<OptionsDataResponse>
@@ -287,8 +290,7 @@ export const getNewsParsed = async (
   const params = new URLSearchParams({});
   if (symbolId) params.set("symbol_id", `${symbolId}`);
   if (type) params.set("type", type);
-  if (industry_ids)
-    params.set("industry_ids", `${JSON.stringify(industry_ids)}`);
+  if (industry_ids) params.set("industry_ids", industry_ids.join(","));
   if (page) params.set("page", `${page}`);
   if (limit) params.set("limit", `${limit}`);
   if (search) params.set("search", search);

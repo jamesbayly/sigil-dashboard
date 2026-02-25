@@ -5,16 +5,17 @@ import {
   type OptionsDataResponse,
   type OptionsDataRequest,
   type PaginationMeta,
+  type OptionType,
 } from "@/types";
 import { toast } from "sonner";
 
-export const useOptionsData = (symbolId?: number) => {
+export const useOptionsData = (symbolId?: number, types?: OptionType[]) => {
   const [optionsData, setOptionsData] = useState<OptionsDataResponse[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(100);
   const [pagination, setPagination] = useState<PaginationMeta | undefined>();
 
   const fetchAll = async () => {
@@ -22,7 +23,7 @@ export const useOptionsData = (symbolId?: number) => {
       setIsLoading(true);
       setError(null);
 
-      const res = await getOptionsData(symbolId, page, limit);
+      const res = await getOptionsData(symbolId, page, limit, types);
       if (isGenericResponse(res)) {
         throw new Error(res.message);
       }
@@ -71,7 +72,7 @@ export const useOptionsData = (symbolId?: number) => {
   useEffect(() => {
     fetchAll();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [symbolId, page, limit]);
+  }, [symbolId, page, limit, types]);
 
   return {
     optionsData,

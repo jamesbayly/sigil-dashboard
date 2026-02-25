@@ -25,22 +25,17 @@ import {
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { NewsType, NewsParsedResponse } from "@/types";
 import ParsedNewsList from "./ParsedNewsList";
-import { Check, ChevronsUpDown, Search } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-type TimeRange = "24h" | "3d" | "7d" | "all";
 
 export default function ParsedNews() {
   const [typeFilter, setTypeFilter] = useState<NewsType | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
   const [industryFilter, setIndustryFilter] = useState<number | undefined>();
-  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
   const [symbolOpen, setSymbolOpen] = useState(false);
   const [industryOpen, setIndustryOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
   const {
     parsedNews,
     isLoading,
@@ -48,34 +43,9 @@ export default function ParsedNews() {
     assetNewsPagination,
     setPage,
     setLimit,
-    setSearch,
   } = useParsedNews(symbolFilter, typeFilter);
   const { symbols } = useSymbols();
   const { industries } = useIndustries();
-
-  // Filter news by time range
-  const filterByTimeRange = useMemo(() => {
-    return (items: NewsParsedResponse[]) => {
-      if (timeRange === "all") return items;
-
-      const now = new Date();
-      const cutoffTime = new Date();
-
-      switch (timeRange) {
-        case "24h":
-          cutoffTime.setHours(now.getHours() - 24);
-          break;
-        case "3d":
-          cutoffTime.setDate(now.getDate() - 3);
-          break;
-        case "7d":
-          cutoffTime.setDate(now.getDate() - 7);
-          break;
-      }
-
-      return items.filter((item) => new Date(item.date) >= cutoffTime);
-    };
-  }, [timeRange]);
 
   // Filter news by industry tag
   const filterByIndustry = useMemo(() => {
@@ -89,10 +59,9 @@ export default function ParsedNews() {
 
   const filteredParsedNews = useMemo(() => {
     let filtered = parsedNews;
-    filtered = filterByTimeRange(filtered);
     filtered = filterByIndustry(filtered);
     return filtered;
-  }, [parsedNews, filterByTimeRange, filterByIndustry]);
+  }, [parsedNews, filterByIndustry]);
 
   return (
     <div className="space-y-6">
@@ -107,24 +76,6 @@ export default function ParsedNews() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
-            <div className="w-full sm:w-auto">
-              <Label>Time Range</Label>
-              <Select
-                value={timeRange}
-                onValueChange={(v) => setTimeRange(v as TimeRange)}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="24h">Last 24 Hours</SelectItem>
-                  <SelectItem value="3d">Last 3 Days</SelectItem>
-                  <SelectItem value="7d">Last Week</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="w-full sm:w-auto">
               <Label>Type</Label>
               <Select
@@ -277,25 +228,6 @@ export default function ParsedNews() {
                   </Command>
                 </PopoverContent>
               </Popover>
-            </div>
-
-            <div className="w-full sm:w-auto">
-              <Label>Search</Label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Search news..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full sm:w-[200px]"
-                />
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => setSearch(searchInput)}
-                >
-                  <Search className="h-4 w-4" />
-                </Button>
-              </div>
             </div>
           </div>
         </CardContent>

@@ -16,7 +16,7 @@ export const useParsedNews = (
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(50);
+  const [limit, setLimit] = useState(100);
   const [search, setSearch] = useState<string | undefined>();
   const [assetNewsPagination, setAssetNewsPagination] = useState<
     PaginationMeta | undefined

@@ -26,14 +26,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSymbol } from "@/hooks/useSymbol";
 import { SymbolType, type SymbolRequest } from "@/types";
 import TradesTable from "./TradesTable";
-import OptionsTable from "./OptionsTable";
 import ParsedNewsList from "./ParsedNewsList";
 import { useParsedNews } from "@/hooks/useParsedNews";
 import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
-import { useOptionsData } from "@/hooks/useOptionsData";
 import { useAuth } from "@/hooks/useAuth";
 import IndustryPopover from "./IndustryPopover";
+import OptionsList from "./OptionsList";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -59,11 +58,9 @@ export default function SymbolPage() {
     isLoading: symbolLoading,
   } = useSymbol(symbolId);
   const { symbols } = useSymbols();
-  const {
-    optionsData,
-    isLoading: optionsLoading,
-    error: optionsError,
-  } = useOptionsData(symbolId);
+
+  const existingSymbol = !!id;
+  const [isEditMode, setIsEditMode] = useState(!existingSymbol); // For new symbols, always in edit mode
 
   // Memoize industry IDs to prevent unnecessary re-renders
   const industryIds = useMemo(
@@ -76,9 +73,6 @@ export default function SymbolPage() {
     undefined,
     industryIds,
   );
-
-  const existingSymbol = !!id;
-  const [isEditMode, setIsEditMode] = useState(!existingSymbol); // For new symbols, always in edit mode
 
   const form = useForm<SymbolFormValues>({
     resolver: zodResolver(symbolSchema),
@@ -539,48 +533,49 @@ export default function SymbolPage() {
 
           {/* Options Tab */}
           {symbol.symbol_type === "STOCK" && (
-            <TabsContent value="options" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl">
-                    Option Score
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
-                    <div className="text-2xl sm:text-3xl font-bold">
-                      <span className={getNumberStyling(symbol.option_score)}>
-                        {symbol.option_score.toFixed(3) || "N/A"}
-                      </span>
+            <TabsContent value="options">
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg sm:text-xl">
+                      Option Score
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                      <div className="text-2xl sm:text-3xl font-bold">
+                        <span className={getNumberStyling(symbol.option_score)}>
+                          {symbol.option_score.toFixed(3) || "N/A"}
+                        </span>
+                      </div>
+                      <div
+                        className={`text-lg sm:text-xl font-semibold ${getNumberStyling(
+                          symbol.option_score - symbol.option_score_prev,
+                        )}`}
+                      >
+                        {symbol.option_score - symbol.option_score_prev > 0
+                          ? "(Δ +"
+                          : "(Δ "}
+                        {(
+                          symbol.option_score - symbol.option_score_prev
+                        ).toFixed(3) || "N/A"}
+                        {")"}
+                      </div>
                     </div>
-                    <div
-                      className={`text-lg sm:text-xl font-semibold ${getNumberStyling(
-                        symbol.option_score - symbol.option_score_prev,
-                      )}`}
-                    >
-                      {symbol.option_score - symbol.option_score_prev > 0
-                        ? "(Δ +"
-                        : "(Δ "}
-                      {(symbol.option_score - symbol.option_score_prev).toFixed(
-                        3,
-                      ) || "N/A"}
-                      {")"}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <h2 className="text-lg sm:text-xl font-semibold">
-                Options for {symbol.name} ({symbol.symbol})
-              </h2>
-              {optionsLoading ? (
-                <div>Loading options data...</div>
-              ) : optionsError ? (
-                <div className="text-red-600">
-                  Error loading options data: {optionsError.message}
-                </div>
-              ) : (
-                <OptionsTable isSymbolFiltered={true} data={optionsData} />
-              )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg sm:text-xl">
+                      Options for {symbol.name} ({symbol.symbol})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <OptionsList symbolId={symbol.id} />
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
           )}
 

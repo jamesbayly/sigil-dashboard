@@ -1,31 +1,59 @@
-import { useSymbols } from "@/hooks/useSymbols";
+import { useState, useMemo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
-import type { OptionsDataResponse, PaginationMeta } from "@/types";
+import type { OptionsDataResponse } from "@/types";
+import { OptionType } from "@/types";
+import { useOptionsData } from "@/hooks/useOptionsData";
+import { useSymbols } from "@/hooks/useSymbols";
 import { getNumberStyling } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
+import SymbolSelector from "./SymbolSelector";
 import { PaginationControls } from "./ui/pagination-controls";
 
-interface OptionsTableProps {
-  data: OptionsDataResponse[];
-  isSymbolFiltered: boolean;
-  pagination?: PaginationMeta;
-  onPageChange?: (page: number) => void;
-  onLimitChange?: (limit: number) => void;
+interface OptionsListProps {
+  symbolId?: number;
 }
 
-export default function OptionsTable({
-  data,
-  isSymbolFiltered,
-  pagination,
-  onPageChange,
-  onLimitChange,
-}: OptionsTableProps) {
+const TYPE_LABELS: Record<OptionType, string> = {
+  CALL_BUY: "Call Buy",
+  CALL_SELL: "Call Sell",
+  PUT_BUY: "Put Buy",
+  PUT_SELL: "Put Sell",
+};
+
+export default function OptionsList({
+  symbolId: initialSymbolId,
+}: OptionsListProps) {
+  const [typeFilter, setTypeFilter] = useState<OptionType[]>([]);
+  const [symbolFilter, setSymbolFilter] = useState<number | undefined>(
+    initialSymbolId,
+  );
   const { symbols } = useSymbols();
+
+  // Use initialSymbolId if provided, otherwise use the state
+  const symbolId = initialSymbolId ?? symbolFilter;
+
+  // Convert type filter to API format
+  const typesFilter = useMemo(() => {
+    return typeFilter.length === 0 ? undefined : typeFilter;
+  }, [typeFilter]);
+
+  const { optionsData, isLoading, error, pagination, setPage, setLimit } =
+    useOptionsData(symbolId, typesFilter);
+
+  const toggleTypeFilter = (type: OptionType) => {
+    setTypeFilter((prev) => {
+      if (prev.includes(type)) {
+        return prev.filter((t) => t !== type);
+      } else {
+        return [...prev, type];
+      }
+    });
+  };
 
   const formatCurrency = (num: number | undefined, showZeros = true) => {
     if (num === undefined || num === null) return "N/A";
@@ -76,7 +104,7 @@ export default function OptionsTable({
       },
     },
     // Only show symbol column if not filtered to a specific symbol
-    ...(isSymbolFiltered
+    ...(initialSymbolId
       ? []
       : ([
           {
@@ -253,30 +281,81 @@ export default function OptionsTable({
     },
   ];
 
-  if (data.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-8">
-          <div className="text-center text-muted-foreground">
-            No options data available.
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <DataTable data={data} columns={columns} />
-        {pagination && onPageChange && (
-          <PaginationControls
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onLimitChange={onLimitChange}
-          />
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium">Filter by Type:</span>
+            <div className="flex flex-wrap gap-2">
+              {Object.values(OptionType).map((type) => (
+                <Button
+                  key={type}
+                  variant={typeFilter.includes(type) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => toggleTypeFilter(type)}
+                >
+                  {TYPE_LABELS[type]}
+                </Button>
+              ))}
+            </div>
+          </div>
+          {!initialSymbolId && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium whitespace-nowrap">
+                Filter by Symbol:
+              </span>
+              <SymbolSelector
+                value={symbolFilter}
+                onChange={setSymbolFilter}
+                showLabel={false}
+                className="w-full sm:w-[200px]"
+                filterType="STOCK"
+                showName={true}
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <Card>
+          <CardContent>
+            <div className="flex justify-center items-center h-64">
+              <div className="text-lg">Loading options data...</div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : error ? (
+        <Card>
+          <CardContent>
+            <div className="flex justify-center items-center h-64">
+              <div className="text-lg text-red-600">Error: {error.message}</div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : optionsData.length === 0 ? (
+        <Card>
+          <CardContent className="py-8">
+            <div className="text-center text-muted-foreground">
+              No options data available.
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <DataTable data={optionsData} columns={columns} />
+            {pagination && (
+              <PaginationControls
+                pagination={pagination}
+                onPageChange={setPage}
+                onLimitChange={setLimit}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }

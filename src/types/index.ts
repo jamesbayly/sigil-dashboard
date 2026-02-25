@@ -41,9 +41,9 @@ export enum SymbolType {
 
 export enum OptionType {
   CALL_BUY = "CALL_BUY",
-  CALL_SELL = "CALL_SELL",
-  PUT_BUY = "PUT_BUY",
   PUT_SELL = "PUT_SELL",
+  PUT_BUY = "PUT_BUY",
+  CALL_SELL = "CALL_SELL",
 }
 
 export enum NewsType {
