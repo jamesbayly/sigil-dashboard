@@ -71,11 +71,11 @@ export default function SymbolPage() {
     [symbol?.industry_tags],
   );
 
-  const {
-    parsedNews,
-    relatedIndustryNews,
-    isLoading: parsedNewsLoading,
-  } = useParsedNews(symbol ? symbolId : undefined, undefined, industryIds);
+  const { parsedNews, isLoading: parsedNewsLoading } = useParsedNews(
+    symbol ? symbolId : undefined,
+    undefined,
+    industryIds,
+  );
 
   const existingSymbol = !!id;
   const [isEditMode, setIsEditMode] = useState(!existingSymbol); // For new symbols, always in edit mode
@@ -599,23 +599,6 @@ export default function SymbolPage() {
                   />
                 ) : (
                   <p>No parsed news items found.</p>
-                )}
-              </div>
-            )}
-
-            {!parsedNewsLoading && relatedIndustryNews && (
-              <div className="space-y-4">
-                <h2 className="text-lg sm:text-xl font-semibold">
-                  Related Industry News for {symbol.name} ({symbol.symbol})
-                </h2>
-                {relatedIndustryNews.length > 0 ? (
-                  <ParsedNewsList
-                    parsedItems={relatedIndustryNews}
-                    symbols={symbols}
-                    title=""
-                  />
-                ) : (
-                  <p>No related industry news items found.</p>
                 )}
               </div>
             )}

@@ -294,10 +294,7 @@ export const getNewsParsed = async (
   if (search) params.set("search", search);
   const res = await fetch(`${BASE}/news-parsed?${params.toString()}`);
   return (await res.json()) as
-    | {
-        asset_news: PaginatedResponse<NewsParsedResponse>;
-        related_industry_news: PaginatedResponse<NewsParsedResponse>;
-      }
+    | PaginatedResponse<NewsParsedResponse>
     | GenericResponse;
 };
 

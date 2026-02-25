@@ -43,11 +43,9 @@ export default function ParsedNews() {
   const [searchInput, setSearchInput] = useState("");
   const {
     parsedNews,
-    relatedIndustryNews,
     isLoading,
     error,
     assetNewsPagination,
-    relatedNewsPagination,
     setPage,
     setLimit,
     setSearch,
@@ -333,27 +331,15 @@ export default function ParsedNews() {
             />
           )}
 
-          {relatedIndustryNews.length > 0 && (
-            <ParsedNewsList
-              parsedItems={relatedIndustryNews}
-              symbols={symbols}
-              title="Related Industry News"
-              pagination={relatedNewsPagination}
-              onPageChange={setPage}
-              onLimitChange={setLimit}
-            />
+          {filteredParsedNews.length === 0 && (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-muted-foreground text-center">
+                  No parsed news items found for the selected filters.
+                </p>
+              </CardContent>
+            </Card>
           )}
-
-          {filteredParsedNews.length === 0 &&
-            relatedIndustryNews.length === 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground text-center">
-                    No parsed news items found for the selected filters.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
         </>
       )}
     </div>
