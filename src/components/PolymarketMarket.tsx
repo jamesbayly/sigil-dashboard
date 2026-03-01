@@ -77,9 +77,11 @@ export default function PolymarketMarket() {
                 <Badge className={statusColor} variant="outline">
                   {marketInfo.status}
                 </Badge>
-                <Badge variant="outline" className="capitalize">
-                  {marketInfo.category}
-                </Badge>
+                {marketInfo.category && (
+                  <Badge variant="outline" className="capitalize">
+                    {marketInfo.category}
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
@@ -222,6 +224,10 @@ export default function PolymarketMarket() {
 
 function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
   const explorerUrl = `https://polygonscan.com/tx/${trade.transaction_hash}`;
+  const walletUrl = `https://polygonscan.com/address/${trade.user_id}`;
+  const polyMarketUserUrl = trade.user_name
+    ? `https://polymarket.com/@${trade.user_name}`
+    : undefined;
 
   return (
     <Card className="border-2">
@@ -254,10 +260,34 @@ function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
             <h4 className="text-xs font-semibold text-muted-foreground mb-1">
               User
             </h4>
-            <p className="text-xs" title={trade.user_id}>
-              <span className="font-mono">{trade.user_id}</span> with{" "}
-              {trade.user_trade_count} trades
-            </p>
+            <div className="text-xs flex flex-wrap items-center gap-1">
+              {trade.user_name ? (
+                <>
+                  <span className="font-mono">{trade.user_name}</span>
+                  <a
+                    href={polyMarketUserUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </>
+              ) : (
+                <>
+                  <span className="font-mono">{trade.user_id}</span>
+                  <a
+                    href={walletUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </>
+              )}{" "}
+              with {trade.user_trade_count} trades
+            </div>
           </div>
 
           <div>
