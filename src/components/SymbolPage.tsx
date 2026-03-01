@@ -467,7 +467,7 @@ export default function SymbolPage() {
                         symbol.hour_change_percent,
                       )}`}
                     >
-                      {symbol.hour_change_percent > 0 ? "+" : ""}
+                      {(symbol.hour_change_percent || 0) > 0 ? "+" : ""}
                       {symbol.hour_change_percent
                         ? symbol.hour_change_percent.toFixed(2) + "%"
                         : "N/A"}
@@ -482,7 +482,7 @@ export default function SymbolPage() {
                         symbol.day_change_percent,
                       )}`}
                     >
-                      {symbol.day_change_percent > 0 ? "+" : ""}
+                      {(symbol.day_change_percent || 0) > 0 ? "+" : ""}
                       {symbol.day_change_percent
                         ? symbol.day_change_percent.toFixed(2) + "%"
                         : "N/A"}

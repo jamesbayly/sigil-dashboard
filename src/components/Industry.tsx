@@ -97,7 +97,7 @@ export default function Industry() {
       accessorKey: "day_change_percent",
       header: "24h %",
       cell: ({ row }) => {
-        const change = row.original.day_change_percent;
+        const change = row.original.day_change_percent ?? 0;
         const colorClass = change > 0 ? "text-green-600" : "text-red-600";
         return (
           <div className={`text-right font-mono ${colorClass}`}>

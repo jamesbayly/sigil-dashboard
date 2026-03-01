@@ -167,8 +167,10 @@ export default function SymbolsView() {
       },
       cell: ({ row }) => {
         return (
-          <span className={getNumberStyling(row.original.day_change_percent)}>
-            {formatPercentage(row.original.day_change_percent)}
+          <span
+            className={getNumberStyling(row.original.day_change_percent ?? 0)}
+          >
+            {formatPercentage(row.original.day_change_percent ?? 0)}
           </span>
         );
       },
@@ -189,7 +191,7 @@ export default function SymbolsView() {
       cell: ({ row }) => {
         return (
           <span className={getNumberStyling(row.original.hour_change_percent)}>
-            {formatPercentage(row.original.hour_change_percent)}
+            {formatPercentage(row.original.hour_change_percent ?? 0)}
           </span>
         );
       },

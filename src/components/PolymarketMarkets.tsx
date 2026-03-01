@@ -19,11 +19,13 @@ import { Button } from "./ui/button";
 
 export default function PolymarketMarkets() {
   const navigate = useNavigate();
-  const [minTradesFilter, setMinTradesFilter] = useState<boolean>(false);
+  const [minTradesFilter, setMinTradesFilter] = useState<boolean>(true);
   const [insiderScoreFilter, setInsiderScoreFilter] = useState<boolean>(true);
+  const [statusFilter, setStatusFilter] = useState<string>("active");
   const { markets, isLoading, error } = usePolymarketMarkets();
 
   const filteredMarkets = markets.filter((m) => {
+    if (statusFilter !== "all" && m.status !== statusFilter) return false;
     if (minTradesFilter && m.significant_trades_count <= 1) return false;
     if (insiderScoreFilter && m.insider_trading_score < 0.6) return false;
     return true;
@@ -70,8 +72,8 @@ export default function PolymarketMarkets() {
           status === "active"
             ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
             : status === "closed"
-            ? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
-            : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+              ? "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+              : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
         return (
           <Badge className={color} variant="outline">
             {status}
@@ -161,6 +163,22 @@ export default function PolymarketMarkets() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
+            <div className="w-full sm:w-auto">
+              <Label>Status</Label>
+              <Select
+                value={statusFilter}
+                onValueChange={(v) => setStatusFilter(v)}
+              >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                  <SelectValue placeholder="All Markets" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Markets</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="w-full sm:w-auto">
               <Label>Minimum Trades</Label>
               <Select

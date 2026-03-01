@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,11 @@ export default function PolymarketMarket() {
   const handleBack = () => {
     navigate("/polymarket");
   };
+
+  const getMarketURL = () =>
+    marketInfo && marketInfo.slug
+      ? `https://polymarket.com/event/${marketInfo.slug}`
+      : "#";
 
   if (isLoading) {
     return (
@@ -57,8 +62,16 @@ export default function PolymarketMarket() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">
+              <CardTitle className="text-2xl mb-2 flex items-center">
                 {marketInfo.title}
+                <Link
+                  to={getMarketURL()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Link>
               </CardTitle>
               <div className="flex flex-wrap gap-2">
                 <Badge className={statusColor} variant="outline">

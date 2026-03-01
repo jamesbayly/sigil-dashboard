@@ -14,6 +14,7 @@ export enum StrategyCodes {
   CRYPTO_STRATEGY_12 = "CRYPTO_STRATEGY_12",
   STOCK_STRATEGY_1 = "STOCK_STRATEGY_1",
   STOCK_STRATEGY_2 = "STOCK_STRATEGY_2",
+  STOCK_STRATEGY_3 = "STOCK_STRATEGY_3",
   AI_STOCK_STRATEGY_1 = "AI_STOCK_STRATEGY_1",
 }
 export enum StrategyStatus {
@@ -207,8 +208,8 @@ export interface SymbolRequest {
 export interface SymbolsResponse extends SymbolRequest {
   id: number;
   market_cap: number | undefined; // Express in Millions
-  day_change_percent: number;
-  hour_change_percent: number;
+  day_change_percent: number | undefined;
+  hour_change_percent: number | undefined;
   cg_rank: number | undefined;
   option_score: number;
   option_score_prev: number;
@@ -280,6 +281,12 @@ export interface IndustryTagResponse extends IndustryTags {
   news: NewsParsedResponse[];
 }
 
+export enum PolymarketMarketStatus {
+  ACTIVE = "active",
+  CLOSED = "closed",
+  INACTIVE = "inactive",
+}
+
 export interface PolymarketMarketsResponse {
   id: number;
   polymarket_market_id: string;
@@ -289,7 +296,7 @@ export interface PolymarketMarketsResponse {
   created_at: Date;
   start_date: Date;
   resolution_date: Date | undefined;
-  status: string;
+  status: PolymarketMarketStatus;
   insider_trading_score: number;
   significant_trades_count: number;
   latest_trade_date?: Date;
@@ -307,6 +314,7 @@ export interface PolymarketTradeResponse {
   market_id: number;
   user_id: string;
   user_trade_count: number;
+  user_name: string;
   outcome: string;
   amount: number;
   price: number;
