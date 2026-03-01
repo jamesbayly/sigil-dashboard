@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { DataTable } from "./ui/data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
@@ -19,6 +20,7 @@ import { Button } from "./ui/button";
 
 export default function PolymarketMarkets() {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [minTradesFilter, setMinTradesFilter] = useState<boolean>(true);
   const [insiderScoreFilter, setInsiderScoreFilter] = useState<boolean>(true);
   const [statusFilter, setStatusFilter] = useState<string>("active");
@@ -28,6 +30,15 @@ export default function PolymarketMarkets() {
     if (statusFilter !== "all" && m.status !== statusFilter) return false;
     if (minTradesFilter && m.significant_trades_count <= 1) return false;
     if (insiderScoreFilter && m.insider_trading_score < 0.6) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (
+        !m.title.toLowerCase().includes(query) &&
+        !m.slug.toLowerCase().includes(query)
+      ) {
+        return false;
+      }
+    }
     return true;
   });
 
@@ -163,6 +174,15 @@ export default function PolymarketMarkets() {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
+            <div className="w-full sm:w-auto">
+              <Label>Search Markets</Label>
+              <Input
+                placeholder="Search by title or slug..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
             <div className="w-full sm:w-auto">
               <Label>Status</Label>
               <Select
