@@ -316,7 +316,12 @@ export interface PolymarketTradeResponse {
   user_trade_count: number;
   user_name: string;
   outcome: string;
+  side: "BUY" | "SELL";
   amount: number;
   price: number;
   trade_date: Date;
+
+  current_price: number | undefined;
+  current_profit: number | undefined;
+  current_profit_percent: number | undefined;
 }

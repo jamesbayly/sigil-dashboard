@@ -6,6 +6,7 @@ import { usePolymarketMarket } from "@/hooks/usePolymarketMarket";
 import { Badge } from "./ui/badge";
 import { PolymarketTradeResponse } from "@/types";
 import { useState } from "react";
+import { getNumberStyling } from "@/lib/utils";
 
 export default function PolymarketMarket() {
   const navigate = useNavigate();
@@ -255,7 +256,6 @@ function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
               </a>
             </div>
           </div>
-
           <div>
             <h4 className="text-xs font-semibold text-muted-foreground mb-1">
               User
@@ -297,6 +297,16 @@ function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
             <Badge
               variant="outline"
               className={
+                trade.side === "BUY"
+                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+              }
+            >
+              {trade.side}
+            </Badge>{" "}
+            <Badge
+              variant="outline"
+              className={
                 trade.outcome.toLowerCase() === "yes"
                   ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                   : trade.outcome.toLowerCase() === "no"
@@ -304,7 +314,7 @@ function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
                     : ""
               }
             >
-              {trade.outcome}
+              {trade.outcome.toUpperCase()}
             </Badge>
           </div>
 
@@ -321,12 +331,37 @@ function TradeCard({ trade }: { trade: PolymarketTradeResponse }) {
               at ${trade.price}
             </p>
           </div>
+          {trade.current_price !== undefined && (
+            <div>
+              <h4 className="text-xs font-semibold text-muted-foreground mb-1">
+                PNL (current price: $
+                {trade.current_price.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+                )
+              </h4>
+              <p
+                className={`font-mono font-semibold ${getNumberStyling(trade.current_profit)}`}
+              >
+                $
+                {(trade.current_profit ?? 0).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}{" "}
+                ({trade.current_profit_percent?.toFixed(2)}%)
+              </p>
+            </div>
+          )}
 
-          <div className="md:col-span-2 lg:col-span-3">
+          <div>
             <h4 className="text-xs font-semibold text-muted-foreground mb-1">
               Trade Date
             </h4>
-            <p>{new Date(trade.trade_date).toLocaleString()}</p>
+            <p>Local: {new Date(trade.trade_date).toLocaleString()}</p>
+            <p className="text-sm text-muted-foreground">
+              UTC: {new Date(trade.trade_date).toUTCString()}
+            </p>
           </div>
         </div>
       </CardContent>
