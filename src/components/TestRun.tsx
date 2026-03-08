@@ -27,7 +27,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
 import { Toggle } from "./ui/toggle";
-import { getNumberStyling } from "@/lib/utils";
+import { exportCSV, getNumberStyling } from "@/lib/utils";
 
 const TestRunPermutationsView: FC<{
   permutations: StrategyTestRunPermutationResponse[];
@@ -384,7 +384,7 @@ const TestRunPermutationsView: FC<{
 const TestRunPermutationsResultsView: FC<{
   permutation: StrategyTestRunPermutationResponse | undefined;
   closeSelf: (
-    updatedPermutation: StrategyTestRunPermutationResponse | undefined
+    updatedPermutation: StrategyTestRunPermutationResponse | undefined,
   ) => void;
   doRefreshTestRun: (permutationID?: number) => void;
 }> = ({ permutation, closeSelf, doRefreshTestRun }) => {
@@ -539,31 +539,22 @@ const TestRunPermutationsResultsView: FC<{
 
   const exportTestRunPermutationResults = () => {
     if (!permutation) return;
-    const csvContent =
-      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella,sqn\n" +
-      permutation.results
-        .map((result) => {
-          return [
-            permutation.id,
-            permutation.name,
-            result.symbol_id,
-            symbols.find((s) => s.id === result.symbol_id)?.symbol,
-            result.trade_count,
-            result.win_rate,
-            result.pnl_percent,
-            result.pnl_amount,
-            result.zella_score,
-            result.sqn,
-          ].join(",");
-        })
-        .join("\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${permutation.name}-results.csv`);
-    document.body.appendChild(link);
-    link.click();
+    exportCSV(
+      `${permutation.name}-results`,
+      "perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella,sqn",
+      permutation.results.map((result) => [
+        permutation.id,
+        permutation.name,
+        result.symbol_id,
+        symbols.find((s) => s.id === result.symbol_id)?.symbol,
+        result.trade_count,
+        result.win_rate,
+        result.pnl_percent,
+        result.pnl_amount,
+        result.zella_score,
+        result.sqn,
+      ]),
+    );
   };
 
   const filteredResults =
@@ -694,33 +685,25 @@ export default function TestRunView() {
 
   const exportTestRunResults = () => {
     if (!testRun) return;
-    const csvContent =
-      "data:text/csv;charset=utf-8,perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella,sqn\n" +
-      testRun.permutations
-        .flatMap((perm) =>
-          perm.results.map((result) => {
-            return [
-              perm.id,
-              perm.name,
-              result.symbol_id,
-              symbols.find((s) => s.id === result.symbol_id)?.symbol,
-              result.trade_count,
-              result.win_rate,
-              result.pnl_percent,
-              result.pnl_amount,
-              result.zella_score,
-              result.sqn,
-            ].join(",");
-          })
-        )
-        .join("\n");
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${testRun.name}-results.csv`);
-    document.body.appendChild(link);
-    link.click();
+    exportCSV(
+      `${testRun.name}-results`,
+      "perm_id,perm_name,symbol_id,symbol,trade_count,win_rate,pnl_%,pnl,zella,sqn",
+      testRun.permutations.flatMap((perm) =>
+        perm.results.map((result) => [
+          perm.id,
+          perm.name,
+          result.symbol_id,
+          symbols.find((s) => s.id === result.symbol_id)?.symbol,
+          result.trade_count,
+          result.win_rate,
+          result.pnl_percent,
+          result.pnl_amount,
+          result.zella_score,
+          result.sqn,
+        ]),
+      ),
+    );
   };
 
   const doRefreshTestRun = async (permutationID: number | undefined) => {
@@ -733,7 +716,7 @@ export default function TestRunView() {
   // Filter permutations based on the toggle state
   const filteredPermutations =
     testRun?.permutations.filter((perm) =>
-      showOnlyWithManyTrades ? perm.results_with_many_trades > 0 : true
+      showOnlyWithManyTrades ? perm.results_with_many_trades > 0 : true,
     ) || [];
 
   return (

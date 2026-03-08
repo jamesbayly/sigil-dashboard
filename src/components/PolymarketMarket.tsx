@@ -6,7 +6,7 @@ import { usePolymarketMarket } from "@/hooks/usePolymarketMarket";
 import { Badge } from "./ui/badge";
 import { PolymarketTradeResponse } from "@/types";
 import { useState } from "react";
-import { getNumberStyling } from "@/lib/utils";
+import { exportCSV, getNumberStyling } from "@/lib/utils";
 
 export default function PolymarketMarket() {
   const navigate = useNavigate();
@@ -23,6 +23,31 @@ export default function PolymarketMarket() {
     marketInfo && marketInfo.slug
       ? `https://polymarket.com/event/${marketInfo.slug}`
       : "#";
+
+  const exportData = () => {
+    if (!marketInfo) return;
+
+    exportCSV(
+      `market_${marketInfo.id}_trades`,
+      "market_id,trade_id,transaction_hash,trade_date,user_id,user_name,user_trade_count,side,outcome,amount,price,current_price,current_profit,current_profit_percent",
+      marketInfo.significant_trades.map((trade) => [
+        marketInfo.id,
+        trade.id,
+        trade.transaction_hash,
+        trade.trade_date,
+        trade.user_id,
+        trade.user_name ?? "",
+        trade.user_trade_count,
+        trade.side,
+        trade.outcome,
+        trade.amount,
+        trade.price,
+        trade.current_price ?? "",
+        trade.current_profit ?? "",
+        trade.current_profit_percent ?? "",
+      ]),
+    );
+  };
 
   if (isLoading) {
     return (
@@ -126,8 +151,16 @@ export default function PolymarketMarket() {
       {/* Significant Trades */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="flex flex-row flex-wrap justify-between">
             Significant Trades ({marketInfo.significant_trades.length})
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={exportData}
+              className="ml-4 h-8 px-2"
+            >
+              Export CSV
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
