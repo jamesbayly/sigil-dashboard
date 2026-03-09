@@ -16,6 +16,17 @@ export enum StrategyCodes {
   STOCK_STRATEGY_2 = "STOCK_STRATEGY_2",
   STOCK_STRATEGY_3 = "STOCK_STRATEGY_3",
   AI_STOCK_STRATEGY_1 = "AI_STOCK_STRATEGY_1",
+  POLYMARKET_STRATEGY_1 = "POLYMARKET_STRATEGY_1",
+  POLYMARKET_STRATEGY_2 = "POLYMARKET_STRATEGY_2",
+  POLYMARKET_STRATEGY_3 = "POLYMARKET_STRATEGY_3",
+  POLYMARKET_STRATEGY_4 = "POLYMARKET_STRATEGY_4",
+  POLYMARKET_STRATEGY_5 = "POLYMARKET_STRATEGY_5",
+  POLYMARKET_STRATEGY_6 = "POLYMARKET_STRATEGY_6",
+  POLYMARKET_STRATEGY_7 = "POLYMARKET_STRATEGY_7",
+  POLYMARKET_STRATEGY_8 = "POLYMARKET_STRATEGY_8",
+  POLYMARKET_STRATEGY_9 = "POLYMARKET_STRATEGY_9",
+  POLYMARKET_STRATEGY_10 = "POLYMARKET_STRATEGY_10",
+  POLYMARKET_STRATEGY_11 = "POLYMARKET_STRATEGY_11",
 }
 export enum StrategyStatus {
   ACTIVE = "active",
@@ -26,6 +37,7 @@ export enum StrategyStatus {
 export enum StrategyType {
   CRYPTO = "CRYPTO",
   STOCK_OPTIONS = "STOCK_OPTIONS",
+  POLYMARKET = "POLYMARKET",
   AI = "AI",
 }
 
@@ -329,6 +341,6 @@ export interface PolymarketTradeExport extends PolymarketTradeResponse {
   market_id: number;
   market_title: string;
   market_slug: string;
-  insider_trading_score: number;
   market_resolution_date: Date | undefined;
+  insider_trading_score: number;
 }

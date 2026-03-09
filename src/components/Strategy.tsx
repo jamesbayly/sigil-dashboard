@@ -60,8 +60,8 @@ const parameterSchema = z.object({
 const strategySchema = z.object({
   name: z.string().min(2).max(100),
   symbol_ids: z.string(), // comma-separated or JSON array string
-  status: z.nativeEnum(StrategyStatus),
-  strategy_type: z.nativeEnum(StrategyType),
+  status: z.enum(StrategyStatus),
+  strategy_type: z.enum(StrategyType),
   strategy_code: z.string(),
   parameters: z.array(parameterSchema),
 });
@@ -247,23 +247,19 @@ export default function StrategyView() {
         result = await createTestRun(strategy.id, permutations, undefined);
       }
 
-      if (isGenericResponse(result)) {
-        toast.error(result.message);
-      } else {
-        let symbolName = "all symbols";
-        if (selectedSymbolIds.length === 1) {
-          const found = symbols.find(
-            (s) => s.id === parseInt(selectedSymbolIds[0]),
-          );
-          symbolName = found ? found.name : selectedSymbolIds[0];
-        } else if (selectedSymbolIds.length > 1) {
-          symbolName = `${selectedSymbolIds.length} symbols`;
-        }
-        toast.success(`Test run created successfully for ${symbolName}`);
-        setIsTestRunDialogOpen(false);
-        setPermutationCount("");
-        setSelectedSymbolIds([]);
+      let symbolName = "all symbols";
+      if (selectedSymbolIds.length === 1) {
+        const found = symbols.find(
+          (s) => s.id === parseInt(selectedSymbolIds[0]),
+        );
+        symbolName = found ? found.name : selectedSymbolIds[0];
+      } else if (selectedSymbolIds.length > 1) {
+        symbolName = `${selectedSymbolIds.length} symbols`;
       }
+      toast.success(result.message || `Test run created for ${symbolName}`);
+      setIsTestRunDialogOpen(false);
+      setPermutationCount("");
+      setSelectedSymbolIds([]);
     } catch {
       toast.error("Failed to create test run");
     } finally {
@@ -422,6 +418,7 @@ export default function StrategyView() {
                           <SelectItem value="STOCK_OPTIONS">
                             Stock Options
                           </SelectItem>
+                          <SelectItem value="POLYMARKET">Polymarket</SelectItem>
                           <SelectItem value="AI">AI</SelectItem>
                         </SelectContent>
                       </Select>
