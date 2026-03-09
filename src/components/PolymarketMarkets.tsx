@@ -17,6 +17,8 @@ import { useNavigate } from "react-router-dom";
 import { PolymarketMarketsResponse } from "@/types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { getAllPolymarketTrades } from "@/utils/api";
+import { exportCSV } from "@/lib/utils";
 
 export default function PolymarketMarkets() {
   const navigate = useNavigate();
@@ -41,6 +43,42 @@ export default function PolymarketMarkets() {
     }
     return true;
   });
+
+  const exportAllTrades = async () => {
+    // Get date from getAllPolymarketTrades response
+    const data = await getAllPolymarketTrades();
+    if ("error" in data) {
+      alert(`Error fetching trades: ${data.error}`);
+      return;
+    }
+
+    if (Array.isArray(data)) {
+      exportCSV(
+        `all_trades`,
+        "market_id,market_title,market_slug,market_resolution_date,insider_trading_score,trade_id,transaction_hash,trade_date,user_id,user_name,user_trade_count,side,outcome,amount,price,current_price,current_profit,current_profit_percent",
+        data.map((trade) => [
+          trade.market_id,
+          trade.market_title,
+          trade.market_slug,
+          trade.market_resolution_date,
+          trade.insider_trading_score,
+          trade.id,
+          trade.transaction_hash,
+          trade.trade_date,
+          trade.user_id,
+          trade.user_name ?? "",
+          trade.user_trade_count,
+          trade.side,
+          trade.outcome,
+          trade.amount,
+          trade.price,
+          trade.current_price ?? "",
+          trade.current_profit ?? "",
+          trade.current_profit_percent ?? "",
+        ]),
+      );
+    }
+  };
 
   const columns: ColumnDef<PolymarketMarketsResponse>[] = [
     {
@@ -231,6 +269,9 @@ export default function PolymarketMarkets() {
                 </SelectContent>
               </Select>
             </div>
+            <Button variant="outline" onClick={exportAllTrades}>
+              Export All Trades CSV
+            </Button>
           </div>
         </CardContent>
       </Card>

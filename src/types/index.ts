@@ -311,7 +311,6 @@ export interface PolymarketMarketResponse extends PolymarketMarketsResponse {
 export interface PolymarketTradeResponse {
   id: number;
   transaction_hash: string;
-  market_id: number;
   user_id: string;
   user_trade_count: number;
   user_name: string;
@@ -324,4 +323,12 @@ export interface PolymarketTradeResponse {
   current_price: number | undefined;
   current_profit: number | undefined;
   current_profit_percent: number | undefined;
+}
+
+export interface PolymarketTradeExport extends PolymarketTradeResponse {
+  market_id: number;
+  market_title: string;
+  market_slug: string;
+  insider_trading_score: number;
+  market_resolution_date: Date | undefined;
 }

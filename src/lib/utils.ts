@@ -23,9 +23,26 @@ export const exportCSV = (
   header: string,
   data: unknown[][],
 ) => {
+  // Helper to escape CSV values
+  const escapeCSVValue = (value: unknown) => {
+    let str = String(value ?? "");
+    // Escape double quotes by doubling them
+    str = str.replace(/"/g, '""');
+    // If value contains comma, quote, or newline, wrap in quotes
+    if (/[,"\n\r]/.test(str)) {
+      str = `"${str}"`;
+    }
+    // Remove control chars except tab/newline
+    // eslint-disable-next-line no-control-regex
+    str = str.replace(/[\x00-\x1F\x7F]/g, (c) =>
+      c === "\t" || c === "\n" || c === "\r" ? c : "",
+    );
+    return str;
+  };
+
+  const csvRows = data.map((row) => row.map(escapeCSVValue).join(","));
   const csvContent =
-    `data:text/csv;charset=utf-8,${header}\n` +
-    data.map((d) => d.join(",")).join("\n");
+    `data:text/csv;charset=utf-8,${header}\n` + csvRows.join("\n");
 
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
