@@ -13,6 +13,7 @@ import {
   PaginatedResponse,
   PolymarketMarketResponse,
   PolymarketMarketsResponse,
+  PolymarketPriceResponse,
   PolymarketTradeExport,
   StrategyRequest,
   StrategyResponse,
@@ -332,4 +333,9 @@ export const getPolymarketMarket = async (marketId: number) => {
 export const getAllPolymarketTrades = async () => {
   const res = await fetch(`${BASE}/polymarkets/trades`);
   return (await res.json()) as PolymarketTradeExport[] | GenericResponse;
+};
+
+export const getAllPolymarketPrices = async (marketId: number) => {
+  const res = await fetch(`${BASE}/polymarkets/${marketId}/prices`);
+  return (await res.json()) as PolymarketPriceResponse[] | GenericResponse;
 };

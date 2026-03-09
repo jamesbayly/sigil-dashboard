@@ -4,9 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePolymarketMarket } from "@/hooks/usePolymarketMarket";
 import { Badge } from "./ui/badge";
-import { PolymarketTradeResponse } from "@/types";
-import { useState } from "react";
+import type { PolymarketPriceResponse, PolymarketTradeResponse } from "@/types";
+import { useState, useEffect } from "react";
 import { exportCSV, getNumberStyling } from "@/lib/utils";
+import { getAllPolymarketPrices } from "@/utils/api";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
 
 export default function PolymarketMarket() {
   const navigate = useNavigate();
@@ -14,10 +23,40 @@ export default function PolymarketMarket() {
   const marketId = id ? parseInt(id, 10) : undefined;
   const { marketInfo, isLoading } = usePolymarketMarket(marketId);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [priceHistory, setPriceHistory] = useState<
+    { date: string; yes_price: number; no_price: number }[]
+  >([]);
+  const [priceLoading, setPriceLoading] = useState(false);
 
   const handleBack = () => {
     navigate("/polymarket");
   };
+
+  // Fetch price history for this market
+  useEffect(() => {
+    if (!marketId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPriceHistory([]);
+      return;
+    }
+    setPriceLoading(true);
+    getAllPolymarketPrices(marketId)
+      .then((prices) => {
+        if (!Array.isArray(prices)) {
+          setPriceHistory([]);
+          return;
+        }
+        // Sort by date ascending
+        // Map to chart format
+        const chartData = prices.map((p: PolymarketPriceResponse) => ({
+          date: new Date(p.date).toISOString(),
+          yes_price: p.outcome_price,
+          no_price: 1 - p.outcome_price,
+        }));
+        setPriceHistory(chartData);
+      })
+      .finally(() => setPriceLoading(false));
+  }, [marketId]);
 
   const getMarketURL = () =>
     marketInfo && marketInfo.slug
@@ -148,6 +187,48 @@ export default function PolymarketMarket() {
         </CardContent>
       </Card>
 
+      {/* Price History Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Price History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {priceLoading ? (
+            <div className="text-center py-8">Loading price history...</div>
+          ) : priceHistory.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No price history found for this market
+            </div>
+          ) : (
+            <div className="h-64 bg-white dark:bg-gray-800 p-2 sm:p-4 rounded">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={priceHistory}>
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={(tick) => tick.slice(0, 10)}
+                  />
+                  <YAxis max={1} min={0} />
+                  <Tooltip />
+                  <Line
+                    label="Yes"
+                    type="monotone"
+                    dataKey="yes_price"
+                    stroke="#3b82f6"
+                    dot={false}
+                  />
+                  <Line
+                    label="No"
+                    type="monotone"
+                    dataKey="no_price"
+                    stroke="#ef4444"
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </CardContent>
+      </Card>
       {/* Significant Trades */}
       <Card>
         <CardHeader>

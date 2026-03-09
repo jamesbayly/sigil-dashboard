@@ -344,3 +344,14 @@ export interface PolymarketTradeExport extends PolymarketTradeResponse {
   market_resolution_date: Date | undefined;
   insider_trading_score: number;
 }
+
+export interface PolymarketPriceResponse {
+  id: number;
+  date: Date;
+  market_id: number;
+  outcome_name: string;
+  outcome_price: number;
+  volume24hr: number;
+  volume1wk: number;
+  volume1mo: number;
+}
