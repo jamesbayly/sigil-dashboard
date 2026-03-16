@@ -27,6 +27,7 @@ export enum StrategyCodes {
   POLYMARKET_STRATEGY_9 = "POLYMARKET_STRATEGY_9",
   POLYMARKET_STRATEGY_10 = "POLYMARKET_STRATEGY_10",
   POLYMARKET_STRATEGY_11 = "POLYMARKET_STRATEGY_11",
+  POLYMARKET_STRATEGY_12 = "POLYMARKET_STRATEGY_12",
 }
 export enum StrategyStatus {
   ACTIVE = "active",
@@ -109,18 +110,26 @@ export interface Trades {
   open_price: number;
   open_notes: string;
   open_fees: number;
-  open_binance_order_id?: string;
   take_profit_price?: number;
   stop_loss_percent?: number;
   close_time?: string;
   close_price?: number;
   close_notes?: string;
   close_fees?: number;
-  close_binance_order_id?: string;
   fees?: number;
   pnl_amount_fee_exclusive?: number;
   pnl_percent?: number;
   pnl_amount?: number;
+}
+
+export interface BinanceTrades extends Trades {
+  open_binance_order_id?: string;
+  close_binance_order_id?: string;
+}
+
+export interface PolymarketTrades extends Omit<Trades, "symbol_id"> {
+  polymarket_market_id: number;
+  outcome: string;
 }
 
 export interface MarketStateResponse {

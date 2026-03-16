@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import TimeAgo from "react-timeago";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
-import { Trades } from "@/types";
+import { BinanceTrades, PolymarketTrades, Trades } from "@/types";
 import TradeView from "./Trade";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { ColumnDef } from "@tanstack/react-table";
@@ -26,7 +26,7 @@ import { DataTable } from "./ui/data-table";
 import { ArrowUpDown } from "lucide-react";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Link } from "react-router-dom";
-import { getNumberStyling } from "@/lib/utils";
+import { getNumberStyling, isRealTrade } from "@/lib/utils";
 import SymbolPopover from "./SymbolPopover";
 import SymbolSelector from "./SymbolSelector";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,223 +37,275 @@ export default function OpenTrades() {
   const { symbols } = useSymbols();
   const { strategies } = useStrategies();
   const [closingAll, setClosingAll] = useState(false);
-  const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
-    undefined,
-  );
+  const [selectedTrade, setSelectedTrade] = useState<
+    Trades | BinanceTrades | PolymarketTrades | undefined
+  >(undefined);
 
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
     "ALL",
   );
+  const [tradeSourceFilter, setTradeSourceFilter] = useState<
+    "ALL" | "SYMBOL" | "POLYM"
+  >("ALL");
   const [strategyFilter, setStrategyFilter] = useState<number | undefined>();
   const [symbolFilter, setSymbolFilter] = useState<number | undefined>();
-  const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
+  const [filteredTrades, setFilteredTrades] = useState<
+    (Trades | PolymarketTrades | BinanceTrades)[]
+  >([]);
 
-  const columns: ColumnDef<Trades>[] = [
-    {
-      id: "symbol",
-      accessorFn: (row) => {
-        const sym = symbols.find((s) => s.id === row.symbol_id);
-        return sym?.symbol || "";
+  const columns = (
+    [
+      ["ALL", "SYMBOL"].includes(tradeSourceFilter) && {
+        id: "symbol",
+        accessorKey: "symbol_id",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Symbol
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const sym =
+            "symbol_id" in row.original
+              ? symbols.find((s) => s.id === (row.original as Trades).symbol_id)
+              : undefined;
+          return sym ? <SymbolPopover symbolId={sym.id} symbol={sym} /> : "NA";
+        },
       },
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Symbol
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
+      ["ALL", "POLYM"].includes(tradeSourceFilter) && {
+        id: "polymarket",
+        accessorKey: "polymarket_id",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Polymarket
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const polymId =
+            "polymarket_id" in row.original
+              ? (row.original.polymarket_id as number)
+              : undefined;
+          return polymId ? <span>{polymId}</span> : "NA";
+        },
       },
-      cell: ({ row }) => {
-        const sym = symbols.find((s) => s.id === row.original.symbol_id);
-        return <SymbolPopover symbolId={row.original.symbol_id} symbol={sym} />;
+      {
+        accessorKey: "strategy_id",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Strategy
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const strat = strategies.find(
+            (s) => s.id === row.original.strategy_id,
+          );
+          return (
+            <Link
+              to={`/strategies/${strat?.id}`}
+              className="hover:text-blue-800 underline"
+            >
+              {strat?.name}
+            </Link>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "strategy_id",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Strategy
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
+      {
+        accessorKey: "type",
+        header: "Type",
+        cell: ({ row }) => {
+          return <span>{isRealTrade(row.original) ? "REAL" : "TEST"}</span>;
+        },
       },
-      cell: ({ row }) => {
-        const strat = strategies.find((s) => s.id === row.original.strategy_id);
-        return (
-          <Link
-            to={`/strategies/${strat?.id}`}
-            className="hover:text-blue-800 underline"
-          >
-            {strat?.name}
-          </Link>
-        );
+      {
+        accessorKey: "conviction",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Conviction
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <span
+              className={`${getNumberStyling(row.original.conviction, 0.3)}`}
+            >
+              {Math.round(row.original.conviction * 100)}%
+            </span>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "type",
-      header: "Type",
-      cell: ({ row }) => {
-        return (
-          <span>{row.original.open_binance_order_id ? "REAL" : "TEST"}</span>
-        );
+      {
+        accessorKey: "open_time",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Opened
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return <TimeAgo date={row.original.open_time} />;
+        },
       },
-    },
-    {
-      accessorKey: "conviction",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Conviction
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
+      {
+        accessorKey: "size",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Size (USD)
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <span>
+              $
+              {parseFloat(
+                (row.original.size * row.original.open_price).toFixed(2),
+              ).toLocaleString()}
+            </span>
+          );
+        },
       },
-      cell: ({ row }) => {
-        return (
-          <span className={`${getNumberStyling(row.original.conviction, 0.3)}`}>
-            {Math.round(row.original.conviction * 100)}%
-          </span>
-        );
+      {
+        accessorKey: "open_price",
+        header: "Open Price",
+        cell: ({ row }) => {
+          return (
+            <span>
+              ${parseFloat(row.original.open_price.toFixed(2)).toLocaleString()}
+            </span>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "open_time",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Opened
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
+      {
+        accessorKey: "close_price",
+        header: "Current Price",
+        cell: ({ row }) => {
+          return (
+            <span>
+              {row.original.close_price
+                ? "$" +
+                  parseFloat(
+                    row.original.close_price.toFixed(2),
+                  ).toLocaleString()
+                : ""}
+            </span>
+          );
+        },
       },
-      cell: ({ row }) => {
-        return <TimeAgo date={row.original.open_time} />;
+      {
+        accessorKey: "pnl_percent",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Current PnL (%)
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <span>
+              {row.original.pnl_percent
+                ? row.original.pnl_percent.toFixed(2) + "%"
+                : ""}
+            </span>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "size",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Size (USD)
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
+      {
+        accessorKey: "take_profit_price",
+        header: "Target Price",
+        cell: ({ row }) => {
+          return (
+            <span>
+              {row.original.take_profit_price
+                ? "$" +
+                  parseFloat(
+                    row.original.take_profit_price.toFixed(2),
+                  ).toLocaleString()
+                : ""}
+            </span>
+          );
+        },
       },
-      cell: ({ row }) => {
-        return (
-          <span>
-            $
-            {parseFloat(
-              (row.original.size * row.original.open_price).toFixed(2),
-            ).toLocaleString()}
-          </span>
-        );
+      {
+        accessorKey: "stop_loss_percent",
+        header: "Trailing Stop (%)",
+        cell: ({ row }) => {
+          return (
+            <span>{row.original.stop_loss_percent?.toFixed(2) + "%"}</span>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "open_price",
-      header: "Open Price",
-      cell: ({ row }) => {
-        return (
-          <span>
-            ${parseFloat(row.original.open_price.toFixed(2)).toLocaleString()}
-          </span>
-        );
+      {
+        accessorKey: "action",
+        header: "Action",
+        cell: ({ row }) => {
+          return (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedTrade(row.original)}
+            >
+              View
+            </Button>
+          );
+        },
       },
-    },
-    {
-      accessorKey: "close_price",
-      header: "Current Price",
-      cell: ({ row }) => {
-        return (
-          <span>
-            {row.original.close_price
-              ? "$" +
-                parseFloat(row.original.close_price.toFixed(2)).toLocaleString()
-              : ""}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "pnl_percent",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Current PnL (%)
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        return (
-          <span>
-            {row.original.pnl_percent
-              ? row.original.pnl_percent.toFixed(2) + "%"
-              : ""}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "take_profit_price",
-      header: "Target Price",
-      cell: ({ row }) => {
-        return (
-          <span>
-            {row.original.take_profit_price
-              ? "$" +
-                parseFloat(
-                  row.original.take_profit_price.toFixed(2),
-                ).toLocaleString()
-              : ""}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: "stop_loss_percent",
-      header: "Trailing Stop (%)",
-      cell: ({ row }) => {
-        return <span>{row.original.stop_loss_percent?.toFixed(2) + "%"}</span>;
-      },
-    },
-    {
-      accessorKey: "action",
-      header: "Action",
-      cell: ({ row }) => {
-        return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setSelectedTrade(row.original)}
-          >
-            View
-          </Button>
-        );
-      },
-    },
-  ];
+    ] as (ColumnDef<Trades | PolymarketTrades | BinanceTrades> | false)[]
+  ).filter(
+    (c): c is ColumnDef<Trades | PolymarketTrades | BinanceTrades> =>
+      c !== false,
+  );
 
   // Update filteredTrades when trades, tradeTypesFilter, strategyFilter, or symbolFilter changes
   useEffect(() => {
@@ -261,7 +313,14 @@ export default function OpenTrades() {
 
     // Apply trade type filter
     if (tradeTypesFilter === "REAL") {
-      filtered = filtered.filter((t) => t.open_binance_order_id);
+      filtered = filtered.filter((t) => isRealTrade(t));
+    }
+
+    // Apply source filter (Symbol vs Polymarket)
+    if (tradeSourceFilter === "SYMBOL") {
+      filtered = filtered.filter((t) => "symbol_id" in t);
+    } else if (tradeSourceFilter === "POLYM") {
+      filtered = filtered.filter((t) => !("symbol_id" in t));
     }
 
     // Apply strategy filter
@@ -271,12 +330,20 @@ export default function OpenTrades() {
 
     // Apply symbol filter
     if (symbolFilter !== undefined) {
-      filtered = filtered.filter((t) => t.symbol_id === symbolFilter);
+      filtered = filtered.filter(
+        (t) => "symbol_id" in t && t.symbol_id === symbolFilter,
+      );
     }
 
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setFilteredTrades(filtered);
-  }, [trades, tradeTypesFilter, strategyFilter, symbolFilter]);
+  }, [
+    trades,
+    tradeTypesFilter,
+    tradeSourceFilter,
+    strategyFilter,
+    symbolFilter,
+  ]);
 
   return (
     <div className="space-y-4">
@@ -336,6 +403,28 @@ export default function OpenTrades() {
 
         <div className="w-full sm:w-auto">
           <SymbolSelector value={symbolFilter} onChange={setSymbolFilter} />
+        </div>
+
+        <div className="w-full sm:w-auto">
+          <Tabs
+            value={tradeSourceFilter}
+            onValueChange={(v) =>
+              setTradeSourceFilter(v as "ALL" | "SYMBOL" | "POLYM")
+            }
+            className="w-full sm:w-[400px]"
+          >
+            <TabsList className="w-full">
+              <TabsTrigger value="SYMBOL" className="flex-1">
+                Symbol Trades
+              </TabsTrigger>
+              <TabsTrigger value="POLYM" className="flex-1">
+                Polymarket Trades
+              </TabsTrigger>
+              <TabsTrigger value="ALL" className="flex-1">
+                All Sources
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
 
         <div className="w-full sm:w-auto">

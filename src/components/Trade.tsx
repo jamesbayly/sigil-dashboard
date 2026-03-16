@@ -1,5 +1,5 @@
 import { useSymbols } from "@/hooks/useSymbols";
-import { Trades } from "@/types";
+import { BinanceTrades, PolymarketTrades, Trades } from "@/types";
 import { Button } from "./ui/button";
 import React from "react";
 import {
@@ -19,7 +19,7 @@ import { useOpenTrades } from "@/hooks/useOpenTrades";
 import { useAuth } from "@/hooks/useAuth";
 
 interface TradeViewProps {
-  trade: Trades | undefined;
+  trade: Trades | BinanceTrades | PolymarketTrades | undefined;
   closeSelf: (updatedTrade: Trades | undefined) => void;
 }
 
@@ -27,7 +27,17 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
   const { onClose } = useOpenTrades();
   const { isAuthenticated } = useAuth();
   const { symbols } = useSymbols();
-  const symbol = symbols.find((s) => s.id === trade?.symbol_id);
+  const type: "binance" | "polymarket" | "generic" = trade
+    ? "open_binance_order_id" in trade
+      ? "binance"
+      : "polymarket_market_id" in trade
+        ? "polymarket"
+        : "generic"
+    : "generic";
+  const symbol =
+    type === "polymarket" && trade && "symbol_id" in trade
+      ? symbols.find((s) => s.id === trade?.symbol_id)
+      : undefined;
 
   const isOpen = !!trade && !trade.close_time;
 
@@ -63,9 +73,11 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
               <p>
                 <strong>Strategy ID:</strong> {trade.strategy_id}
               </p>
-              <p>
-                <strong>Symbol ID:</strong> {trade.symbol_id}
-              </p>
+              {symbol && (
+                <p>
+                  <strong>Symbol ID:</strong> {symbol.name}
+                </p>
+              )}
               <p>
                 <strong>Size:</strong> {trade.size}
               </p>
@@ -93,12 +105,13 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
               <p>
                 <strong>Open Fees:</strong> ${trade.open_fees.toFixed(2)}
               </p>
-              {trade.open_binance_order_id && (
-                <p>
-                  <strong>Open Binance Order ID:</strong>{" "}
-                  {trade.open_binance_order_id}
-                </p>
-              )}
+              {"open_binance_order_id" in trade &&
+                trade.open_binance_order_id && (
+                  <p>
+                    <strong>Open Binance Order ID:</strong>{" "}
+                    {trade.open_binance_order_id}
+                  </p>
+                )}
               {trade.take_profit_price && (
                 <p>
                   <strong>Take Profit Price:</strong> $
@@ -139,12 +152,13 @@ const TradeView: React.FC<TradeViewProps> = ({ trade, closeSelf }) => {
                   <strong>Close Fees:</strong> ${trade.close_fees.toFixed(2)}
                 </p>
               )}
-              {trade.close_binance_order_id && (
-                <p>
-                  <strong>Close Binance Order ID:</strong>{" "}
-                  {trade.close_binance_order_id}
-                </p>
-              )}
+              {"close_binance_order_id" in trade &&
+                trade.close_binance_order_id && (
+                  <p>
+                    <strong>Close Binance Order ID:</strong>{" "}
+                    {trade.close_binance_order_id}
+                  </p>
+                )}
               {trade.fees && (
                 <p>
                   <strong>Total Fees:</strong> ${trade.fees.toFixed(2)}

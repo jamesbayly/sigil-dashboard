@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 import { getHistoricTrades } from "@/utils/api";
-import { type Trades, isGenericResponse, type PaginationMeta } from "@/types";
+import {
+  type Trades,
+  isGenericResponse,
+  type PaginationMeta,
+  BinanceTrades,
+  PolymarketTrades,
+} from "@/types";
 import { toast } from "sonner";
 import { DateRange } from "react-day-picker";
 
@@ -9,7 +15,9 @@ export const useHistoricTrades = (
   strategyId?: number,
   symbolId?: number,
 ) => {
-  const [trades, setTrades] = useState<Trades[]>([]);
+  const [trades, setTrades] = useState<
+    (Trades | PolymarketTrades | BinanceTrades)[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [page, setPage] = useState(1);

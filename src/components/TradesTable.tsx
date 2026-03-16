@@ -20,14 +20,14 @@ import {
 import { useHistoricTrades } from "@/hooks/useHistoricTrades";
 import { useSymbols } from "@/hooks/useSymbols";
 import { useStrategies } from "@/hooks/useStrategies";
-import { Trades } from "@/types";
+import { BinanceTrades, PolymarketTrades, Trades } from "@/types";
 import TradeView from "./Trade";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { CalendarIcon, ArrowUpDown } from "lucide-react";
 import { addDays, format } from "date-fns";
-import { cn, getNumberStyling } from "@/lib/utils";
+import { cn, getNumberStyling, isRealTrade } from "@/lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { calculateZellaScore } from "@/lib/zellaScoreHelper";
 import { useHistoricMarketState } from "@/hooks/useHistoricMarketState";
@@ -59,9 +59,9 @@ export default function TradesTable({
   const [symFilter, setSymFilter] = useState<number | undefined>(
     globalSymbolFilter,
   );
-  const [selectedTrade, setSelectedTrade] = useState<Trades | undefined>(
-    undefined,
-  );
+  const [selectedTrade, setSelectedTrade] = useState<
+    Trades | PolymarketTrades | BinanceTrades | undefined
+  >(undefined);
   const [date, setDate] = useState<DateRange | undefined>({
     from: addDays(new Date(), -7),
     to: new Date(),
@@ -69,7 +69,9 @@ export default function TradesTable({
   const [tradeTypesFilter, setTradeTypesFilter] = useState<"REAL" | "ALL">(
     "ALL",
   );
-  const [filteredTrades, setFilteredTrades] = useState<Trades[]>([]);
+  const [filteredTrades, setFilteredTrades] = useState<
+    (Trades | PolymarketTrades | BinanceTrades)[]
+  >([]);
   const { trades, pagination, setPage, setLimit } = useHistoricTrades(
     date,
     stratFilter,
@@ -78,7 +80,7 @@ export default function TradesTable({
   const { marketState } = useHistoricMarketState(date);
 
   // Column definitions for the DataTable
-  const columns: ColumnDef<Trades>[] = [
+  const columns: ColumnDef<Trades | PolymarketTrades | BinanceTrades>[] = [
     {
       accessorKey: "close_time",
       header: ({ column }) => {
@@ -100,17 +102,12 @@ export default function TradesTable({
       accessorKey: "type",
       header: "Type",
       cell: ({ row }) => {
-        return (
-          <span>{row.original.open_binance_order_id ? "REAL" : "TEST"}</span>
-        );
+        return <span>{isRealTrade(row.original) ? "REAL" : "TEST"}</span>;
       },
     },
     {
       id: "symbol",
-      accessorFn: (row) => {
-        const sym = symbols.find((s) => s.id === row.symbol_id);
-        return sym?.symbol || "";
-      },
+      accessorKey: "symbol_id",
       header: ({ column }) => {
         return (
           <Button
@@ -123,8 +120,11 @@ export default function TradesTable({
         );
       },
       cell: ({ row }) => {
-        const sym = symbols.find((s) => s.id === row.original.symbol_id);
-        return <SymbolPopover symbolId={row.original.symbol_id} symbol={sym} />;
+        const sym =
+          "symbol_id" in row.original
+            ? symbols.find((s) => s.id === (row.original as Trades).symbol_id)
+            : undefined;
+        return sym ? <SymbolPopover symbolId={sym.id} symbol={sym} /> : "NA";
       },
     },
     {
@@ -238,7 +238,7 @@ export default function TradesTable({
   // Update filteredTrades when trades or tradeTypesFilter changes
   useEffect(() => {
     if (tradeTypesFilter === "REAL") {
-      setFilteredTrades(trades.filter((t) => t.open_binance_order_id));
+      setFilteredTrades(trades.filter((t) => isRealTrade(t)));
     } else {
       setFilteredTrades(trades);
     }

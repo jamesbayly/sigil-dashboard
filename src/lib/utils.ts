@@ -1,3 +1,4 @@
+import { BinanceTrades, PolymarketTrades, Trades } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -50,4 +51,10 @@ export const exportCSV = (
   link.setAttribute("download", `${fileName}.csv`);
   document.body.appendChild(link);
   link.click();
+};
+
+export const isRealTrade = (
+  trade: Trades | BinanceTrades | PolymarketTrades,
+) => {
+  return "open_binance_order_id" in trade && trade.open_binance_order_id;
 };

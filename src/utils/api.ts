@@ -1,4 +1,5 @@
 import {
+  BinanceTrades,
   GenericResponse,
   IndustryTagResponse,
   IndustryTags,
@@ -15,6 +16,7 @@ import {
   PolymarketMarketsResponse,
   PolymarketPriceResponse,
   PolymarketTradeExport,
+  PolymarketTrades,
   StrategyRequest,
   StrategyResponse,
   StrategyTestRunResponse,
@@ -29,12 +31,18 @@ const BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const getOpenTrades = async () => {
   const res = await fetch(`${BASE}/trade`);
-  return (await res.json()) as Trades[] | GenericResponse;
+  return (await res.json()) as
+    | (Trades | PolymarketTrades | BinanceTrades)[]
+    | GenericResponse;
 };
 
 export const closeTrade = async (id: number) => {
   const res = await fetch(`${BASE}/trade/${id}`, { method: "DELETE" });
-  return (await res.json()) as Trades | GenericResponse;
+  return (await res.json()) as
+    | Trades
+    | PolymarketTrades
+    | BinanceTrades
+    | GenericResponse;
 };
 
 export const closeAllTrades = async () => {
@@ -58,7 +66,9 @@ export const getHistoricTrades = async (
   if (page) params.set("page", `${page}`);
   if (limit) params.set("limit", `${limit}`);
   const res = await fetch(`${BASE}/trade/historic?${params.toString()}`);
-  return (await res.json()) as PaginatedResponse<Trades> | GenericResponse;
+  return (await res.json()) as
+    | PaginatedResponse<Trades | PolymarketTrades | BinanceTrades>
+    | GenericResponse;
 };
 
 export const getHistoricMarketState = async (

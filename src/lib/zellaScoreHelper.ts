@@ -1,6 +1,8 @@
-import { Trades } from "@/types";
+import { BinanceTrades, PolymarketTrades, Trades } from "@/types";
 
-export const calculateZellaScore = (trades: Trades[]): number => {
+export const calculateZellaScore = (
+  trades: (Trades | PolymarketTrades | BinanceTrades)[],
+): number => {
   // Filter closed trades with defined PnL
   const closedTrades = trades.filter((t) => t.pnl_amount && t.close_price);
 
@@ -11,11 +13,11 @@ export const calculateZellaScore = (trades: Trades[]): number => {
 
   const grossProfit = wins.reduce(
     (sum, t) => sum + Math.abs(t.pnl_amount ?? 0),
-    0
+    0,
   );
   const grossLoss = losses.reduce(
     (sum, t) => sum + Math.abs(t.pnl_amount ?? 0),
-    0
+    0,
   );
   const netProfit = grossProfit - grossLoss;
 
@@ -85,7 +87,7 @@ export const calculateZellaScore = (trades: Trades[]): number => {
     const dateStr = trade.close_time.split("T")[0];
     dailyPnLMap.set(
       dateStr,
-      (dailyPnLMap.get(dateStr) || 0) + (trade.pnl_amount ?? 0)
+      (dailyPnLMap.get(dateStr) || 0) + (trade.pnl_amount ?? 0),
     );
   }
   const dailyPnLs = Array.from(dailyPnLMap.values());
@@ -96,9 +98,9 @@ export const calculateZellaScore = (trades: Trades[]): number => {
       ? Math.sqrt(
           dailyPnLs.reduce(
             (sum, val) => sum + Math.pow(val - avgDailyProfit, 2),
-            0
+            0,
           ) /
-            (dailyPnLs.length - 1)
+            (dailyPnLs.length - 1),
         )
       : 0;
   const consistencyRatio = totalProfit > 0 ? stdDev / totalProfit : 0;
@@ -118,7 +120,7 @@ export const calculateZellaScore = (trades: Trades[]): number => {
 
 const getScoreFromRanges = (
   value: number,
-  ranges: { min: number; score: number }[]
+  ranges: { min: number; score: number }[],
 ): number => {
   for (const range of ranges) {
     if (value >= range.min) return range.score;

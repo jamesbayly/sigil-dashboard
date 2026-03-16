@@ -1,10 +1,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { getOpenTrades, closeTrade, closeAllTrades } from "@/utils/api";
-import { isGenericResponse, type Trades } from "@/types";
+import {
+  BinanceTrades,
+  isGenericResponse,
+  PolymarketTrades,
+  type Trades,
+} from "@/types";
 import { toast } from "sonner";
 
 export const useOpenTrades = () => {
-  const [trades, setTrades] = useState<Trades[]>([]);
+  const [trades, setTrades] = useState<
+    (Trades | BinanceTrades | PolymarketTrades)[]
+  >([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -30,8 +37,7 @@ export const useOpenTrades = () => {
 
   useEffect(() => {
     fetchAll();
-    const id = setInterval(fetchAll, 10_000);
-    return () => clearInterval(id);
+    // Polling removed: fetch only on mount and when `fetchAll` changes.
   }, [fetchAll]);
 
   const onClose = async (id: number) => {
