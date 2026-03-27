@@ -1,0 +1,72 @@
+import { useEffect, useState } from "react";
+import { getHistoricPolymarketTrades } from "@/utils/api";
+import {
+  isGenericResponse,
+  PolymarketTrades,
+  type PaginationMeta,
+} from "@/types";
+import { toast } from "sonner";
+import { DateRange } from "react-day-picker";
+
+export const useHistoricPolymarketTrades = (
+  date: DateRange | undefined,
+  strategyId?: number,
+) => {
+  const [trades, setTrades] = useState<PolymarketTrades[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
+  const [pagination, setPagination] = useState<PaginationMeta | undefined>();
+
+  const fetchAll = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const res = await getHistoricPolymarketTrades(
+        date?.from,
+        date?.to,
+        strategyId,
+        page,
+        limit,
+      );
+      if (isGenericResponse(res)) {
+        throw new Error(res.message);
+      }
+
+      setTrades(
+        res.data.sort((a, b) =>
+          (a.close_time ?? 0) < (b.close_time ?? 0) ? 1 : -1,
+        ),
+      );
+      setPagination(res.pagination);
+    } catch (err) {
+      const newError =
+        err instanceof Error
+          ? err
+          : new Error("Failed to fetch historic polymarket trades");
+      setError(newError);
+      toast.error(newError.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [date, strategyId, page, limit]);
+
+  return {
+    trades,
+    isLoading,
+    error,
+    pagination,
+    page,
+    setPage,
+    limit,
+    setLimit,
+    refetch: fetchAll,
+  };
+};

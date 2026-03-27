@@ -22,7 +22,8 @@ export default function Nav() {
 
   const navLinks = isAuthenticated
     ? [
-        { to: "/open", label: "Open" },
+        { to: "/open", label: "Open Crypto" },
+        { to: "/open/polymarket", label: "Open Polymarket" },
         { to: "/history", label: "History" },
         { to: "/strategies", label: "Strategies" },
         { to: "/tests", label: "Test Runs" },

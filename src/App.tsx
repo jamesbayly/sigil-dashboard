@@ -14,6 +14,7 @@ import NewsDetail from "./components/NewsDetail";
 import ParsedNews from "./components/ParsedNews";
 import PolymarketMarkets from "./components/PolymarketMarkets";
 import PolymarketMarket from "./components/PolymarketMarket";
+import PolymarketTrades from "./components/PolymarketTrades";
 import Industries from "./components/Industries";
 import Industry from "./components/Industry";
 
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/" element={<Nav />}>
           <Route index element={<Navigate to="/symbols" replace />} />
           <Route path="open" element={<OpenTrades />} />
+          <Route path="open/polymarket" element={<PolymarketTrades />} />
           <Route path="history" element={<HistoricTrades />} />
           <Route path="strategies" element={<StrategiesView />} />
           <Route path="strategies/create" element={<StrategyView />} />

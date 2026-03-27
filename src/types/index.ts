@@ -28,6 +28,7 @@ export enum StrategyCodes {
   POLYMARKET_STRATEGY_10 = "POLYMARKET_STRATEGY_10",
   POLYMARKET_STRATEGY_11 = "POLYMARKET_STRATEGY_11",
   POLYMARKET_STRATEGY_12 = "POLYMARKET_STRATEGY_12",
+  POLYMARKET_STRATEGY_13 = "POLYMARKET_STRATEGY_13",
 }
 export enum StrategyStatus {
   ACTIVE = "active",
@@ -129,6 +130,8 @@ export interface BinanceTrades extends Trades {
 
 export interface PolymarketTrades extends Omit<Trades, "symbol_id"> {
   polymarket_market_id: number;
+  polymarket_market_title: string;
+  polymarket_insider_trading_score: number;
   outcome: string;
 }
 

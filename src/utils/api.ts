@@ -31,9 +31,12 @@ const BASE = import.meta.env.VITE_API_BASE_URL;
 
 export const getOpenTrades = async () => {
   const res = await fetch(`${BASE}/trade`);
-  return (await res.json()) as
-    | (Trades | PolymarketTrades | BinanceTrades)[]
-    | GenericResponse;
+  return (await res.json()) as (Trades | BinanceTrades)[] | GenericResponse;
+};
+
+export const getOpenPolymarketTrades = async () => {
+  const res = await fetch(`${BASE}/trade/polymarket`);
+  return (await res.json()) as PolymarketTrades[] | GenericResponse;
 };
 
 export const closeTrade = async (id: number) => {
@@ -67,7 +70,28 @@ export const getHistoricTrades = async (
   if (limit) params.set("limit", `${limit}`);
   const res = await fetch(`${BASE}/trade/historic?${params.toString()}`);
   return (await res.json()) as
-    | PaginatedResponse<Trades | PolymarketTrades | BinanceTrades>
+    | PaginatedResponse<Trades | BinanceTrades>
+    | GenericResponse;
+};
+
+export const getHistoricPolymarketTrades = async (
+  start: Date | undefined,
+  end: Date | undefined,
+  strategyId?: number,
+  page?: number,
+  limit?: number,
+) => {
+  const params = new URLSearchParams({});
+  if (start) params.set("start", `${start.toISOString().slice(0, 10)}`);
+  if (end) params.set("end", `${end.toISOString().slice(0, 10)}`);
+  if (strategyId) params.set("strategy_id", `${strategyId}`);
+  if (page) params.set("page", `${page}`);
+  if (limit) params.set("limit", `${limit}`);
+  const res = await fetch(
+    `${BASE}/trade/polymarket/historic?${params.toString()}`,
+  );
+  return (await res.json()) as
+    | PaginatedResponse<PolymarketTrades>
     | GenericResponse;
 };
 
