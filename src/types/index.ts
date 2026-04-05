@@ -133,6 +133,7 @@ export interface PolymarketTrades extends Omit<Trades, "symbol_id"> {
   polymarket_market_title: string;
   polymarket_insider_trading_score: number;
   outcome: string;
+  open_tx: string | undefined;
 }
 
 export interface MarketStateResponse {

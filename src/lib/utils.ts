@@ -56,5 +56,8 @@ export const exportCSV = (
 export const isRealTrade = (
   trade: Trades | BinanceTrades | PolymarketTrades,
 ) => {
-  return "open_binance_order_id" in trade && trade.open_binance_order_id;
+  return (
+    ("open_binance_order_id" in trade && trade.open_binance_order_id) ||
+    ("open_tx" in trade && trade.open_tx)
+  );
 };
