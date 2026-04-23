@@ -368,3 +368,58 @@ export interface PolymarketPriceResponse {
   volume1wk: number;
   volume1mo: number;
 }
+
+export type CopyTradeStatus = "executed" | "skipped" | "failed";
+
+export interface CopyTraderAccountRequest {
+  wallet_address: string;
+  strategy_id: number;
+  size_usd?: number;
+  min_source_size_usd?: number;
+}
+
+export interface CopyTraderAccountUpdateRequest {
+  is_active?: boolean;
+  strategy_id?: number;
+  size_usd?: number | null;
+  min_source_size_usd?: number | null;
+}
+
+export interface CopyTraderAccountTradeStats {
+  total: number;
+  executed: number;
+  skipped: number;
+  failed: number;
+}
+
+export interface CopyTraderAccountResponse {
+  id: number;
+  wallet_address: string;
+  user_name: string;
+  is_active: boolean;
+  strategy_id: number;
+  size_usd: number | undefined;
+  min_source_size_usd: number | undefined;
+  last_checked_at: Date | undefined;
+  created_at: Date;
+}
+
+export interface CopyTraderAccountDetailResponse extends CopyTraderAccountResponse {
+  trade_stats: CopyTraderAccountTradeStats;
+}
+
+export interface CopyTradeResponse {
+  id: number;
+  source_transaction_hash: string;
+  source_wallet_address: string;
+  copy_trader_account_id: number;
+  market_id: number;
+  position_id: number | undefined;
+  outcome: string;
+  side: string;
+  source_price: number;
+  source_amount: number;
+  status: CopyTradeStatus;
+  skip_reason: string | undefined;
+  copied_at: Date;
+}

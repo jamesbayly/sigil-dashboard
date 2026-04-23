@@ -33,6 +33,7 @@ export default function Nav() {
         { to: "/parsed-news", label: "Parsed News" },
         { to: "/polymarket", label: "Polymarket" },
         { to: "/industries", label: "Industries" },
+        { to: "/copy-trader", label: "Copy Trader" },
       ]
     : [
         { to: "/symbols", label: "Symbols" },

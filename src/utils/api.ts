@@ -1,5 +1,9 @@
 import {
   BinanceTrades,
+  CopyTraderAccountDetailResponse,
+  CopyTraderAccountRequest,
+  CopyTraderAccountResponse,
+  CopyTraderAccountUpdateRequest,
   GenericResponse,
   IndustryTagResponse,
   IndustryTags,
@@ -372,4 +376,41 @@ export const getAllPolymarketTrades = async () => {
 export const getAllPolymarketPrices = async (marketId: number) => {
   const res = await fetch(`${BASE}/polymarkets/${marketId}/prices`);
   return (await res.json()) as PolymarketPriceResponse[] | GenericResponse;
+};
+
+export const getCopyTraderAccounts = async () => {
+  const res = await fetch(`${BASE}/copy-trader/accounts`);
+  return (await res.json()) as
+    | CopyTraderAccountDetailResponse[]
+    | GenericResponse;
+};
+
+export const createCopyTraderAccount = async (
+  payload: CopyTraderAccountRequest,
+) => {
+  const res = await fetch(`${BASE}/copy-trader/accounts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as CopyTraderAccountResponse | GenericResponse;
+};
+
+export const updateCopyTraderAccount = async (
+  id: number,
+  payload: CopyTraderAccountUpdateRequest,
+) => {
+  const res = await fetch(`${BASE}/copy-trader/accounts/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return (await res.json()) as CopyTraderAccountResponse | GenericResponse;
+};
+
+export const deleteCopyTraderAccount = async (id: number) => {
+  const res = await fetch(`${BASE}/copy-trader/accounts/${id}`, {
+    method: "DELETE",
+  });
+  return (await res.json()) as GenericResponse;
 };

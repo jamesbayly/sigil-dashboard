@@ -17,6 +17,7 @@ import PolymarketMarket from "./components/PolymarketMarket";
 import PolymarketTrades from "./components/PolymarketTrades";
 import Industries from "./components/Industries";
 import Industry from "./components/Industry";
+import CopyTrader from "./components/CopyTrader";
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
           <Route path="industries/list" element={<Industries />} />
           <Route path="industries/map" element={<Industries />} />
           <Route path="industries/:id" element={<Industry />} />
+          <Route path="copy-trader" element={<CopyTrader />} />
         </Route>
       </Routes>
     </BrowserRouter>
