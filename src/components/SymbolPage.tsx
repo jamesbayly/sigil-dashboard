@@ -663,21 +663,29 @@ export default function SymbolPage() {
                               data={stockTrendData}
                               margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
                             >
-                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                              <CartesianGrid
+                                strokeDasharray="3 3"
+                                vertical={false}
+                              />
                               <XAxis
                                 dataKey="date"
                                 minTickGap={32}
                                 tickFormatter={(value: Date) =>
-                                  new Date(value).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                  })
+                                  new Date(value).toLocaleDateString(
+                                    undefined,
+                                    {
+                                      month: "short",
+                                      day: "numeric",
+                                    },
+                                  )
                                 }
                               />
                               <YAxis
                                 width={64}
                                 domain={["auto", "auto"]}
-                                tickFormatter={(value: number) => value.toFixed(2)}
+                                tickFormatter={(value: number) =>
+                                  value.toFixed(2)
+                                }
                               />
                               <Tooltip
                                 labelFormatter={(value: Date) =>
