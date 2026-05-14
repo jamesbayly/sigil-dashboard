@@ -75,6 +75,67 @@ export enum NewsSentiment {
   NEUTRAL = "NEUTRAL",
 }
 
+export const API_VALIDATION_RULES = {
+  pagination: {
+    defaultPage: 1,
+    defaultLimit: 50,
+    maxLimit: 100,
+  },
+  search: {
+    minLength: 1,
+    maxLength: 256,
+  },
+  filters: {
+    maxOptionTypes: 4,
+    maxIndustryIds: 50,
+  },
+} as const;
+
+export const API_ENUM_VALUES = {
+  optionTypes: [
+    OptionType.CALL_BUY,
+    OptionType.CALL_SELL,
+    OptionType.PUT_BUY,
+    OptionType.PUT_SELL,
+  ],
+  newsTypes: [
+    NewsType.GENERAL_NEWS,
+    NewsType.NOTABLE_OPTIONS,
+    NewsType.PREMARKET,
+  ],
+} as const;
+
+export const API_JSON_SCHEMA_FIELDS = {
+  positiveInteger: {
+    type: "integer",
+    minimum: 1,
+  },
+  page: {
+    type: "integer",
+    minimum: 1,
+    default: API_VALIDATION_RULES.pagination.defaultPage,
+  },
+  limit: {
+    type: "integer",
+    minimum: 1,
+    maximum: API_VALIDATION_RULES.pagination.maxLimit,
+    default: API_VALIDATION_RULES.pagination.defaultLimit,
+  },
+  search: {
+    type: "string",
+    minLength: API_VALIDATION_RULES.search.minLength,
+    maxLength: API_VALIDATION_RULES.search.maxLength,
+  },
+  newsType: {
+    type: "string",
+    enum: [...API_ENUM_VALUES.newsTypes],
+  },
+  optionType: {
+    type: "string",
+    enum: [...API_ENUM_VALUES.optionTypes],
+  },
+} as const;
+
 export class GenericResponse {
   message: string;
 
@@ -246,6 +307,70 @@ export interface SymbolResponse extends SymbolsResponse {
   count_data: number; // The count of price data
   week_change_percent: number | undefined;
   month_change_percent: number | undefined;
+}
+
+export type PerformanceReturnHorizon = "1d" | "5d" | "1m" | "3m" | "6m" | "12m";
+
+export interface SymbolPerformanceReturns {
+  "1d": number | null;
+  "5d": number | null;
+  "1m": number | null;
+  "3m": number | null;
+  "6m": number | null;
+  "12m": number | null;
+}
+
+export interface SymbolPerformanceDailyOHLCV {
+  date: Date;
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  v: number;
+}
+
+export interface SymbolPerformanceBreakout {
+  breakout_level: number | null;
+  days_since_breakout: number | null;
+  percent_above_level: number | null;
+}
+
+export interface SymbolPerformanceRelativeStrength {
+  vs_spy: SymbolPerformanceReturns | null;
+  vs_qqq: SymbolPerformanceReturns | null;
+  vs_industry: SymbolPerformanceReturns;
+  industry_context: {
+    id: number;
+    name: string;
+    theme: string;
+  } | null;
+}
+
+export interface SymbolPerformanceResponse {
+  symbol_id: number;
+  daily_ohlcv_1y: SymbolPerformanceDailyOHLCV[];
+  indicators: {
+    vwap_20d: number | null;
+    atr_14: number | null;
+    volume_ratio_20d: number | null;
+    moving_averages: {
+      sma_20: number | null;
+      sma_50: number | null;
+      sma_200: number | null;
+    };
+  };
+  returns_percent: SymbolPerformanceReturns;
+  relative_strength_percent_points: SymbolPerformanceRelativeStrength;
+  breakout: SymbolPerformanceBreakout;
+  data_availability: {
+    daily_points: number;
+    has_1y_daily: boolean;
+    industry_relative_strength_horizons: Record<
+      PerformanceReturnHorizon,
+      boolean
+    >;
+  };
+  latest_close: number;
 }
 
 export interface OptionsDataRequest {

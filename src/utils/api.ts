@@ -25,6 +25,7 @@ import {
   StrategyResponse,
   StrategyTestRunResponse,
   StrategyTestRunsResponse,
+  SymbolPerformanceResponse,
   SymbolRequest,
   SymbolResponse,
   SymbolsResponse,
@@ -413,4 +414,9 @@ export const deleteCopyTraderAccount = async (id: number) => {
     method: "DELETE",
   });
   return (await res.json()) as GenericResponse;
+};
+
+export const getSymbolPerformance = async (symbolId: number) => {
+  const res = await fetch(`${BASE}/symbol/${symbolId}/performance`);
+  return (await res.json()) as SymbolPerformanceResponse | GenericResponse;
 };

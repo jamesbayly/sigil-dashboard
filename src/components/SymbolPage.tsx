@@ -5,6 +5,15 @@ import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Edit2, X } from "lucide-react";
 import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import {
   Form,
   FormControl,
   FormField,
@@ -24,7 +33,11 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSymbol } from "@/hooks/useSymbol";
-import { SymbolType, type SymbolRequest } from "@/types";
+import {
+  SymbolType,
+  type SymbolPerformanceReturns,
+  type SymbolRequest,
+} from "@/types";
 import TradesTable from "./TradesTable";
 import ParsedNewsList from "./ParsedNewsList";
 import { useParsedNews } from "@/hooks/useParsedNews";
@@ -33,6 +46,7 @@ import { getNumberStyling } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import IndustryPopover from "./IndustryPopover";
 import OptionsList from "./OptionsList";
+import { useSymbolPerformance } from "../hooks/useSymbolPerformance";
 
 // Zod schema for symbol form
 const symbolSchema = z.object({
@@ -45,6 +59,20 @@ const symbolSchema = z.object({
 });
 
 type SymbolFormValues = z.infer<typeof symbolSchema>;
+
+const PERFORMANCE_HORIZONS: (keyof SymbolPerformanceReturns)[] = [
+  "1d",
+  "5d",
+  "1m",
+  "3m",
+  "6m",
+  "12m",
+];
+
+const formatPercent = (value: number | null | undefined) => {
+  if (value === null || value === undefined) return "N/A";
+  return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
+};
 
 export default function SymbolPage() {
   const navigate = useNavigate();
@@ -72,6 +100,23 @@ export default function SymbolPage() {
     symbol ? symbolId : undefined,
     undefined,
     industryIds,
+  );
+
+  const {
+    performance,
+    isLoading: performanceLoading,
+    error: performanceError,
+  } = useSymbolPerformance(
+    symbol?.symbol_type === SymbolType.STOCK ? symbol.id : undefined,
+  );
+
+  const stockTrendData = useMemo(
+    () =>
+      performance?.daily_ohlcv_1y.map((point) => ({
+        date: new Date(point.date),
+        close: point.c,
+      })) ?? [],
+    [performance?.daily_ohlcv_1y],
   );
 
   const form = useForm<SymbolFormValues>({
@@ -185,12 +230,17 @@ export default function SymbolPage() {
       {existingSymbol && symbol ? (
         <Tabs defaultValue="details" className="space-y-6">
           <TabsList
-            className={`grid w-full ${symbol.symbol_type === "STOCK" ? "grid-cols-4" : "grid-cols-3"}`}
+            className={`grid w-full ${symbol.symbol_type === "STOCK" ? "grid-cols-5" : "grid-cols-3"}`}
           >
             <TabsTrigger value="details">Details</TabsTrigger>
             <TabsTrigger value="trades">Trades</TabsTrigger>
             {symbol.symbol_type === "STOCK" && (
               <TabsTrigger value="options">Options</TabsTrigger>
+            )}
+            {symbol.symbol_type === "STOCK" && (
+              <TabsTrigger value="stock-performance">
+                Stock Performance
+              </TabsTrigger>
             )}
             <TabsTrigger value="news">News</TabsTrigger>
           </TabsList>
@@ -576,6 +626,377 @@ export default function SymbolPage() {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+          )}
+
+          {symbol.symbol_type === "STOCK" && (
+            <TabsContent value="stock-performance" className="space-y-4">
+              {performanceLoading ? (
+                <Card>
+                  <CardContent className="py-6">
+                    <p className="text-sm text-muted-foreground">
+                      Loading stock performance...
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : performanceError ? (
+                <Card>
+                  <CardContent className="py-6">
+                    <p className="text-sm text-red-600">
+                      {performanceError.message}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : performance ? (
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg sm:text-xl">
+                        1Y Close Trend
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {stockTrendData.length > 1 ? (
+                        <div className="h-56 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <LineChart
+                              data={stockTrendData}
+                              margin={{ top: 8, right: 12, left: 4, bottom: 8 }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                              <XAxis
+                                dataKey="date"
+                                minTickGap={32}
+                                tickFormatter={(value: Date) =>
+                                  new Date(value).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                  })
+                                }
+                              />
+                              <YAxis
+                                width={64}
+                                domain={["auto", "auto"]}
+                                tickFormatter={(value: number) => value.toFixed(2)}
+                              />
+                              <Tooltip
+                                labelFormatter={(value: Date) =>
+                                  new Date(value).toLocaleDateString()
+                                }
+                                formatter={(value: number | string) =>
+                                  typeof value === "number"
+                                    ? value.toFixed(2)
+                                    : value
+                                }
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="close"
+                                stroke="hsl(var(--primary))"
+                                strokeWidth={2}
+                                dot={false}
+                              />
+                            </LineChart>
+                          </ResponsiveContainer>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Not enough OHLCV data to render trend chart.
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg sm:text-xl">
+                        Returns %
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                        {PERFORMANCE_HORIZONS.map((horizon) => {
+                          const value = performance.returns_percent[horizon];
+                          return (
+                            <div
+                              key={horizon}
+                              className="p-3 bg-muted rounded space-y-1"
+                            >
+                              <div className="text-xs text-muted-foreground uppercase">
+                                {horizon}
+                              </div>
+                              <div
+                                className={`text-base font-mono ${getNumberStyling(
+                                  value ?? undefined,
+                                )}`}
+                              >
+                                {formatPercent(value)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Indicators</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">
+                              Latest Close
+                            </div>
+                            <div className="font-mono font-semibold">
+                              {performance.latest_close.toFixed(2)}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">
+                              VWAP 20D
+                            </div>
+                            <div className="font-mono font-semibold">
+                              {performance.indicators.vwap_20d?.toFixed(2) ??
+                                "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">ATR 14</div>
+                            <div className="font-mono font-semibold">
+                              {performance.indicators.atr_14?.toFixed(2) ??
+                                "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">
+                              Volume Ratio 20D
+                            </div>
+                            <div className="font-mono font-semibold">
+                              {performance.indicators.volume_ratio_20d?.toFixed(
+                                2,
+                              ) ?? "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">SMA 20</div>
+                            <div className="font-mono font-semibold">
+                              {performance.indicators.moving_averages.sma_20?.toFixed(
+                                2,
+                              ) ?? "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">SMA 50</div>
+                            <div className="font-mono font-semibold">
+                              {performance.indicators.moving_averages.sma_50?.toFixed(
+                                2,
+                              ) ?? "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">SMA 200</div>
+                            <div className="font-mono font-semibold">
+                              {performance.indicators.moving_averages.sma_200?.toFixed(
+                                2,
+                              ) ?? "N/A"}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Breakout</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">
+                              Breakout Level
+                            </div>
+                            <div className="font-mono font-semibold">
+                              {performance.breakout.breakout_level?.toFixed(
+                                2,
+                              ) ?? "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">
+                              Days Since Breakout
+                            </div>
+                            <div className="font-mono font-semibold">
+                              {performance.breakout.days_since_breakout ??
+                                "N/A"}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-muted-foreground">
+                              % Above Breakout
+                            </div>
+                            <div
+                              className={`font-mono font-semibold ${getNumberStyling(
+                                performance.breakout.percent_above_level ??
+                                  undefined,
+                              )}`}
+                            >
+                              {formatPercent(
+                                performance.breakout.percent_above_level,
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg sm:text-xl">
+                        Relative Strength (% points)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {performance.relative_strength_percent_points
+                        .industry_context && (
+                        <p className="text-sm text-muted-foreground">
+                          Industry:{" "}
+                          {
+                            performance.relative_strength_percent_points
+                              .industry_context.name
+                          }
+                        </p>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {[
+                          {
+                            label: "vs SPY",
+                            values:
+                              performance.relative_strength_percent_points
+                                .vs_spy,
+                          },
+                          {
+                            label: "vs QQQ",
+                            values:
+                              performance.relative_strength_percent_points
+                                .vs_qqq,
+                          },
+                          {
+                            label: "vs Industry",
+                            values:
+                              performance.relative_strength_percent_points
+                                .vs_industry,
+                          },
+                        ].map((series) => (
+                          <div
+                            key={series.label}
+                            className="border rounded p-3 space-y-2"
+                          >
+                            <div className="font-medium text-sm">
+                              {series.label}
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-xs">
+                              {PERFORMANCE_HORIZONS.map((horizon) => {
+                                const value = series.values?.[horizon];
+                                return (
+                                  <div key={horizon} className="space-y-1">
+                                    <div className="text-muted-foreground uppercase">
+                                      {horizon}
+                                    </div>
+                                    <div
+                                      className={`font-mono ${getNumberStyling(
+                                        value ?? undefined,
+                                      )}`}
+                                    >
+                                      {formatPercent(value)}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-xs text-muted-foreground">
+                        Data availability:{" "}
+                        {performance.data_availability.daily_points} daily
+                        points (
+                        {performance.data_availability.has_1y_daily
+                          ? "1Y complete"
+                          : "1Y partial"}
+                        )
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg sm:text-xl">
+                        Recent Daily OHLCV
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b text-left">
+                              <th className="py-2 pr-3">Date</th>
+                              <th className="py-2 pr-3">Open</th>
+                              <th className="py-2 pr-3">High</th>
+                              <th className="py-2 pr-3">Low</th>
+                              <th className="py-2 pr-3">Close</th>
+                              <th className="py-2">Volume</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {performance.daily_ohlcv_1y
+                              .slice(-10)
+                              .reverse()
+                              .map((row) => (
+                                <tr
+                                  key={new Date(row.date).toISOString()}
+                                  className="border-b"
+                                >
+                                  <td className="py-2 pr-3">
+                                    {new Date(row.date).toLocaleDateString()}
+                                  </td>
+                                  <td className="py-2 pr-3 font-mono">
+                                    {row.o.toFixed(2)}
+                                  </td>
+                                  <td className="py-2 pr-3 font-mono">
+                                    {row.h.toFixed(2)}
+                                  </td>
+                                  <td className="py-2 pr-3 font-mono">
+                                    {row.l.toFixed(2)}
+                                  </td>
+                                  <td className="py-2 pr-3 font-mono">
+                                    {row.c.toFixed(2)}
+                                  </td>
+                                  <td className="py-2 font-mono">
+                                    {row.v.toLocaleString()}
+                                  </td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="py-6">
+                    <p className="text-sm text-muted-foreground">
+                      No stock performance data available yet.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
             </TabsContent>
           )}
 
